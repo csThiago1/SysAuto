@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -51,12 +51,21 @@ export function StepPlaca(): React.ReactElement {
   const ultima = (dup.data?.results ?? []).find(
     (os) => os.plate === plate && os.customer_person_id != null
   );
+  const preenchido = useRef<{ plate: string; id: number } | null>(null);
   useEffect(() => {
+    // Placa corrigida: o cliente que a placa anterior trouxe sai (se ninguém trocou à mão)
+    const antes = preenchido.current;
+    if (antes && antes.plate !== plate && form.getValues("customer_id") === antes.id) {
+      setValue("customer_id", null);
+      setValue("customer_name", "");
+      preenchido.current = null;
+    }
     if (!ultima?.customer_person_id || form.getValues("customer_id")) return;
     setValue("customer_id", ultima.customer_person_id);
     setValue("customer_name", ultima.customer_name);
+    preenchido.current = { plate: plate ?? "", id: ultima.customer_person_id };
     toast.info(`Cliente da última OS: ${ultima.customer_name}`);
-  }, [ultima?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [plate, ultima?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handlePlateChange(e: React.ChangeEvent<HTMLInputElement>): void {
     const val = e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 8);

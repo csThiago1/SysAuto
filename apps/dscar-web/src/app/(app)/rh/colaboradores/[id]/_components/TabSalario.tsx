@@ -12,6 +12,7 @@ import { useSalaryHistory, useCreateSalaryHistory } from "@/hooks";
 import { Skeleton } from "@/components/ui";
 import { DateField } from "@/components/ui/date-field"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
 
 interface TabSalarioProps {
   employee: Employee;
@@ -56,13 +57,13 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
               }).format(parseFloat(employee.base_salary))}
             </p>
           </div>
-          <button
+          <Button
             onClick={() => setShowForm((p) => !p)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            size="sm"
           >
             <TrendingUp className="h-3.5 w-3.5" />
             Novo reajuste
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -140,13 +141,13 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              size="sm"
             >
               {create.isPending ? "Salvando..." : "Confirmar reajuste"}
-            </button>
+            </Button>
           </div>
         </form>
       )}

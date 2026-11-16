@@ -215,7 +215,8 @@ export function BudgetHeader({ budget }: Props) {
               size="sm"
               disabled={approving}
               onClick={() => setConfirmApprove(true)}
-              className="gap-1.5 bg-success-600 hover:bg-success-700 text-foreground"
+              variant="success"
+              className="gap-1.5"
             >
               <CheckCircle className="h-4 w-4" />
               Aprovar → OS

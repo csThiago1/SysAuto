@@ -154,9 +154,9 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
   },
   ready: {
     label:  "Pronto p/ Entrega",
-    badge:  `bg-flag-verde text-white ${FAIXA}`,
+    badge:  `bg-flag-verde text-black ${FAIXA}`,
     border: "border-l-4 border-l-flag-verde",
-    column: "bg-flag-verde text-white",
+    column: "bg-flag-verde text-black",
     dot:    "bg-flag-verde",
     text:   "text-success-400",
   },
@@ -230,35 +230,35 @@ export const KANBAN_PHASE_GROUPS: KanbanPhaseGroup[] = [
     label: "Entrada",
     statuses: ["reception", "initial_survey", "budget", "waiting_auth", "authorized"],
     headerClass:
-      "bg-blue-50 text-blue-700 border-b border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20",
+      "bg-muted/60 text-foreground border-b-2 border-b-flag-aluminio",
   },
   {
     id: "production",
     label: "Produção",
     statuses: ["waiting_parts", "repair", "mechanic", "bodywork", "painting", "assembly"],
     headerClass:
-      "bg-red-50 text-red-700 border-b border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20",
+      "bg-muted/60 text-foreground border-b-2 border-b-flag-azul",
   },
   {
     id: "finishing",
     label: "Acabamento",
     statuses: ["polishing", "washing", "final_survey"],
     headerClass:
-      "bg-yellow-50 text-yellow-700 border-b border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-300 dark:border-yellow-500/20",
+      "bg-muted/60 text-foreground border-b-2 border-b-flag-azul",
   },
   {
     id: "delivery",
     label: "Saída",
     statuses: ["ready", "delivered"],
     headerClass:
-      "bg-green-50 text-green-700 border-b border-green-200 dark:bg-green-500/10 dark:text-green-300 dark:border-green-500/20",
+      "bg-muted/60 text-foreground border-b-2 border-b-flag-verde",
   },
   {
     id: "cancelled",
     label: "Canceladas",
     statuses: ["cancelled"],
     headerClass:
-      "bg-neutral-100 text-neutral-500 border-b border-neutral-200 dark:bg-neutral-500/10 dark:text-neutral-400 dark:border-neutral-500/20",
+      "bg-muted/60 text-muted-foreground border-b-2 border-b-border",
   },
 ];
 
@@ -282,57 +282,57 @@ export const OS_PHOTO_FOLDERS: Record<OSPhotoFolder, FolderConfig> = {
     label: "Vistoria Inicial",
     description: "Fotos de chegada do veículo antes de qualquer serviço",
     icon: "Camera",
-    color: "text-blue-400",
-    bgColor: "bg-blue-500/10",
-    borderColor: "border-blue-500/20",
+    color: "text-info-400",
+    bgColor: "bg-info-500/10",
+    borderColor: "border-info-500/20",
   },
   checklist_entrada: {
     label: "Checklist de Entrada",
     description: "Checklist, formulários e documentos de recepção",
     icon: "ClipboardCheck",
-    color: "text-indigo-400",
-    bgColor: "bg-indigo-500/10",
-    borderColor: "border-indigo-500/20",
+    color: "text-muted-foreground",
+    bgColor: "bg-muted/60",
+    borderColor: "border-border",
   },
   acompanhamento: {
     label: "Acompanhamento de Reparos",
     description: "Fotos do progresso dos serviços em execução",
     icon: "Wrench",
-    color: "text-orange-400",
-    bgColor: "bg-orange-500/10",
-    borderColor: "border-orange-500/20",
+    color: "text-info-400",
+    bgColor: "bg-info-500/10",
+    borderColor: "border-info-500/20",
   },
   complemento: {
     label: "Complemento",
     description: "Danos adicionais encontrados durante o reparo",
     icon: "AlertCircle",
-    color: "text-amber-400",
-    bgColor: "bg-amber-500/10",
-    borderColor: "border-amber-500/20",
+    color: "text-warning-400",
+    bgColor: "bg-warning-500/10",
+    borderColor: "border-warning-500/20",
   },
   vistoria_final: {
     label: "Vistoria Final",
     description: "Fotos finais após conclusão de todos os serviços",
     icon: "CheckCircle",
-    color: "text-green-400",
-    bgColor: "bg-green-500/10",
-    borderColor: "border-green-500/20",
+    color: "text-success-400",
+    bgColor: "bg-success-500/10",
+    borderColor: "border-success-500/20",
   },
   documentos: {
     label: "Documentos",
     description: "Laudos, notas fiscais e documentos do sinistro",
     icon: "FileText",
-    color: "text-slate-400",
-    bgColor: "bg-slate-500/10",
-    borderColor: "border-slate-500/20",
+    color: "text-muted-foreground",
+    bgColor: "bg-muted/60",
+    borderColor: "border-border",
   },
   orcamentos: {
     label: "Orçamentos",
     description: "Orçamentos, propostas e comparativos de peças",
     icon: "Receipt",
-    color: "text-violet-400",
-    bgColor: "bg-violet-500/10",
-    borderColor: "border-violet-500/20",
+    color: "text-muted-foreground",
+    bgColor: "bg-muted/60",
+    borderColor: "border-border",
   },
 } as const;
 
@@ -350,14 +350,13 @@ export const OS_PHOTO_FOLDER_ORDER: OSPhotoFolder[] = [
 
 /**
  * Retorna classe Tailwind de cor de texto baseada nos dias na oficina.
- * Verde ≤ 7 dias · Amarelo 8–14 · Laranja 15–21 · Vermelho > 21
+ * Verde ≤ 7 dias · Amarelo 8–14 · Vermelho > 14 (tokens por tema)
  */
 export function getDaysInShopColor(days: number | null): string {
-  if (days === null) return "text-neutral-400";
-  if (days <= 7)  return "text-emerald-600";
-  if (days <= 14) return "text-amber-500";
-  if (days <= 21) return "text-orange-500";
-  return "text-red-600";
+  if (days === null) return "text-muted-foreground";
+  if (days <= 7)  return "text-success-400";
+  if (days <= 14) return "text-warning-400";
+  return "text-error-400";
 }
 
 /**
@@ -366,18 +365,17 @@ export function getDaysInShopColor(days: number | null): string {
 export function getDaysInShopBorderColor(days: number | null): string {
   if (days === null) return "";
   if (days <= 7)  return "";
-  if (days <= 14) return "border-l-amber-400";
-  if (days <= 21) return "border-l-orange-500";
-  return "border-l-red-500";
+  if (days <= 14) return "border-l-flag-amarela";
+  return "border-l-flag-vermelha";
 }
 
 /**
  * Retorna badge classes de urgência baseada nos dias de atraso.
  */
 export function getUrgencyBadgeClass(daysOverdue: number): string {
-  if (daysOverdue > 0)  return "bg-red-100 text-red-700 border border-red-200";
-  if (daysOverdue === 0) return "bg-amber-100 text-amber-700 border border-amber-200";
-  return "bg-blue-50 text-blue-600 border border-blue-100";
+  if (daysOverdue > 0)  return "bg-error-500/10 text-error-400 border border-error-500/30";
+  if (daysOverdue === 0) return "bg-warning-500/10 text-warning-400 border border-warning-500/30";
+  return "bg-info-500/10 text-info-400 border border-info-500/30";
 }
 
 // ─── Role labels ──────────────────────────────────────────────────────────────

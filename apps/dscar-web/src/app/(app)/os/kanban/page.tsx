@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { podeAbrirOS } from "@/components/dock/nav-config";
 import { AlertCircle, CheckCircle, LayoutList, Plus, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -23,6 +25,7 @@ const KanbanBoard = dynamic(
 );
 
 export default function KanbanPage(): React.ReactElement {
+  const { data: session } = useSession();
   const [showDelivered, setShowDelivered] = useState(false);
   const [showCancelled, setShowCancelled] = useState(false);
 
@@ -82,12 +85,14 @@ export default function KanbanPage(): React.ReactElement {
               Ver Lista
             </Link>
           </Button>
-          <Button asChild>
-            <Link href="/recepcao">
-              <Plus className="h-4 w-4" />
-              Nova OS
-            </Link>
-          </Button>
+          {podeAbrirOS(session?.role) && (
+            <Button asChild>
+              <Link href="/recepcao">
+                <Plus className="h-4 w-4" />
+                Nova OS
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 

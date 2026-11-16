@@ -3,6 +3,7 @@
 import { useState, useCallback, type KeyboardEvent } from "react"
 import { Tags, Plus, Pencil, Trash2, Check, X } from "lucide-react"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
 import type {
   TipoPeca,
   CategoriaProduto,
@@ -106,14 +107,13 @@ function TiposPecaTab() {
     <div className="space-y-4">
       {/* Create button */}
       <div className="flex justify-end">
-        <button
+        <Button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Novo Tipo
-        </button>
+        </Button>
       </div>
 
       {/* Inline create form */}
@@ -164,14 +164,13 @@ function TiposPecaTab() {
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="button"
               onClick={handleCreate}
               disabled={createMut.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createMut.isPending ? "Criando..." : "Criar"}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -425,14 +424,13 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
     <div className="space-y-4">
       {/* Create button */}
       <div className="flex justify-end">
-        <button
+        <Button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova {entityLabel}
-        </button>
+        </Button>
       </div>
 
       {/* Inline create form */}
@@ -497,14 +495,13 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="button"
               onClick={handleCreate}
               disabled={createPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createPending ? "Criando..." : "Criar"}
-            </button>
+            </Button>
           </div>
         </div>
       )}

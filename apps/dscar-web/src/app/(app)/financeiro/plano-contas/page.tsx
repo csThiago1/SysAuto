@@ -4,6 +4,7 @@
  * Plano de Contas — Arvore hierarquica interativa com colapso por nivel.
  */
 
+import { Button } from "@/components/ui/button";
 import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
@@ -265,13 +266,12 @@ export default function PlanoContasPage(): React.ReactElement {
             >
               Recolher tudo
             </button>
-            <Link
-              href={"/financeiro/plano-contas/nova" as Route}
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              <PlusCircle className="h-3.5 w-3.5" />
-              Nova Conta
-            </Link>
+            <Button asChild size="sm">
+              <Link href={"/financeiro/plano-contas/nova" as Route}>
+                <PlusCircle className="h-3.5 w-3.5" />
+                Nova Conta
+              </Link>
+            </Button>
           </div>
         </div>
 

@@ -20,6 +20,7 @@ import {
   useCreatePrazo,
   useCreateCondicao,
 } from "@/hooks/usePurchasing"
+import { NativeSelect } from "@/components/ui/native-select"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -236,10 +237,9 @@ export function RespostaForm({ pedidos, open, onOpenChange }: RespostaFormProps)
           {/* Supplier selector */}
           <div className="space-y-1.5">
             <Label className="label-mono text-muted-foreground">Fornecedor</Label>
-            <select
+            <NativeSelect
               value={supplierId}
               onChange={(e) => setSupplierId(e.target.value)}
-              className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">Selecione o fornecedor...</option>
               {suppliers?.map((s) => (
@@ -247,7 +247,7 @@ export function RespostaForm({ pedidos, open, onOpenChange }: RespostaFormProps)
                   {s.name}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
 
           {/* Per-pedido price inputs */}
@@ -297,10 +297,10 @@ export function RespostaForm({ pedidos, open, onOpenChange }: RespostaFormProps)
                     />
 
                     <div>
-                      <select
+                      <NativeSelect
                         value={prazoSelectVal}
                         onChange={(e) => handlePrazoChange(p.id, e.target.value)}
-                        className="w-full bg-muted/50 border border-border text-foreground rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring h-8"
+                        className="h-8 text-xs"
                       >
                         <option value="">Selecionar prazo...</option>
                         {prazos?.map((pr) => (
@@ -309,7 +309,7 @@ export function RespostaForm({ pedidos, open, onOpenChange }: RespostaFormProps)
                           </option>
                         ))}
                         <option value={CRIAR_NOVO}>+ Criar novo...</option>
-                      </select>
+                      </NativeSelect>
                       {showNovoPrazo[p.id] && (
                         <CriarPrazoInline
                           onCreated={(id) => {
@@ -321,10 +321,10 @@ export function RespostaForm({ pedidos, open, onOpenChange }: RespostaFormProps)
                     </div>
 
                     <div>
-                      <select
+                      <NativeSelect
                         value={condicaoSelectVal}
                         onChange={(e) => handleCondicaoChange(p.id, e.target.value)}
-                        className="w-full bg-muted/50 border border-border text-foreground rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring h-8"
+                        className="h-8 text-xs"
                       >
                         <option value="">Selecionar condição...</option>
                         {condicoes?.map((c) => (
@@ -333,7 +333,7 @@ export function RespostaForm({ pedidos, open, onOpenChange }: RespostaFormProps)
                           </option>
                         ))}
                         <option value={CRIAR_NOVO}>+ Criar nova...</option>
-                      </select>
+                      </NativeSelect>
                       {showNovaCondicao[p.id] && (
                         <CriarCondicaoInline
                           onCreated={(id) => {

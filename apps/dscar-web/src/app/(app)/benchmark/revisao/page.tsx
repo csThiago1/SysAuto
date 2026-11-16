@@ -213,7 +213,8 @@ export default function BenchmarkRevisaoPage() {
                   <Button
                     onClick={handleAceitar}
                     disabled={aceitando}
-                    className="flex-1 bg-success-600 hover:bg-success-700 text-foreground"
+                    variant="success"
+                    className="flex-1"
                     size="sm"
                   >
                     <CheckCheck className="h-3.5 w-3.5 mr-1" />

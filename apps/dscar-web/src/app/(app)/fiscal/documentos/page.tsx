@@ -8,6 +8,7 @@
  * com filtros por tipo, status e busca por ref.
  */
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import { FileText, RefreshCw, XCircle, CheckCircle2, Clock, AlertCircle, Mail, X, ArrowRightLeft } from "lucide-react"
 import { toast } from "sonner"
@@ -153,17 +154,16 @@ function SubstituirDialog({ doc, open, onClose }: SubstituirDialogProps) {
             <label className="text-xs font-medium text-foreground">
               Código de justificativa
             </label>
-            <select
+            <NativeSelect
               value={codigoJustificativa}
               onChange={(e) => setCodigoJustificativa(e.target.value)}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {JUSTIFICATIVA_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
         </div>
 
@@ -904,27 +904,29 @@ export default function FiscalDocumentosPage() {
 
       {/* Filtros */}
       <div className="flex gap-3">
-        <select
+        <NativeSelect
           value={docType}
           onChange={(e) => setDocType(e.target.value)}
-          className="rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm text-foreground"
+          className="w-auto"
+          wrapperClassName="w-auto"
         >
           <option value="">Todos os tipos</option>
           <option value="nfse">NFS-e</option>
           <option value="nfe">NF-e</option>
           <option value="nfce">NFC-e</option>
-        </select>
-        <select
+        </NativeSelect>
+        <NativeSelect
           value={docStatus}
           onChange={(e) => setDocStatus(e.target.value)}
-          className="rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm text-foreground"
+          className="w-auto"
+          wrapperClassName="w-auto"
         >
           <option value="">Todos os status</option>
           <option value="pending">Aguardando</option>
           <option value="authorized">Autorizada</option>
           <option value="rejected">Rejeitada</option>
           <option value="cancelled">Cancelada</option>
-        </select>
+        </NativeSelect>
       </div>
 
       {/* Cards (mobile) */}

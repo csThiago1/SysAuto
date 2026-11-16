@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { CatalogSearchCombobox } from "./CatalogSearchCombobox"
 import { CatalogContextCard } from "./CatalogContextCard"
+import { NativeSelect } from "@/components/ui/native-select"
 
 interface CompraFormModalProps {
   open: boolean
@@ -156,19 +157,18 @@ export function CompraFormModal({
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 Tipo de peca *
               </label>
-              <select
+              <NativeSelect
                 value={tipoQualidade}
                 onChange={(e) =>
                   setTipoQualidade(e.target.value as TipoQualidade)
                 }
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none"
               >
                 {TIPO_QUALIDADE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">

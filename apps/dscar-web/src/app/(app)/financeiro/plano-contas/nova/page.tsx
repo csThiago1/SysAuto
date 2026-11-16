@@ -4,6 +4,8 @@
  * Nova Conta Contabil — Formulario de criacao no plano de contas.
  */
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -214,13 +216,10 @@ export default function NovaContaPage(): React.ReactElement {
 
               {/* Tipo de Conta */}
               <FormField label="Tipo de Conta *" error={errors.account_type}>
-                <select
+                <NativeSelect
                   value={form.account_type}
                   onChange={(e) => setField("account_type", e.target.value)}
-                  className={cn(
-                    "w-full rounded-md border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
-                    errors.account_type ? "border-error-500/20" : "border-border"
-                  )}
+                  className={cn(errors.account_type && "border-error-500/20")}
                 >
                   <option value="">Selecione o tipo...</option>
                   {ACCOUNT_TYPES.map(([value, label]) => (
@@ -228,18 +227,15 @@ export default function NovaContaPage(): React.ReactElement {
                       {label}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </FormField>
 
               {/* Natureza */}
               <FormField label="Natureza *" error={errors.nature}>
-                <select
+                <NativeSelect
                   value={form.nature}
                   onChange={(e) => setField("nature", e.target.value)}
-                  className={cn(
-                    "w-full rounded-md border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
-                    errors.nature ? "border-error-500/20" : "border-border"
-                  )}
+                  className={cn(errors.nature && "border-error-500/20")}
                 >
                   <option value="">Selecione a natureza...</option>
                   {NATURE_ENTRIES.map(([value, label]) => (
@@ -247,7 +243,7 @@ export default function NovaContaPage(): React.ReactElement {
                       {label}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </FormField>
             </div>
 
@@ -329,13 +325,12 @@ export default function NovaContaPage(): React.ReactElement {
             >
               Cancelar
             </Link>
-            <button
+            <Button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {create.isPending ? "Criando..." : "Criar Conta"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

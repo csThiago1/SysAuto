@@ -5,7 +5,7 @@ import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { ChevronRight, LogOut, Plus } from "lucide-react";
-import { ROLE_HIERARCHY, type PaddockRole, type ExtraPermission } from "@paddock/types";
+import type { PaddockRole, ExtraPermission } from "@paddock/types";
 import { NotificationBell } from "@/components/header/NotificationBell";
 import { OfflineStatusBar } from "@/components/offline/OfflineStatusBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -23,6 +23,7 @@ import {
   getInitials,
   isActiveRoute,
   isGroupActive,
+  podeAbrirOS,
   visibleSections,
   type NavItem,
 } from "./nav-config";
@@ -96,11 +97,11 @@ function Item({ item, pathname, counts }: { item: NavItem; pathname: string; cou
     );
   }
   return (
-    <details open={isGroupActive(pathname, item)} className="group">
+    <details open={isGroupActive(pathname, item)}>
       <summary className="flex cursor-pointer list-none items-center gap-2.5 rounded-sm px-3 py-[7px] text-[13px] text-foreground/75 hover:bg-muted/60 hover:text-foreground [&::-webkit-details-marker]:hidden">
         <item.icon className="h-4 w-4 shrink-0" aria-hidden />
         <span className="flex-1 truncate">{item.label}</span>
-        <ChevronRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" aria-hidden />
+        <ChevronRight className="h-3.5 w-3.5 transition-transform [details[open]>summary>&]:rotate-90" aria-hidden />
       </summary>
       <div className="ml-[18px] border-l border-border pl-1.5">
         {kids.map((c) => (
@@ -117,7 +118,6 @@ export function Sidebar(): React.ReactElement {
   const role = (session?.role ?? "STOREKEEPER") as PaddockRole;
   const perms = (session?.extraPermissions ?? []) as ExtraPermission[];
   const roleLabel = ROLE_LABELS[session?.role ?? ""] ?? session?.role ?? "";
-  const podeAbrirOS = (ROLE_HIERARCHY[role] ?? 0) >= ROLE_HIERARCHY.CONSULTANT;
 
   const sections = visibleSections(role, perms);
   const oficina = sections.filter((s) => OFICINA.has(s.label)).flatMap((s) => s.items);
@@ -136,7 +136,7 @@ export function Sidebar(): React.ReactElement {
           <img src="/logo-ticket-branca.svg" alt="" aria-hidden className="hidden h-20 w-auto shrink-0 dark:block" />
           <Placar torre className="min-w-0 flex-1" />
         </div>
-        {podeAbrirOS && (
+        {podeAbrirOS(role) && (
           <Link
             href="/recepcao"
             className="flex h-9 items-center justify-center gap-1.5 rounded-md bg-primary text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
@@ -153,10 +153,10 @@ export function Sidebar(): React.ReactElement {
           <Item key={i.id} item={i} pathname={pathname} counts={counts} />
         ))}
         {gestao.length > 0 && (
-          <details open={gestaoAtiva} className="group/g pt-3">
+          <details open={gestaoAtiva} className="pt-3">
             <summary className="flex cursor-pointer list-none items-center gap-1 px-3 pb-1 text-[11px] text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
               Gestão
-              <ChevronRight className="h-3 w-3 transition-transform group-open/g:rotate-90" aria-hidden />
+              <ChevronRight className="h-3 w-3 transition-transform [details[open]>summary>&]:rotate-90" aria-hidden />
             </summary>
             {gestao.map((i) => (
               <Item key={i.id} item={i} pathname={pathname} counts={counts} />

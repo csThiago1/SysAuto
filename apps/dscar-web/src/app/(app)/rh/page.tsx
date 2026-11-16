@@ -19,6 +19,7 @@ import {
 import { useEmployees } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { StatCard } from "@/app/(app)/dashboard/_components/StatCard";
+import { Button } from "@/components/ui/button"
 
 export default function RHDashboardPage(): React.ReactElement {
   const { data: activeData, isLoading: loadingActive } = useEmployees({
@@ -53,12 +54,13 @@ export default function RHDashboardPage(): React.ReactElement {
               Gestão de colaboradores, ponto, metas e folha
             </p>
           </div>
-          <Link
-            href={"/rh/colaboradores/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
+          <Button asChild>
+            <Link
+              href={"/rh/colaboradores/novo" as Route}
+            >
             + Admitir colaborador
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Headcount stats */}

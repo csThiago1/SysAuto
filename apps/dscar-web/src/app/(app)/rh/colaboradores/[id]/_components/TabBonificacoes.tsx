@@ -9,6 +9,8 @@ import type { Employee, CreateBonusPayload, BonusType } from "@paddock/types";
 import { BONUS_TYPE_LABELS } from "@paddock/types";
 import { useEmployeeBonuses, useCreateBonus } from "@/hooks";
 import { Skeleton } from "@/components/ui";
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 interface TabBonificacoesProps {
   employee: Employee;
@@ -56,7 +58,7 @@ export function TabBonificacoes({
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Tipo</label>
-              <select
+              <NativeSelect
                 value={form.bonus_type}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -64,7 +66,6 @@ export function TabBonificacoes({
                     bonus_type: e.target.value as BonusType,
                   }))
                 }
-                className="rounded border border-border px-2 py-1.5 text-sm"
               >
                 {(Object.entries(BONUS_TYPE_LABELS) as [BonusType, string][]).map(
                   ([v, l]) => (
@@ -73,7 +74,7 @@ export function TabBonificacoes({
                     </option>
                   )
                 )}
-              </select>
+              </NativeSelect>
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Valor (R$)</label>
@@ -125,13 +126,13 @@ export function TabBonificacoes({
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="submit"
               disabled={create.isPending}
-              className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              size="sm"
             >
               {create.isPending ? "Salvando..." : "Registrar bônus"}
-            </button>
+            </Button>
           </div>
         </form>
       )}

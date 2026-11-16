@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { NativeSelect } from "@/components/ui/native-select"
 
 interface EstoqueBuscaModalProps {
   open: boolean
@@ -119,28 +120,30 @@ export function EstoqueBuscaModal({
 
         {/* Filter chips */}
         <div className="mt-3 flex gap-2">
-          <select
+          <NativeSelect
             value={tipoPeca}
             onChange={(e) => setTipoPeca(e.target.value)}
-            className="bg-muted/50 border border-border text-foreground/60 rounded-md px-2 py-1.5 text-xs focus:outline-none"
+            wrapperClassName="w-auto"
+            className="h-8 w-auto text-xs"
           >
             <option value="">Tipo de peca</option>
             <option value="genuina">Genuina</option>
             <option value="reposicao">Reposicao</option>
             <option value="similar">Similar</option>
             <option value="usada">Usada</option>
-          </select>
-          <select
+          </NativeSelect>
+          <NativeSelect
             value={categoria}
             onChange={(e) => setCategoria(e.target.value)}
-            className="bg-muted/50 border border-border text-foreground/60 rounded-md px-2 py-1.5 text-xs focus:outline-none"
+            wrapperClassName="w-auto"
+            className="h-8 w-auto text-xs"
           >
             <option value="">Categoria</option>
             <option value="mecanica">Mecanica</option>
             <option value="eletrica">Eletrica</option>
             <option value="funilaria">Funilaria</option>
             <option value="pintura">Pintura</option>
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Results */}
@@ -260,19 +263,18 @@ export function EstoqueBuscaModal({
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   Tipo de peca *
                 </label>
-                <select
+                <NativeSelect
                   value={tipoQualidade}
                   onChange={(e) =>
                     setTipoQualidade(e.target.value as TipoQualidade)
                   }
-                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none"
                 >
                   {TIPO_QUALIDADE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
             </div>
 

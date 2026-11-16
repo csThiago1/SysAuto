@@ -4,6 +4,8 @@
  * Lançamentos Contábeis — Lista paginada com filtros.
  */
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
@@ -56,13 +58,12 @@ export default function LancamentosPage(): React.ReactElement {
               {data?.count ?? "—"} lançamento{(data?.count ?? 0) !== 1 ? "s" : ""}
             </p>
           </div>
-          <Link
-            href={"/financeiro/lancamentos/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <PlusCircle className="h-4 w-4" />
-            Novo Lançamento
-          </Link>
+          <Button asChild>
+            <Link href={"/financeiro/lancamentos/novo" as Route}>
+              <PlusCircle className="h-4 w-4" />
+              Novo Lançamento
+            </Link>
+          </Button>
         </div>
 
         {/* Filters */}
@@ -73,10 +74,11 @@ export default function LancamentosPage(): React.ReactElement {
             onChange={(e) => setSearch(e.target.value)}
             className="w-56"
           />
-          <select
+          <NativeSelect
             value={origin}
             onChange={(e) => setOrigin(e.target.value as FilterOrigin)}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-auto"
+            wrapperClassName="w-auto"
           >
             <option value="">Todas as origens</option>
             {ORIGINS.map(([value, label]) => (
@@ -84,16 +86,17 @@ export default function LancamentosPage(): React.ReactElement {
                 {label}
               </option>
             ))}
-          </select>
-          <select
+          </NativeSelect>
+          <NativeSelect
             value={isApproved}
             onChange={(e) => setIsApproved(e.target.value as FilterApproved)}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-auto"
+            wrapperClassName="w-auto"
           >
             <option value="">Todos os status</option>
             <option value="true">Aprovados</option>
             <option value="false">Pendentes</option>
-          </select>
+          </NativeSelect>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">De</span>
             <DateField value={dateStart} onChange={setDateStart} />

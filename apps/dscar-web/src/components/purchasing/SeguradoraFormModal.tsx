@@ -9,6 +9,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 interface SeguradoraFormModalProps {
   open: boolean
@@ -91,19 +93,18 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 Tipo de peca *
               </label>
-              <select
+              <NativeSelect
                 value={tipoQualidade}
                 onChange={(e) =>
                   setTipoQualidade(e.target.value as TipoQualidade)
                 }
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none"
               >
                 {TIPO_QUALIDADE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
@@ -140,21 +141,20 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
         </div>
 
         <DialogFooter>
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={handleClose}
-            className="rounded-md border border-border bg-muted/50 px-4 py-2 text-sm text-foreground/60 hover:text-foreground hover:bg-muted transition-colors"
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSubmit}
             disabled={!description || !unitPrice}
-            className="rounded-md bg-primary hover:bg-primary/90 px-4 py-2 text-sm font-medium text-primary-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Registrar
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -11,6 +11,8 @@ import {
 import { useProdutosPeca, useProdutosInsumo } from "@/hooks/useInventoryProduct"
 import type { ProdutoComercialPeca, ProdutoComercialInsumo } from "@paddock/types"
 import { DateField } from "@/components/ui/date-field"
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -400,14 +402,13 @@ export default function EntradaManualPage() {
           </div>
 
           {/* Submit */}
-          <button
+          <Button
             type="button"
             disabled={submitting}
             onClick={handleSubmitPeca}
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-medium rounded-md px-6 py-2.5 text-sm transition-colors"
           >
             {entradaPeca.isPending ? "Registrando..." : "Registrar Entrada"}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -509,17 +510,16 @@ export default function EntradaManualPage() {
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   UNIDADE DE COMPRA *
                 </label>
-                <select
+                <NativeSelect
                   value={lote.unidade_compra}
                   onChange={(e) => setLote({ ...lote, unidade_compra: e.target.value })}
-                  className={INPUT_CLS}
                 >
                   {UNIDADES_COMPRA.map((u) => (
                     <option key={u} value={u}>
                       {u}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
               <div>
                 <label className="label-mono text-muted-foreground mb-1.5 block">
@@ -593,14 +593,13 @@ export default function EntradaManualPage() {
           </div>
 
           {/* Submit */}
-          <button
+          <Button
             type="button"
             disabled={submitting}
             onClick={handleSubmitLote}
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-medium rounded-md px-6 py-2.5 text-sm transition-colors"
           >
             {entradaLote.isPending ? "Registrando..." : "Registrar Entrada"}
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { NativeSelect } from "@/components/ui/native-select";
 import React, { useState } from "react";
 import { BarChart3, FileText, Package, TrendingUp } from "lucide-react";
 import { SummaryCard } from "@/components/financeiro";
@@ -37,9 +38,6 @@ export default function ResumoFiscalPage() {
   const pis = data ? formatCurrency(parseFloat(data.impostos.pis)) : "—";
   const cofins = data ? formatCurrency(parseFloat(data.impostos.cofins)) : "—";
 
-  const selectClass =
-    "rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
     <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Header */}
@@ -56,28 +54,30 @@ export default function ResumoFiscalPage() {
 
         {/* Period selectors */}
         <div className="flex items-center gap-2">
-          <select
+          <NativeSelect
             value={month}
             onChange={(e) => setMonth(Number(e.target.value))}
-            className={selectClass}
+            className="w-auto"
+            wrapperClassName="w-auto"
           >
             {MONTHS.map((m) => (
               <option key={m.value} value={m.value}>
                 {m.label}
               </option>
             ))}
-          </select>
-          <select
+          </NativeSelect>
+          <NativeSelect
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
-            className={selectClass}
+            className="w-auto"
+            wrapperClassName="w-auto"
           >
             {YEARS.map((y) => (
               <option key={y} value={y}>
                 {y}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
       </div>
 

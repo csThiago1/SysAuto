@@ -21,6 +21,7 @@ import {
 } from "@/hooks/useServiceCatalog"
 import type { ServiceCatalogDetail } from "@paddock/types"
 import { SERVICE_CATALOG_CATEGORY_LABELS } from "@paddock/types"
+import { NativeSelect } from "@/components/ui/native-select"
 
 const schema = z.object({
   name: z.string().min(2, "Nome obrigatório"),
@@ -110,14 +111,13 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
           {/* Categoria */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-foreground/70">Categoria *</label>
-            <select
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            <NativeSelect
               {...register("category")} aria-invalid={!!errors.category}
             >
               {Object.entries(SERVICE_CATALOG_CATEGORY_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
 
           {/* Preço */}
@@ -152,7 +152,6 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
               {editing ? "Salvar" : "Criar"}

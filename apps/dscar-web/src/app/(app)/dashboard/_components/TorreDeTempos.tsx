@@ -57,7 +57,8 @@ function Numero({ valor, rotulo, alerta }: { valor: string; rotulo: string; aler
 /** Os carros do pátio em ordem de urgência, como a torre de tempos da F1. */
 export function TorreDeTempos({ mostrarValor }: { mostrarValor: boolean }) {
   const { data, isLoading, isError } = useServiceOrders(
-    { is_active: "true", exclude_closed: "true" },
+    // ordenado no servidor: com mais de 200 OS, as que ficam de fora são as de maior folga
+    { is_active: "true", exclude_closed: "true", ordering: "estimated_delivery_date" },
     1,
     200
   )

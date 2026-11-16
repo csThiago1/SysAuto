@@ -5,6 +5,8 @@
  * Sprint 14
  */
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -103,9 +105,6 @@ const ORIGIN_OPTIONS = Object.entries(PAYABLE_ORIGIN_LABELS) as [
   PayableOrigin,
   string,
 ][];
-
-const SELECT_CLASS =
-  "w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary";
 
 /**
  * Sugestão de conta contábil a partir da descrição.
@@ -289,10 +288,9 @@ export default function NovoContaPagarPage(): React.ReactElement {
               {loadingSuppliers ? (
                 <Skeleton className="h-9 w-full" />
               ) : (
-                <select
+                <NativeSelect
                   value={form.supplier_id}
                   onChange={(e) => setField("supplier_id", e.target.value)}
-                  className={SELECT_CLASS}
                 >
                   <option value="">Selecione o fornecedor...</option>
                   {suppliers.map((s) => (
@@ -300,7 +298,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
                       {s.name}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               )}
             </FormField>
             <p className="text-xs text-muted-foreground">
@@ -329,8 +327,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
               </div>
               <div className="md:col-span-2">
                 <FormField label="Conta contábil" error={errors.expense_account_id}>
-                  <select
-                    className={SELECT_CLASS}
+                  <NativeSelect
                     value={form.expense_account_id}
                     onChange={(e) => setField("expense_account_id", e.target.value)}
                   >
@@ -340,7 +337,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
                         {acc.code} — {acc.name}
                       </option>
                     ))}
-                  </select>
+                  </NativeSelect>
                 </FormField>
                 <AccountSuggestionHint
                   description={form.description}
@@ -375,17 +372,16 @@ export default function NovoContaPagarPage(): React.ReactElement {
                 <DateField value={form.competence_date} onChange={(v) => setField("competence_date", v)} />
               </FormField>
               <FormField label="Origem" error={errors.origin}>
-                <select
+                <NativeSelect
                   value={form.origin}
                   onChange={(e) => setField("origin", e.target.value)}
-                  className={SELECT_CLASS}
                 >
                   {ORIGIN_OPTIONS.map(([value, label]) => (
                     <option key={value} value={value}>
                       {label}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </FormField>
             </div>
           </section>
@@ -478,17 +474,16 @@ export default function NovoContaPagarPage(): React.ReactElement {
             >
               Cancelar
             </Link>
-            <button
+            <Button
               type="submit"
               disabled={isSaving}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {isSaving
                 ? "Salvando..."
                 : numParcelas > 1
                   ? `Criar ${numParcelas} Parcelas`
                   : "Salvar Título"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

@@ -15,6 +15,8 @@ import {
   useProdutoInsumoCreate,
   useProdutoInsumoUpdate,
 } from "@/hooks/useInventoryProduct"
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -231,26 +233,24 @@ export function ProdutoInsumoDialog({
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   UNIDADE BASE
                 </label>
-                <select
+                <NativeSelect
                   value={form.unidade_base}
                   onChange={(e) => set("unidade_base", e.target.value)}
-                  className={INPUT_CLS}
                 >
                   {UNIDADE_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
               <div>
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   CATEGORIA
                 </label>
-                <select
+                <NativeSelect
                   value={form.categoria_insumo}
                   onChange={(e) => set("categoria_insumo", e.target.value)}
-                  className={INPUT_CLS}
                 >
                   <option value="">-- Selecione --</option>
                   {categorias.map((c) => (
@@ -258,7 +258,7 @@ export function ProdutoInsumoDialog({
                       {c.nome}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
             </div>
           </div>
@@ -316,21 +316,20 @@ export function ProdutoInsumoDialog({
 
         {/* Footer */}
         <div className="mt-6 flex justify-end gap-2">
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => onOpenChange(false)}
-            className="rounded-md border border-border px-3 py-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {isPending ? "Salvando..." : isEdit ? "Salvar" : "Criar"}
-          </button>
+          </Button>
         </div>
       </SheetContent>
     </Sheet>

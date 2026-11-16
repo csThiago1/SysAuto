@@ -28,6 +28,7 @@ import { useCategoriasMaoObra } from "@/hooks/usePricingCatalog"
 import type { HeatmapDia, EmployeeListItem } from "@paddock/types"
 import { TableSkeleton } from "@/components/ui/table-skeleton"
 import { DateField } from "@/components/ui/date-field"
+import { NativeSelect } from "@/components/ui/native-select"
 
 function startOfWeek(d: Date): string {
   const day = d.getDay()
@@ -243,8 +244,7 @@ export default function CapacidadePage() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-foreground/70 text-xs">Categoria de mão de obra *</Label>
-                <select
-                  className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+                <NativeSelect
                   value={capCategoria}
                   onChange={(e) => setCapCategoria(e.target.value)}
                 >
@@ -252,7 +252,7 @@ export default function CapacidadePage() {
                   {categorias.map((c) => (
                     <option key={c.id} value={c.id}>{c.nome}</option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-foreground/70 text-xs">Horas/dia útil</Label>

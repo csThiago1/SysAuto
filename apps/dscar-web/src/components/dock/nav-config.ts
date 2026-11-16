@@ -309,6 +309,11 @@ export function getInitials(name: string | null | undefined): string {
 
 // ─── Role-gated helpers ───────────────────────────────────────────────
 
+/** Abrir OS (recepção) é de CONSULTANT para cima — o middleware barra o resto. */
+export function podeAbrirOS(role: string | undefined): boolean {
+  return (ROLE_HIERARCHY[role as PaddockRole] ?? 0) >= ROLE_HIERARCHY.CONSULTANT;
+}
+
 export function visibleSections(
   role: PaddockRole,
   perms: ExtraPermission[]

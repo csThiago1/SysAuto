@@ -5,6 +5,8 @@
  * Sprint 14
  */
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
@@ -140,13 +142,12 @@ export default function ContasReceberPage(): React.ReactElement {
               {(data?.count ?? 0) !== 1 ? "s" : ""}
             </p>
           </div>
-          <Link
-            href={"/financeiro/contas-receber/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <PlusCircle className="h-4 w-4" />
-            Novo Título
-          </Link>
+          <Button asChild>
+            <Link href={"/financeiro/contas-receber/novo" as Route}>
+              <PlusCircle className="h-4 w-4" />
+              Novo Título
+            </Link>
+          </Button>
         </div>
 
         {/* Summary cards */}
@@ -189,10 +190,11 @@ export default function ContasReceberPage(): React.ReactElement {
             onChange={(e) => setSearch(e.target.value)}
             className="w-60"
           />
-          <select
+          <NativeSelect
             value={status}
             onChange={(e) => setStatus(e.target.value as FilterStatus)}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-auto"
+            wrapperClassName="w-auto"
           >
             <option value="">Todos os status</option>
             {STATUS_OPTIONS.map(([value, label]) => (
@@ -200,11 +202,12 @@ export default function ContasReceberPage(): React.ReactElement {
                 {label}
               </option>
             ))}
-          </select>
-          <select
+          </NativeSelect>
+          <NativeSelect
             value={origin}
             onChange={(e) => setOrigin(e.target.value as FilterOrigin)}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-auto"
+            wrapperClassName="w-auto"
           >
             <option value="">Todas as origens</option>
             {ORIGIN_OPTIONS.map(([value, label]) => (
@@ -212,7 +215,7 @@ export default function ContasReceberPage(): React.ReactElement {
                 {label}
               </option>
             ))}
-          </select>
+          </NativeSelect>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Venc. de</span>
             <DateField value={dueDateGte} onChange={setDueDateGte} />

@@ -6,6 +6,8 @@ import Link from "next/link"
 import { toast } from "sonner"
 import { useNFeEntrada, useGerarEstoque, useReconciliarItem } from "@/hooks/useInventory"
 import type { NFeEntradaItem, StatusReconciliacao } from "@paddock/types"
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 const RECONCILIACAO_LABELS: Record<StatusReconciliacao, string> = {
   pendente: "Pendente",
@@ -44,17 +46,18 @@ function ReconciliacaoSelect({
   }
 
   return (
-    <select
+    <NativeSelect
       value={item.status_reconciliacao}
       onChange={(e) => handleReconciliar(e.target.value)}
       disabled={disabled || reconciliarMutation.isPending}
-      className={`text-xs bg-muted/50 border border-border text-foreground rounded px-2 py-1 disabled:opacity-50 ${RECONCILIACAO_COLORS[item.status_reconciliacao]}`}
+      wrapperClassName="w-auto"
+      className={`w-auto text-xs ${RECONCILIACAO_COLORS[item.status_reconciliacao]}`}
     >
       <option value="pendente" className="bg-card text-foreground">Pendente</option>
       <option value="peca" className="bg-card text-foreground">Peça</option>
       <option value="insumo" className="bg-card text-foreground">Insumo</option>
       <option value="ignorado" className="bg-card text-foreground">Ignorado</option>
-    </select>
+    </NativeSelect>
   )
 }
 
@@ -103,14 +106,13 @@ export default function NFeEntradaDetailPage({ params }: { params: Promise<{ id:
         </div>
 
         {!nfe.estoque_gerado && (
-          <button
+          <Button
             onClick={handleGerarEstoque}
             disabled={gerarEstoqueMutation.isPending || pendentes > 0}
-            className="flex items-center gap-2 text-sm bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-md transition-colors"
           >
             <Package className="h-4 w-4" />
             {gerarEstoqueMutation.isPending ? "Gerando..." : "Gerar Estoque"}
-          </button>
+          </Button>
         )}
 
         {nfe.estoque_gerado && (

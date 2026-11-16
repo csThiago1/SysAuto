@@ -1,5 +1,6 @@
 "use client"
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import { toast } from "sonner"
 import {
@@ -99,7 +100,6 @@ function AbaFallback({ empresaId }: { empresaId: string }) {
           <Button
             size="sm"
             onClick={() => setSheetOpen(true)}
-            className="bg-primary hover:bg-primary/90"
           >
             Cadastrar fallback
           </Button>
@@ -171,8 +171,7 @@ function AbaFallback({ empresaId }: { empresaId: string }) {
           <div className="mt-6 space-y-4">
             <div className="space-y-1">
               <Label className="text-xs text-foreground/60">Categoria de mão de obra</Label>
-              <select
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+              <NativeSelect
                 value={form.categoria ?? ""}
                 onChange={(e) => setForm({ ...form, categoria: e.target.value })}
               >
@@ -180,7 +179,7 @@ function AbaFallback({ empresaId }: { empresaId: string }) {
                 {categorias.map((c) => (
                   <option key={c.id} value={c.id}>{c.nome}</option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -211,7 +210,7 @@ function AbaFallback({ empresaId }: { empresaId: string }) {
               />
             </div>
             <Button
-              className="w-full bg-primary hover:bg-primary/90 mt-2"
+              className="w-full mt-2"
               onClick={handleSave}
               disabled={createMutation.isPending}
             >
@@ -300,14 +299,13 @@ function AbaParametros({ empresaId }: { empresaId: string }) {
           </div>
           <div className="space-y-1">
             <Label className="text-xs text-foreground/60">Método</Label>
-            <select
+            <NativeSelect
               value={rateioForm.metodo ?? "por_hora"}
               onChange={(e) => setRateioForm({ ...rateioForm, metodo: e.target.value as "por_hora" | "por_os" })}
-              className="w-full rounded-md bg-muted/50 border border-border text-foreground text-sm px-3 py-2"
             >
               <option value="por_hora">Por hora produtiva</option>
               <option value="por_os">Por OS concluída</option>
-            </select>
+            </NativeSelect>
           </div>
           <div className="space-y-1">
             <Label className="text-xs text-foreground/60">Vigente desde</Label>
@@ -323,7 +321,6 @@ function AbaParametros({ empresaId }: { empresaId: string }) {
             size="sm"
             onClick={handleSaveRateio}
             disabled={createRateio.isPending}
-            className="bg-primary hover:bg-primary/90"
           >
             {createRateio.isPending ? "Salvando..." : "Salvar parâmetro de rateio"}
           </Button>
@@ -411,7 +408,6 @@ function AbaParametros({ empresaId }: { empresaId: string }) {
             size="sm"
             onClick={handleSaveCustoHora}
             disabled={createCustoHora.isPending}
-            className="bg-primary hover:bg-primary/90"
           >
             {createCustoHora.isPending ? "Salvando..." : "Salvar parâmetro de custo/hora"}
           </Button>
@@ -514,7 +510,7 @@ function AbaSimulacao({ empresaId }: { empresaId: string }) {
         <Button
           onClick={handleSimular}
           disabled={debugMutation.isPending}
-          className="w-full bg-primary hover:bg-primary/90"
+          className="w-full"
         >
           {debugMutation.isPending ? "Calculando..." : "Simular custo/hora"}
         </Button>
