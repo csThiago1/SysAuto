@@ -6,6 +6,7 @@ import type { TipoMovimentacao, MovimentacaoEstoque } from "@paddock/types"
 import { useMovimentacoes } from "@/hooks/useInventoryMovement"
 import { ScrollFade } from "@/components/ui/scroll-fade"
 import { DateField } from "@/components/ui/date-field"
+import { NativeSelect } from "@/components/ui/native-select"
 
 // ─── Tipo badge config ──────────────────────────────────────────────────────
 
@@ -121,10 +122,11 @@ export default function MovimentacoesPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <select
+        <NativeSelect
           value={tipoFilter}
           onChange={(e) => setTipoFilter(e.target.value)}
-          className={inputClass}
+          wrapperClassName="w-auto"
+          className="w-auto"
         >
           <option value="">Todos os tipos</option>
           {ALL_TIPOS.map((t) => (
@@ -132,7 +134,7 @@ export default function MovimentacoesPage() {
               {TIPO_CONFIG[t].label}
             </option>
           ))}
-        </select>
+        </NativeSelect>
 
         <DateField value={dataInicio} onChange={setDataInicio} />
         <DateField value={dataFim} onChange={setDataFim} />

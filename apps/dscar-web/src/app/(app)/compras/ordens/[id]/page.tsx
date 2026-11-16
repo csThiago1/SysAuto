@@ -18,6 +18,7 @@ import {
 import { OrdemCompraDetail } from "@/components/purchasing/OrdemCompraDetail"
 import { TipoQualidadeBadge } from "@/components/purchasing/TipoQualidadeBadge"
 import { ScrollFade } from "@/components/ui/scroll-fade"
+import { NativeSelect } from "@/components/ui/native-select"
 
 // ─── Add Item Form ────────────────────────────────────────────────────────────
 
@@ -95,16 +96,15 @@ function AddItemForm({
         {/* Tipo qualidade */}
         <div className="space-y-1">
           <label className="label-mono text-muted-foreground">TIPO</label>
-          <select
+          <NativeSelect
             value={form.tipo_qualidade}
             onChange={(e) => update("tipo_qualidade", e.target.value as TipoQualidade)}
-            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 focus:outline-none focus:border-border"
           >
             <option value="genuina">Genuina</option>
             <option value="reposicao">Reposicao</option>
             <option value="similar">Similar</option>
             <option value="usada">Usada</option>
-          </select>
+          </NativeSelect>
         </div>
       </div>
 

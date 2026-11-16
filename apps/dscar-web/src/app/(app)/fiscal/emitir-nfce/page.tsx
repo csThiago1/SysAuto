@@ -1,5 +1,6 @@
 "use client"
 
+import { NativeSelect } from "@/components/ui/native-select";
 import React from "react"
 import { ShoppingCart, Plus, Trash2, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
@@ -201,10 +202,9 @@ export default function EmitirNfcePage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-xs text-foreground/70">Forma de pagamento *</Label>
-              <select value={formaPagamento} onChange={e => setFormaPagamento(e.target.value)}
-                className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+              <NativeSelect value={formaPagamento} onChange={e => setFormaPagamento(e.target.value)}>
                 {FORMA_PAGAMENTO_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
+              </NativeSelect>
             </div>
             <div>
               <Label className="text-xs text-foreground/70">Observações</Label>

@@ -7,6 +7,7 @@ import {
   usePrateleiras,
   useNiveis,
 } from "@/hooks/useInventoryLocation"
+import { NativeSelect } from "@/components/ui/native-select"
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -17,13 +18,6 @@ interface PosicaoSelectorProps {
   onChange: (nivelId: string | null) => void
   disabled?: boolean
 }
-
-/* ------------------------------------------------------------------ */
-/*  Shared select styles                                               */
-/* ------------------------------------------------------------------ */
-
-const SELECT_CLS =
-  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40 disabled:cursor-not-allowed"
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -73,11 +67,10 @@ export function PosicaoSelector({
         <label className="label-mono text-muted-foreground mb-1.5 block">
           ARMAZÉM
         </label>
-        <select
+        <NativeSelect
           value={armazemId}
           onChange={(e) => handleArmazemChange(e.target.value)}
           disabled={disabled}
-          className={SELECT_CLS}
         >
           <option value="">Selecione...</option>
           {armazens.map((a) => (
@@ -85,17 +78,16 @@ export function PosicaoSelector({
               {a.codigo} — {a.nome}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {/* Rua */}
       <div>
         <label className="label-mono text-muted-foreground mb-1.5 block">RUA</label>
-        <select
+        <NativeSelect
           value={ruaId}
           onChange={(e) => handleRuaChange(e.target.value)}
           disabled={disabled || !armazemId}
-          className={SELECT_CLS}
         >
           <option value="">
             {armazemId ? "Selecione..." : "Escolha o armazém"}
@@ -106,7 +98,7 @@ export function PosicaoSelector({
               {r.descricao ? ` — ${r.descricao}` : ""}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {/* Prateleira */}
@@ -114,11 +106,10 @@ export function PosicaoSelector({
         <label className="label-mono text-muted-foreground mb-1.5 block">
           PRATELEIRA
         </label>
-        <select
+        <NativeSelect
           value={prateleiraId}
           onChange={(e) => handlePrateleiraChange(e.target.value)}
           disabled={disabled || !ruaId}
-          className={SELECT_CLS}
         >
           <option value="">
             {ruaId ? "Selecione..." : "Escolha a rua"}
@@ -129,17 +120,16 @@ export function PosicaoSelector({
               {p.descricao ? ` — ${p.descricao}` : ""}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {/* Nível */}
       <div>
         <label className="label-mono text-muted-foreground mb-1.5 block">NÍVEL</label>
-        <select
+        <NativeSelect
           value={value ?? ""}
           onChange={(e) => handleNivelChange(e.target.value)}
           disabled={disabled || !prateleiraId}
-          className={SELECT_CLS}
         >
           <option value="">
             {prateleiraId ? "Selecione..." : "Escolha a prateleira"}
@@ -149,7 +139,7 @@ export function PosicaoSelector({
               {n.codigo} — {n.endereco_completo}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
     </div>
   )

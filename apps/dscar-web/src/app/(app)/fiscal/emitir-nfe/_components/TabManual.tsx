@@ -1,5 +1,6 @@
 "use client"
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -273,8 +274,8 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label className="text-xs text-foreground/60">Forma de Pagamento</Label>
-            <select
-              className="mt-1 w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground"
+            <NativeSelect
+              wrapperClassName="mt-1"
               {...form.register("forma_pagamento")}
             >
               {FORMA_PAGAMENTO_OPTIONS.map((o) => (
@@ -282,7 +283,7 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
                   {o.label}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
         </div>
 

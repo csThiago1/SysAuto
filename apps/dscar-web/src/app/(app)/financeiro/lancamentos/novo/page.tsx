@@ -5,6 +5,8 @@
  * Validação: débitos totais = créditos totais (balanceamento).
  */
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -307,17 +309,16 @@ export default function NovoLancamentoPage(): React.ReactElement {
                 <DateField value={form.competence_date} onChange={(v) => setField("competence_date", v)} />
               </FormField>
               <FormField label="Origem *" error={errors.origin}>
-                <select
+                <NativeSelect
                   value={form.origin}
                   onChange={(e) => setField("origin", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {ORIGINS.map(([value, label]) => (
                     <option key={value} value={value}>
                       {label}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </FormField>
             </div>
           </section>
@@ -361,15 +362,10 @@ export default function NovoLancamentoPage(): React.ReactElement {
                       >
                         {/* Conta */}
                         <div>
-                          <select
+                          <NativeSelect
                             value={line.account_id}
                             onChange={(e) => setLineField(i, "account_id", e.target.value)}
-                            className={cn(
-                              "w-full rounded-md border bg-muted/50 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
-                              lineErr?.account_id
-                                ? "border-error-500/20"
-                                : "border-border"
-                            )}
+                            className={cn(lineErr?.account_id && "border-error-500/20")}
                           >
                             <option value="">Selecione a conta...</option>
                             {accounts.map((acc) => (
@@ -377,7 +373,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                                 {acc.code} — {acc.name}
                               </option>
                             ))}
-                          </select>
+                          </NativeSelect>
                           {lineErr?.account_id && (
                             <p className="text-xs text-error-400 mt-0.5">
                               {lineErr.account_id}
@@ -498,13 +494,12 @@ export default function NovoLancamentoPage(): React.ReactElement {
             >
               Cancelar
             </Link>
-            <button
+            <Button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {create.isPending ? "Salvando..." : "Salvar Lançamento"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

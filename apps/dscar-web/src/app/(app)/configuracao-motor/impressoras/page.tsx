@@ -1,5 +1,6 @@
 "use client"
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import { Printer, Plus, Trash2, Wifi } from "lucide-react"
 import { toast } from "sonner"
@@ -147,15 +148,14 @@ export default function ImpressorasPage() {
             </div>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground">Modelo</label>
-              <select
+              <NativeSelect
                 value={form.modelo}
                 onChange={(e) => setForm({ ...form, modelo: e.target.value as ModeloImpressora })}
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 {MODELOS.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className="sm:col-span-2 space-y-1">
               <label className="text-xs text-muted-foreground">Endpoint (URL ou IP:porta)</label>

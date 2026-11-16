@@ -16,6 +16,7 @@ import {
 import { formatDate, formatCurrency } from "@paddock/utils"
 import { ScrollFade } from "@/components/ui/scroll-fade"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 // ─── Status badge config ────────────────────────────────────────────────────────
 // dot = faixa do card denso (mobile) | text = texto colorido da linha 1
@@ -154,15 +155,14 @@ function NovaOCDialog({
           >
             Cancelar
           </button>
-          <button
+          <Button
             type="button"
             onClick={handleCreate}
             disabled={criarOC.isPending}
             data-testid="nova-oc-submit"
-            className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
             {criarOC.isPending ? "Criando..." : "Criar OC"}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -193,15 +193,13 @@ export default function OrdensCompraPage() {
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={() => setDialogOpen(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md
-                     bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus size={16} />
           Nova OC
-        </button>
+        </Button>
       </div>
 
       {/* ── Mobile cards ── */}

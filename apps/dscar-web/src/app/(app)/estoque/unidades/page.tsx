@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 import { useUnidades, useReservarUnidade, useBipagem } from "@/hooks/useInventory"
 import { useTransferir } from "@/hooks/useInventoryMovement"
+import { Button } from "@/components/ui/button"
 import { BarcodeScanInput } from "@/components/inventory/BarcodeScanInput"
 import { PosicaoSelector } from "@/components/inventory/PosicaoSelector"
 import {
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/dialog"
 import type { UnidadeFisicaStatus, UnidadeFisica } from "@paddock/types"
 import { toast } from "sonner"
+import { NativeSelect } from "@/components/ui/native-select"
 
 
 /* ------------------------------------------------------------------ */
@@ -99,14 +101,14 @@ function ReservarModal({
           >
             Cancelar
           </button>
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={handleSubmit}
             disabled={!osId.trim() || reservar.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {reservar.isPending ? "Reservando..." : "Reservar"}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -166,14 +168,14 @@ function TransferirModal({
           >
             Cancelar
           </button>
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={handleSubmit}
             disabled={!nivelId || transferir.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {transferir.isPending ? "Transferindo..." : "Transferir"}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -232,16 +234,17 @@ export default function UnidadesPage() {
           </div>
         </div>
 
-        <select
+        <NativeSelect
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+          wrapperClassName="w-auto"
+          className="w-auto"
         >
           <option value="">Todos os status</option>
           {Object.entries(STATUS_LABELS).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {/* Barcode Scanner */}

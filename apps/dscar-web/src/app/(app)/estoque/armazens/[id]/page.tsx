@@ -14,6 +14,8 @@ import {
   useRuas,
 } from "@/hooks/useInventoryLocation"
 import { ArmazemTree } from "@/components/inventory/ArmazemTree"
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 const TIPO_BADGE: Record<ArmazemTipo, { label: string; className: string }> = {
   galpao: {
@@ -239,14 +241,13 @@ export default function ArmazemDetailPage({
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="button"
               onClick={handleCreateRua}
               disabled={ruaCreate.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {ruaCreate.isPending ? "Criando..." : "Criar Rua"}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -259,10 +260,9 @@ export default function ArmazemDetailPage({
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 RUA
               </label>
-              <select
+              <NativeSelect
                 value={pratRuaId}
                 onChange={(e) => setPratRuaId(e.target.value)}
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">Selecione...</option>
                 {ruas.map((r) => (
@@ -271,7 +271,7 @@ export default function ArmazemDetailPage({
                     {r.descricao ? ` — ${r.descricao}` : ""}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
@@ -308,14 +308,13 @@ export default function ArmazemDetailPage({
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="button"
               onClick={handleCreatePrateleira}
               disabled={prateleiraCreate.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {prateleiraCreate.isPending ? "Criando..." : "Criar Prateleira"}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -328,13 +327,12 @@ export default function ArmazemDetailPage({
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 RUA
               </label>
-              <select
+              <NativeSelect
                 value={nivelRuaId}
                 onChange={(e) => {
                   setNivelRuaId(e.target.value)
                   setNivelPratId("")
                 }}
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">Selecione a rua...</option>
                 {ruas.map((r) => (
@@ -343,17 +341,16 @@ export default function ArmazemDetailPage({
                     {r.descricao ? ` — ${r.descricao}` : ""}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 PRATELEIRA
               </label>
-              <select
+              <NativeSelect
                 value={nivelPratId}
                 onChange={(e) => setNivelPratId(e.target.value)}
                 disabled={!nivelRuaId}
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40"
               >
                 <option value="">
                   {nivelRuaId ? "Selecione..." : "Escolha a rua primeiro"}
@@ -364,7 +361,7 @@ export default function ArmazemDetailPage({
                     {p.descricao ? ` — ${p.descricao}` : ""}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
@@ -389,14 +386,13 @@ export default function ArmazemDetailPage({
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="button"
               onClick={handleCreateNivel}
               disabled={nivelCreate.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {nivelCreate.isPending ? "Criando..." : "Criar Nível"}
-            </button>
+            </Button>
           </div>
         </div>
       )}

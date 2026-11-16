@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { EmployeeTable, EmployeeTableSkeleton } from "./_components/EmployeeTable";
 import type { EmployeeStatus, HRDepartment } from "@paddock/types";
 import { DEPARTMENT_LABELS } from "@paddock/types";
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 type FilterStatus = EmployeeStatus | "";
 type FilterDepartment = HRDepartment | "";
@@ -46,12 +48,13 @@ export default function ColaboradoresPage(): React.ReactElement {
               {(data?.count ?? 0) !== 1 ? "es" : ""}
             </p>
           </div>
-          <Link
-            href={"/rh/colaboradores/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
+          <Button asChild>
+            <Link
+              href={"/rh/colaboradores/novo" as Route}
+            >
             + Admitir
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Filters */}
@@ -62,21 +65,21 @@ export default function ColaboradoresPage(): React.ReactElement {
             onChange={(e) => setSearch(e.target.value)}
             className="w-64"
           />
-          <select
+          <NativeSelect
             value={status}
             onChange={(e) => setStatus(e.target.value as FilterStatus)}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
+            wrapperClassName="w-auto" className="w-auto"
           >
             <option value="">Todos os status</option>
             <option value="active">Ativos</option>
             <option value="on_leave">Afastados</option>
             <option value="vacation">Férias</option>
             <option value="terminated">Desligados</option>
-          </select>
-          <select
+          </NativeSelect>
+          <NativeSelect
             value={department}
             onChange={(e) => setDepartment(e.target.value as FilterDepartment)}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
+            wrapperClassName="w-auto" className="w-auto"
           >
             <option value="">Todos os setores</option>
             {(
@@ -86,7 +89,7 @@ export default function ColaboradoresPage(): React.ReactElement {
                 {label}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Table */}

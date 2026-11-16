@@ -12,6 +12,8 @@ import {
 } from "@/hooks/useInventoryProduct"
 import { ProdutoPecaDialog } from "@/components/inventory/ProdutoPecaDialog"
 import { ScrollFade } from "@/components/ui/scroll-fade"
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 const INPUT_CLS =
   "bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
@@ -71,14 +73,13 @@ export default function ProdutosPecasPage() {
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={handleNew}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova Peca
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}
@@ -92,10 +93,11 @@ export default function ProdutosPecasPage() {
             className={INPUT_CLS + " w-full pl-9"}
           />
         </div>
-        <select
+        <NativeSelect
           value={tipoFilter}
           onChange={(e) => setTipoFilter(e.target.value)}
-          className={INPUT_CLS + " min-w-[160px]"}
+          wrapperClassName="w-auto"
+          className="w-auto min-w-[160px]"
         >
           <option value="">Todos os Tipos</option>
           {tipos.map((t) => (
@@ -103,11 +105,12 @@ export default function ProdutosPecasPage() {
               {t.nome}
             </option>
           ))}
-        </select>
-        <select
+        </NativeSelect>
+        <NativeSelect
           value={catFilter}
           onChange={(e) => setCatFilter(e.target.value)}
-          className={INPUT_CLS + " min-w-[160px]"}
+          wrapperClassName="w-auto"
+          className="w-auto min-w-[160px]"
         >
           <option value="">Todas Categorias</option>
           {categorias.map((c) => (
@@ -115,7 +118,7 @@ export default function ProdutosPecasPage() {
               {c.nome}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {/* Table */}

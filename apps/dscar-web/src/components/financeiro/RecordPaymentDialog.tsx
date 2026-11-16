@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -127,10 +129,9 @@ export function RecordPaymentDialog({
           </div>
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs font-medium text-foreground/70">Forma de pagamento *</Label>
-            <select
+            <NativeSelect
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               required
             >
               {paymentMethods.map(([value, label]) => (
@@ -138,7 +139,7 @@ export function RecordPaymentDialog({
                   {label}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs font-medium text-foreground/70">Conta bancaria</Label>
@@ -173,13 +174,12 @@ export function RecordPaymentDialog({
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {isPending ? "Salvando..." : submitLabel}
-            </button>
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

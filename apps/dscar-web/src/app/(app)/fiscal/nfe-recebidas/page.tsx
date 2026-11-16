@@ -7,6 +7,7 @@
  * Botão "Sincronizar" busca novas NF-e na Focus e importa automaticamente.
  */
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import {
   Inbox,
@@ -213,16 +214,17 @@ export default function NfeRecebidasPage() {
 
       {/* Filters */}
       <div className="flex gap-3">
-        <select
+        <NativeSelect
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-auto"
+          wrapperClassName="w-auto"
         >
           <option value="">Todos os status</option>
           <option value="importada">Importada</option>
           <option value="validada">Validada</option>
           <option value="estoque_gerado">Estoque Gerado</option>
-        </select>
+        </NativeSelect>
       </div>
 
       {/* Table */}

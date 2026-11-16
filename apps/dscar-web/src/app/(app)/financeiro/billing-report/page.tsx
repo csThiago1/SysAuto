@@ -5,6 +5,7 @@
  * Agrupamento por cliente, origem ou mes com totais.
  */
 
+import { NativeSelect } from "@/components/ui/native-select";
 import React, { useMemo, useState } from "react";
 import { ReceiptText } from "lucide-react";
 import { useFaturamento } from "@/hooks/useAccounting";
@@ -91,17 +92,18 @@ export default function FaturamentoPage(): React.ReactElement {
                 {PRESET_LABELS[p]}
               </button>
             ))}
-            <select
+            <NativeSelect
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value)}
-              className="px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-muted/50 text-foreground"
+              className="w-auto text-xs font-medium"
+              wrapperClassName="w-auto"
             >
               {GROUP_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   Agrupar: {opt.label}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
         </div>
 

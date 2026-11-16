@@ -16,6 +16,7 @@ import {
 import { usePermission } from "@/hooks/usePermission"
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 import { formatDateTime } from "@paddock/utils"
+import { Button } from "@/components/ui/button"
 
 // ─── Badge maps ─────────────────────────────────────────────────────────────
 
@@ -159,14 +160,14 @@ function ItemRow({
       </td>
       <td className="px-4 py-3">
         {editable && dirty && (
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={handleSave}
             disabled={registrar.isPending}
-            className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {registrar.isPending ? "..." : "Salvar"}
-          </button>
+          </Button>
         )}
       </td>
     </tr>
