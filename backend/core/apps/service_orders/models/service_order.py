@@ -441,6 +441,10 @@ class ServiceOrder(PaddockBaseModel):
         retorna soma normal de peças + serviços - descontos.
         """
         if self.total_seguradora_oficial is not None and self.total_seguradora_oficial > 0:
+            # Lista anota o complemento numa query só (views/orders.py); sem ela, 2 queries.
+            anotado = getattr(self, "_complemento", None)
+            if anotado is not None:
+                return float(self.total_seguradora_oficial + anotado)
             # Complemento particular = items que NÃO são da seguradora
             from decimal import Decimal
             from django.db.models import Sum, F, ExpressionWrapper

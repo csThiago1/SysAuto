@@ -31,6 +31,7 @@ import {
 } from "./nav-config";
 import { Placar, usePlacar } from "./Placar";
 import { SearchTrigger } from "./DockActions";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 /** Seções do dia a dia; o resto vai para "Gestão", recolhido. */
 const OFICINA = new Set(["GERAL", "CRM"]);
@@ -125,7 +126,10 @@ export function Sidebar(): React.ReactElement {
   const oficina = sections.filter((s) => OFICINA.has(s.label)).flatMap((s) => s.items);
   const gestao = sections.filter((s) => !OFICINA.has(s.label)).flatMap((s) => s.items);
   const gestaoAtiva = gestao.some((i) => isGroupActive(pathname, i));
-  const counts = { "/os": usePlacar().patio };
+  // A barra fica escondida (CSS) no celular; sem isto ela buscava placar e
+  // notificações em toda tela do celular, disputando os 2 workers do backend.
+  const desktop = useIsDesktop();
+  const counts = { "/os": usePlacar(desktop).patio };
 
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card md:flex">
@@ -136,7 +140,7 @@ export function Sidebar(): React.ReactElement {
           <img src="/logo-ticket-preta.svg" alt="DS Car Centro Automotivo" className="h-20 w-auto shrink-0 dark:hidden" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-ticket-branca.svg" alt="" aria-hidden className="hidden h-20 w-auto shrink-0 dark:block" />
-          <Placar torre className="min-w-0 flex-1" />
+          {desktop && <Placar torre className="min-w-0 flex-1" />}
         </div>
         {podeAbrirOS(role) && (
           <Link
@@ -203,7 +207,7 @@ export function Sidebar(): React.ReactElement {
             </DropdownMenuContent>
           </DropdownMenu>
           <OfflineStatusBar />
-          <NotificationBell />
+          {desktop && <NotificationBell />}
         </div>
       </div>
     </aside>

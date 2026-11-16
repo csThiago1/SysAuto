@@ -10,9 +10,12 @@ Wants=network-online.target
 User=opc
 WorkingDirectory=/opt/paddock
 EnvironmentFile=/opt/paddock/.env
+# --threads 4: o trabalho é espera de banco (Neon); 2 workers sync atendiam só
+# 2 requests por vez e o dashboard no celular dispara 5+. Threads quase não
+# gastam RAM (mesmo processo). max-requests maior = menos reboot de worker.
 ExecStart=/opt/paddock/venv/bin/gunicorn config.wsgi:application \
-  --bind 127.0.0.1:8000 --workers 2 --timeout 60 \
-  --max-requests 500 --max-requests-jitter 50
+  --bind 127.0.0.1:8000 --workers 2 --threads 4 --timeout 60 \
+  --max-requests 2000 --max-requests-jitter 100
 Restart=always
 RestartSec=5
 MemoryMax=350M

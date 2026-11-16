@@ -20,6 +20,13 @@ vi.mock("@/hooks/useServiceOrders", () => ({
   useServiceOrders: () => ({ data: { count: 23, results: [] } }),
 }));
 
+// tela de desktop (o placar e o sino só carregam em md+)
+window.matchMedia = vi.fn().mockReturnValue({
+  matches: true,
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+}) as unknown as typeof window.matchMedia;
+
 function wrap(ui: React.ReactElement) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>);

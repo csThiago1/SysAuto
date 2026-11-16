@@ -31,7 +31,7 @@ const serwist = new Serwist({
         url.pathname.startsWith("/api/proxy/") && request.method === "GET",
       handler: new NetworkFirst({
         cacheName: "api-get-cache",
-        networkTimeoutSeconds: 10,
+        networkTimeoutSeconds: 3, // rede móvel ruim: mostra o cache em 3s, não 10s
       }),
     },
     ...defaultCache,

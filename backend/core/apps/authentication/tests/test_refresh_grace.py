@@ -27,7 +27,9 @@ class TestRefreshGrace(TenantTestCase):
         self.c.defaults["HTTP_HOST"] = self.domain.domain
 
     def _refresh_inicial(self) -> str:
-        r = self.c.post(LOGIN, {"email": "ana@test.com", "password": "senha-forte-1"}, format="json")
+        r = self.c.post(
+            LOGIN, {"email": "ana@test.com", "password": "senha-forte-1"}, format="json"
+        )
         self.assertEqual(r.status_code, 200, r.content)
         return r.json()["refresh"]
 
@@ -43,14 +45,20 @@ class TestRefreshGrace(TenantTestCase):
 
     def test_token_usado_expira_depois_da_janela(self) -> None:
         rt = self._refresh_inicial()
-        self.assertEqual(self.c.post(REFRESH, {"refresh_token": rt}, format="json").status_code, 200)
+        self.assertEqual(
+            self.c.post(REFRESH, {"refresh_token": rt}, format="json").status_code, 200
+        )
         passado = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         RefreshToken.objects.filter(expires_at__lt=passado + datetime.timedelta(minutes=5)).update(
             expires_at=passado
         )
-        self.assertEqual(self.c.post(REFRESH, {"refresh_token": rt}, format="json").status_code, 401)
+        self.assertEqual(
+            self.c.post(REFRESH, {"refresh_token": rt}, format="json").status_code, 401
+        )
 
     def test_revogado_no_logout_nao_renova(self) -> None:
         rt = self._refresh_inicial()
         RefreshToken.objects.update(is_revoked=True)
-        self.assertEqual(self.c.post(REFRESH, {"refresh_token": rt}, format="json").status_code, 401)
+        self.assertEqual(
+            self.c.post(REFRESH, {"refresh_token": rt}, format="json").status_code, 401
+        )

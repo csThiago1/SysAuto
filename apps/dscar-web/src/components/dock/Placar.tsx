@@ -6,8 +6,8 @@ import { useOverdueOrders } from "@/hooks/useOverdueOrders";
 import { cn } from "@/lib/utils";
 
 /** Pátio, atrasadas e entregas de hoje — o placar da oficina no topo do menu. */
-export function usePlacar(): { patio?: number; atrasadas?: number; hoje?: number } {
-  const { data: abertas } = useServiceOrders({ is_active: "true", exclude_closed: "true" }, 1, 1);
+export function usePlacar(enabled: boolean = true): { patio?: number; atrasadas?: number; hoje?: number } {
+  const { data: abertas } = useServiceOrders({ is_active: "true", exclude_closed: "true" }, 1, 1, enabled);
   const { data: prazos } = useOverdueOrders();
   return {
     patio: abertas?.count,

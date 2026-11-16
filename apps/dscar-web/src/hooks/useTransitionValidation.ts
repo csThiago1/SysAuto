@@ -51,11 +51,13 @@ export function useRequestOverride(osId: string) {
   })
 }
 
-export function usePendingOverrides() {
+export function usePendingOverrides(enabled: boolean = true) {
   return useQuery<TransitionOverrideRequest[]>({
     queryKey: ["pending-overrides"],
     queryFn: () => fetchList<TransitionOverrideRequest>(`${API}/pending-overrides/`),
-    refetchInterval: 30000,
+    refetchInterval: 60_000,
+    retry: false,
+    enabled,
   })
 }
 

@@ -59,6 +59,8 @@ class RailwayTenantMiddleware(TenantMainMiddleware):
 
 MIDDLEWARE = [
     "config.settings.railway.RailwayTenantMiddleware",
+    # JSON da lista de OS (até 200 linhas) ia sem compressão da VM até a Vercel.
+    "django.middleware.gzip.GZipMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
