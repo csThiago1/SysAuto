@@ -345,7 +345,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
               disabled={
                 billMutation.isPending || !preview.can_bill || validation?.ready === false
               }
-              className="bg-success-600 hover:bg-success-700 text-foreground"
+              variant="success"
             >
               {billMutation.isPending ? (
                 <>

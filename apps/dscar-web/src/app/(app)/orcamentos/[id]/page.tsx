@@ -467,7 +467,7 @@ export default function OrcamentoDetailPage() {
           )}
           {canAprovar && (
             <Button size="sm" onClick={handleAprovar} disabled={aprovando}
-              className="bg-success-600 hover:bg-success-700 text-foreground"
+              variant="success"
             >
               <CheckCircle className="h-3.5 w-3.5 mr-1" />
               {aprovando ? "Aprovando..." : "Aprovar → OS"}

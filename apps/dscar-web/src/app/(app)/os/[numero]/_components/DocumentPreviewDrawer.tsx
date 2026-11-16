@@ -340,7 +340,6 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
               <Button
                 onClick={handleGenerate}
                 disabled={generateMutation.isPending}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 {generateMutation.isPending ? (
                   <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Gerando...</>

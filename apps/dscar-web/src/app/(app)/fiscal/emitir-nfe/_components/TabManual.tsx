@@ -328,7 +328,6 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
         <Button
           type="submit"
           disabled={emitMutation.isPending}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {emitMutation.isPending ? (
             <>

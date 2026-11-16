@@ -5,7 +5,7 @@ import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { ChevronRight, LogOut, Plus } from "lucide-react";
-import { ROLE_HIERARCHY, type PaddockRole, type ExtraPermission } from "@paddock/types";
+import type { PaddockRole, ExtraPermission } from "@paddock/types";
 import { NotificationBell } from "@/components/header/NotificationBell";
 import { OfflineStatusBar } from "@/components/offline/OfflineStatusBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -23,6 +23,7 @@ import {
   getInitials,
   isActiveRoute,
   isGroupActive,
+  podeAbrirOS,
   visibleSections,
   type NavItem,
 } from "./nav-config";
@@ -117,7 +118,6 @@ export function Sidebar(): React.ReactElement {
   const role = (session?.role ?? "STOREKEEPER") as PaddockRole;
   const perms = (session?.extraPermissions ?? []) as ExtraPermission[];
   const roleLabel = ROLE_LABELS[session?.role ?? ""] ?? session?.role ?? "";
-  const podeAbrirOS = (ROLE_HIERARCHY[role] ?? 0) >= ROLE_HIERARCHY.CONSULTANT;
 
   const sections = visibleSections(role, perms);
   const oficina = sections.filter((s) => OFICINA.has(s.label)).flatMap((s) => s.items);
@@ -136,7 +136,7 @@ export function Sidebar(): React.ReactElement {
           <img src="/logo-ticket-branca.svg" alt="" aria-hidden className="hidden h-20 w-auto shrink-0 dark:block" />
           <Placar torre className="min-w-0 flex-1" />
         </div>
-        {podeAbrirOS && (
+        {podeAbrirOS(role) && (
           <Link
             href="/recepcao"
             className="flex h-9 items-center justify-center gap-1.5 rounded-md bg-primary text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"

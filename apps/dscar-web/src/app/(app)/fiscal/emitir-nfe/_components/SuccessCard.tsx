@@ -86,7 +86,6 @@ export function SuccessCard({
         <Button
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onClick={() => router.push("/fiscal/documentos" as any)}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           Ver documentos emitidos
         </Button>

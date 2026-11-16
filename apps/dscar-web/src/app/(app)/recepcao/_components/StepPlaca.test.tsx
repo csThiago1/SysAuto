@@ -1,4 +1,4 @@
-import { render, waitFor } from "@testing-library/react"
+import { act, render, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { FormProvider, useForm, type UseFormReturn } from "react-hook-form"
@@ -63,6 +63,15 @@ describe("StepPlaca — cliente pela placa", () => {
     renderStep()
     await waitFor(() => expect(form.getValues("customer_id")).toBe(42))
     expect(form.getValues("customer_name")).toBe("João da Silva")
+  })
+
+  it("placa corrigida tira o cliente que a placa errada trouxe", async () => {
+    orders = [ULTIMA]
+    renderStep()
+    await waitFor(() => expect(form.getValues("customer_id")).toBe(42))
+    act(() => form.setValue("plate", "XYZ9Z99"))
+    await waitFor(() => expect(form.getValues("customer_id")).toBeNull())
+    expect(form.getValues("customer_name")).toBe("")
   })
 
   it("não troca um cliente já escolhido", async () => {

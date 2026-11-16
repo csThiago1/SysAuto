@@ -151,7 +151,7 @@ export function DeliveryConfirmationDialog({
           <Button
             onClick={handleConfirm}
             disabled={!canDeliver || deliverMutation.isPending}
-            className="bg-success-600 hover:bg-success-700 text-foreground"
+            variant="success"
           >
             {deliverMutation.isPending ? (
               <>

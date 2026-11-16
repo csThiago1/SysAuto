@@ -409,7 +409,8 @@ export function QuotationBuilder({ pedidos, open, onOpenChange }: QuotationBuild
               <Button
                 type="button"
                 size="sm"
-                className="flex-1 bg-success-600 hover:bg-success-700 text-white"
+                variant="success"
+                className="flex-1"
                 disabled={isSending}
                 onClick={() => void handleSend("whatsapp")}
               >

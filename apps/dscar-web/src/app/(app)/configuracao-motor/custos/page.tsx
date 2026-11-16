@@ -100,7 +100,6 @@ function AbaFallback({ empresaId }: { empresaId: string }) {
           <Button
             size="sm"
             onClick={() => setSheetOpen(true)}
-            className="bg-primary hover:bg-primary/90"
           >
             Cadastrar fallback
           </Button>
@@ -211,7 +210,7 @@ function AbaFallback({ empresaId }: { empresaId: string }) {
               />
             </div>
             <Button
-              className="w-full bg-primary hover:bg-primary/90 mt-2"
+              className="w-full mt-2"
               onClick={handleSave}
               disabled={createMutation.isPending}
             >
@@ -322,7 +321,6 @@ function AbaParametros({ empresaId }: { empresaId: string }) {
             size="sm"
             onClick={handleSaveRateio}
             disabled={createRateio.isPending}
-            className="bg-primary hover:bg-primary/90"
           >
             {createRateio.isPending ? "Salvando..." : "Salvar parâmetro de rateio"}
           </Button>
@@ -410,7 +408,6 @@ function AbaParametros({ empresaId }: { empresaId: string }) {
             size="sm"
             onClick={handleSaveCustoHora}
             disabled={createCustoHora.isPending}
-            className="bg-primary hover:bg-primary/90"
           >
             {createCustoHora.isPending ? "Salvando..." : "Salvar parâmetro de custo/hora"}
           </Button>
@@ -513,7 +510,7 @@ function AbaSimulacao({ empresaId }: { empresaId: string }) {
         <Button
           onClick={handleSimular}
           disabled={debugMutation.isPending}
-          className="w-full bg-primary hover:bg-primary/90"
+          className="w-full"
         >
           {debugMutation.isPending ? "Calculando..." : "Simular custo/hora"}
         </Button>

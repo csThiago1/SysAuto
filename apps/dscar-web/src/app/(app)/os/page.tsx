@@ -3,6 +3,8 @@
 import { NativeSelect } from "@/components/ui/native-select"
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
+import { podeAbrirOS } from "@/components/dock/nav-config"
 import { Search, FilterX, Plus, ChevronLeft, ChevronRight, X, SlidersHorizontal, Columns3 } from "lucide-react"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 
@@ -138,6 +140,7 @@ function AdvancedFilters({
 }
 
 export default function ServiceOrdersPage() {
+  const { data: session } = useSession()
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<string>("ALL")
   const [customerType, setCustomerType] = useState<string>("ALL")
@@ -217,12 +220,14 @@ export default function ServiceOrdersPage() {
               <Columns3 className="h-4 w-4 md:hidden" />
               <span className="hidden md:inline">Ver Kanban</span>
             </Link>
-            <Button asChild className="min-h-[44px] md:min-h-0">
-              <Link href="/recepcao">
-                <Plus className="h-4 w-4" />
-                Nova OS
-              </Link>
-            </Button>
+            {podeAbrirOS(session?.role) && (
+              <Button asChild className="min-h-[44px] md:min-h-0">
+                <Link href="/recepcao">
+                  <Plus className="h-4 w-4" />
+                  Nova OS
+                </Link>
+              </Button>
+            )}
         </div>
       </div>
 

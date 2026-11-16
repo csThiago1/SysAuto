@@ -154,9 +154,9 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
   },
   ready: {
     label:  "Pronto p/ Entrega",
-    badge:  `bg-flag-verde text-white ${FAIXA}`,
+    badge:  `bg-flag-verde text-black ${FAIXA}`,
     border: "border-l-4 border-l-flag-verde",
-    column: "bg-flag-verde text-white",
+    column: "bg-flag-verde text-black",
     dot:    "bg-flag-verde",
     text:   "text-success-400",
   },
