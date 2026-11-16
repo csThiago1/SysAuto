@@ -320,12 +320,6 @@ class Employee(PaddockBaseModel):
             return True
         return perm in (self.extra_permissions or [])
 
-    def save(self, *args: object, **kwargs: object) -> None:
-        """Gera cpf_hash automaticamente para lookup sem expor CPF em claro."""
-        if self.cpf:
-            self.cpf_hash = hashlib.sha256(self.cpf.encode()).hexdigest()
-        super().save(*args, **kwargs)
-
 
 class EmployeeDocument(PaddockBaseModel):
     """

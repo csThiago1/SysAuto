@@ -37,7 +37,11 @@ STORAGE_FAILED = {"detail": "Não foi possível enviar a CNH. Tente de novo ou e
 class InviteThrottle(AnonRateThrottle):
     """Páginas públicas do convite: limita tentativa de adivinhar token."""
 
-    rate = "20/minute"
+    # Bucket próprio: a Vercel chega com um IP só, então "anon" seria um balde global com os outros endpoints.
+    # Token de 256 bits não se adivinha; o limite só segura abuso. shortcut: ident é o IP do proxy,
+    # trocar por X-Client-IP quando o PROXY_SHARED_SECRET estiver na Oracle.
+    scope = "invite"
+    rate = "60/minute"
 
 
 class _Gone(Exception):
@@ -98,7 +102,9 @@ class InviteRevokeView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
     def delete(self, request: Request, pk: uuid.UUID) -> Response:
-        updated = Invite.objects.filter(pk=pk, used_at__isnull=True, revoked_at__isnull=True).update(
+        updated = Invite.objects.filter(
+            pk=pk, tenant_schema=connection.schema_name, used_at__isnull=True, revoked_at__isnull=True
+        ).update(
             revoked_at=timezone.now()
         )
         if not updated:

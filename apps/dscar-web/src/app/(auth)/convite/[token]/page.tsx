@@ -13,12 +13,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isFormField, toFormErrors, type Errors } from "./form-errors";
 
 const CNH_MAX_BYTES = 10 * 1024 * 1024;
 const CNH_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 
 const inviteInfoSchema = z.object({ role_display: z.string(), expires_at: z.string() });
-const fieldErrorsSchema = z.record(z.string(), z.union([z.array(z.string()), z.string()]));
 
 const formSchema = z
   .object({
@@ -37,7 +37,6 @@ const formSchema = z
   .refine((v) => v.password === v.confirm, { path: ["confirm"], message: "As senhas não conferem." });
 
 type FormValues = z.infer<typeof formSchema>;
-type Errors = Partial<Record<keyof FormValues | "detail", string>>;
 
 const inputClass =
   "bg-secondary-950 border-secondary-700 text-foreground placeholder:text-secondary-600 focus-visible:ring-ring";
@@ -104,8 +103,8 @@ export default function ConvitePage({ params }: { params: Promise<{ token: strin
     if (!parsed.success) {
       const next: Errors = {};
       for (const issue of parsed.error.issues) {
-        const key = issue.path[0] as keyof FormValues;
-        next[key] ??= issue.message;
+        const key = String(issue.path[0]);
+        if (isFormField(key)) next[key] ??= issue.message;
       }
       setErrors(next);
       return;
@@ -134,15 +133,7 @@ export default function ConvitePage({ params }: { params: Promise<{ token: strin
         await invite.refetch();
         return;
       }
-      const data = fieldErrorsSchema.safeParse(await res.json().catch(() => ({})));
-      const next: Errors = {};
-      if (data.success) {
-        for (const [key, msg] of Object.entries(data.data)) {
-          next[key as keyof Errors] = Array.isArray(msg) ? msg[0] : msg;
-        }
-      }
-      if (!Object.keys(next).length) next.detail = "Não foi possível concluir o cadastro. Tente novamente.";
-      setErrors(next);
+      setErrors(toFormErrors(await res.json().catch(() => null)));
     } catch {
       setErrors({ detail: "Erro de conexão. Tente novamente." });
     } finally {

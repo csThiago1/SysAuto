@@ -163,3 +163,15 @@ class TestInviteEndpoints(TenantTestCase):
         assert res.status_code == 503
         assert GlobalUser.objects.count() == before
         assert Invite.find(token).is_usable
+
+
+    def test_revoke_other_tenant_404(self) -> None:
+        other, _ = Invite.issue("CONSULTANT", "outro_tenant", self.admin)
+        assert self.client.delete(f"{BASE}{other.pk}/").status_code == 404
+        other.refresh_from_db()
+        assert other.revoked_at is None
+
+    def test_invite_throttle_has_own_scope(self) -> None:
+        from apps.authentication.invites import InviteThrottle
+
+        assert InviteThrottle.scope == "invite"
