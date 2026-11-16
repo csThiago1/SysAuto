@@ -112,12 +112,19 @@ async function proxyRequest(
  * next-auth descartava o Set-Cookie — o backend já tinha girado o refresh,
  * o cookie ficava com o token revogado e a sessão caía na renovação seguinte.
  */
-function handler(method: string) {
-  return auth(async (req, ctx) => {
-    const { path } = (await ctx.params) as { path: string[] };
-    // NextAuthRequest vem tipado contra outra cópia do `next` (mesmo cast do middleware)
-    return proxyRequest(req as unknown as NextRequest, path, method, req.auth);
+type RouteCtx = { params: Promise<{ path: string[] }> };
+type RouteHandler = (req: NextRequest, ctx: RouteCtx) => Promise<Response>;
+
+function handler(method: string): RouteHandler {
+  // Tipos explícitos: com `npm ci` limpo a inferência do overload de auth()
+  // muda (req/ctx viravam any no CI). O cast cobre a cópia do `next` que o
+  // next-auth enxerga, a mesma razão do cast no middleware.
+  const wrapped = auth(async (req: unknown, ctx: unknown) => {
+    const r = req as NextRequest & { auth: Session | null };
+    const { path } = await (ctx as RouteCtx).params;
+    return proxyRequest(r, path, method, r.auth);
   });
+  return wrapped as unknown as RouteHandler;
 }
 
 export const GET = handler("GET");
