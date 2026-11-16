@@ -5,9 +5,13 @@ import { cn } from "@/lib/utils"
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
+/** segmented: botões num trilho (padrão). underline: texto com faixa vermelha embaixo. */
+export type TabsVariant = "segmented" | "underline"
+
 interface TabsContextValue {
   value: string
   onValueChange: (value: string) => void
+  variant: TabsVariant
 }
 
 const TabsContext = React.createContext<TabsContextValue | null>(null)
@@ -21,6 +25,7 @@ function useTabsContext(): TabsContextValue {
 // ─── Tabs (root) ──────────────────────────────────────────────────────────────
 
 interface TabsProps {
+  variant?: TabsVariant
   defaultValue?: string
   value?: string
   onValueChange?: (value: string) => void
@@ -29,6 +34,7 @@ interface TabsProps {
 }
 
 function Tabs({
+  variant = "segmented",
   defaultValue = "",
   value: controlled,
   onValueChange,
@@ -47,7 +53,7 @@ function Tabs({
   )
 
   return (
-    <TabsContext.Provider value={{ value, onValueChange: handleChange }}>
+    <TabsContext.Provider value={{ value, onValueChange: handleChange, variant }}>
       <div className={cn("w-full", className)}>{children}</div>
     </TabsContext.Provider>
   )
@@ -61,6 +67,7 @@ interface TabsListProps {
 }
 
 function TabsList({ className, children }: TabsListProps) {
+  const { variant } = useTabsContext()
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       const list = e.currentTarget
@@ -104,7 +111,9 @@ function TabsList({ className, children }: TabsListProps) {
       role="tablist"
       onKeyDown={handleKeyDown}
       className={cn(
-        "inline-flex items-center rounded-lg p-1 gap-1",
+        variant === "underline"
+          ? "flex items-center gap-4 overflow-x-auto border-b border-border"
+          : "inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 p-1",
         className
       )}
     >
@@ -136,8 +145,21 @@ function TabsTrigger({ value, className, children, disabled }: TabsTriggerProps)
       onClick={() => ctx.onValueChange(value)}
       data-state={isActive ? "active" : "inactive"}
       className={cn(
-        "inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium ring-offset-transparent transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20",
+        "inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-medium transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        ctx.variant === "underline"
+          ? cn(
+              "-mb-px border-b-2 px-0.5 py-2",
+              isActive
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )
+          : cn(
+              "min-h-[32px] rounded-sm px-3",
+              isActive
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            ),
         "disabled:pointer-events-none disabled:opacity-50",
         className
       )}
