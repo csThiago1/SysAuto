@@ -168,6 +168,9 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
             <TableHead className={cn("w-[80px] label-mono text-muted-foreground", sortableClass)} onClick={() => toggleSort("number")}>
               OS<SortIcon field="number" ordering={ordering} />
             </TableHead>
+            <TableHead className={cn("w-[150px] label-mono text-muted-foreground", sortableClass)} onClick={() => toggleSort("status")}>
+              STATUS<SortIcon field="status" ordering={ordering} />
+            </TableHead>
             <TableHead className={cn("min-w-[160px] label-mono text-muted-foreground", sortableClass)} onClick={() => toggleSort("customer_name")}>
               CLIENTE<SortIcon field="customer_name" ordering={ordering} />
             </TableHead>
@@ -178,9 +181,6 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
             <TableHead className="min-w-[150px] label-mono text-muted-foreground">VEÍCULO</TableHead>
             <TableHead className={cn("w-[130px] label-mono text-muted-foreground", sortableClass)} onClick={() => toggleSort("entry_date")}>
               DATAS<SortIcon field="entry_date" ordering={ordering} />
-            </TableHead>
-            <TableHead className={cn("w-[150px] label-mono text-muted-foreground", sortableClass)} onClick={() => toggleSort("status")}>
-              STATUS<SortIcon field="status" ordering={ordering} />
             </TableHead>
             <TableHead className="w-[50px] label-mono text-muted-foreground">$</TableHead>
             <TableHead className="w-[50px]"></TableHead>
@@ -199,6 +199,14 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
                 {/* OS Number */}
                 <TableCell className="font-medium text-foreground">
                   <span className="text-primary font-bold">#{order.number}</span>
+                </TableCell>
+
+                {/* Status — logo depois do número: não some quando a tabela rola */}
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={order.status} />
+                    <ClosureDots closureStatus={order.closure_status} />
+                  </div>
                 </TableCell>
 
                 {/* Cliente */}
@@ -268,14 +276,6 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
                       <span className={cn(isLate ? "text-error-400" : "text-muted-foreground")}>Prev:</span>
                       <span>{formatDate(order.estimated_delivery_date)}</span>
                     </div>
-                  </div>
-                </TableCell>
-
-                {/* Status */}
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={order.status} />
-                    <ClosureDots closureStatus={order.closure_status} />
                   </div>
                 </TableCell>
 

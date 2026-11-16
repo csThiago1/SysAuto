@@ -1,5 +1,6 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { toast } from "sonner"
 import { useExperts, useExpertCreate, type ExpertResult } from "../../_hooks/useExperts"
@@ -114,14 +115,14 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled, knownExpe
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="button"
+              size="sm"
               onClick={handleCreate}
               disabled={!newName.trim() || createMutation.isPending}
-              className="rounded bg-primary px-3 py-1 text-xs text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {createMutation.isPending ? "Salvando..." : "Salvar"}
-            </button>
+            </Button>
           </div>
         </div>
       )}

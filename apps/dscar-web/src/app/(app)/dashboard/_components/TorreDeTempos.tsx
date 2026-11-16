@@ -6,6 +6,7 @@ import type { ServiceOrder } from "@paddock/types"
 import { formatCurrency, formatPlate } from "@paddock/utils"
 import { useServiceOrders } from "@/hooks/useServiceOrders"
 import { Skeleton } from "@/components/ui/skeleton"
+import { StatusBadge } from "@/components/ui/status-badge"
 import { cn } from "@/lib/utils"
 
 /** Dias de atraso: >0 atrasada, 0 sai hoje, <0 folga, null sem previsão. */
@@ -31,8 +32,6 @@ export function ordenarPorUrgencia<T extends Pick<ServiceOrder, "estimated_deliv
     return db - da
   })
 }
-
-const ESPERA = new Set(["waiting_auth", "waiting_parts"])
 
 function Prazo({ dias }: { dias: number | null }) {
   if (dias === null) return <span className="text-muted-foreground">—</span>
@@ -130,18 +129,7 @@ export function TorreDeTempos({ mostrarValor }: { mostrarValor: boolean }) {
                       {carro} · {quem}
                     </span>
                     <span className="hidden md:block">
-                      <span
-                        className={cn(
-                          "inline-block max-w-full truncate rounded-sm px-2 py-0.5 text-xs",
-                          ESPERA.has(os.status)
-                            ? "bg-warning-500/10 text-warning-400"
-                            : os.status === "ready"
-                              ? "bg-success-500/10 text-success-400"
-                              : "bg-muted text-foreground/80"
-                        )}
-                      >
-                        {os.status_display}
-                      </span>
+                      <StatusBadge status={os.status} size="sm" className="max-w-full truncate" />
                     </span>
                   </span>
                   <span className="text-right font-plate text-[17px] font-bold tabular-nums">

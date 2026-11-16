@@ -11,6 +11,7 @@
  *   />
  */
 
+import { NativeSelect } from "@/components/ui/native-select"
 import { useState, useEffect, useCallback } from "react"
 import { DollarSign, Loader2, AlertTriangle, FileText } from "lucide-react"
 import {
@@ -246,7 +247,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                                 <label className="label-mono text-muted-foreground text-[9px] mb-1 block">
                                   FORMA PGTO
                                 </label>
-                                <select
+                                <NativeSelect
                                   value={localState.payment_method}
                                   onChange={(e) =>
                                     updateItem(
@@ -255,7 +256,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                                       e.target.value as BillingPaymentMethod
                                     )
                                   }
-                                  className="w-full h-8 rounded border border-border bg-muted/30 text-xs text-foreground/80 px-2 focus:outline-none focus:border-border transition-colors"
+                                  className="h-8 text-xs"
                                 >
                                   {(
                                     Object.entries(BILLING_PAYMENT_METHOD_LABELS) as [
@@ -267,7 +268,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                                       {label}
                                     </option>
                                   ))}
-                                </select>
+                                </NativeSelect>
                               </div>
 
                               {/* Payment term */}
@@ -275,7 +276,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                                 <label className="label-mono text-muted-foreground text-[9px] mb-1 block">
                                   PRAZO
                                 </label>
-                                <select
+                                <NativeSelect
                                   value={localState.payment_term_days}
                                   onChange={(e) =>
                                     updateItem(
@@ -284,14 +285,14 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                                       parseInt(e.target.value, 10)
                                     )
                                   }
-                                  className="w-full h-8 rounded border border-border bg-muted/30 text-xs text-foreground/80 px-2 focus:outline-none focus:border-border transition-colors"
+                                  className="h-8 text-xs"
                                 >
                                   {PAYMENT_TERMS.map((term) => (
                                     <option key={term.days} value={term.days}>
                                       {term.label}
                                     </option>
                                   ))}
-                                </select>
+                                </NativeSelect>
                               </div>
                             </div>
                           )

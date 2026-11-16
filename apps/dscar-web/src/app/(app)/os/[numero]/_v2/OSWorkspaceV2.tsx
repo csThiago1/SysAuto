@@ -8,6 +8,7 @@
  * componentes de dados existentes enquanto são redesenhadas em fases.
  */
 
+import { Button } from "@/components/ui/button"
 import { Suspense, lazy, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
@@ -266,21 +267,22 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
           )}
 
           <div className="ml-auto flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setImportOpen(true)}
-              className="inline-flex min-h-[44px] items-center whitespace-nowrap rounded-md border border-border px-3.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/50 md:min-h-0 md:px-3 md:py-1.5"
+              className="min-h-[44px] md:min-h-0"
             >
-              <Upload className="mr-1.5 inline h-3.5 w-3.5" />
+              <Upload className="h-3.5 w-3.5" />
               Importar orçamento
-            </button>
-            <a
-              href={`/os/${order.number}/vistoria`}
-              className="inline-flex min-h-[44px] items-center whitespace-nowrap rounded-md bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 md:min-h-0 md:px-3 md:py-1.5"
-            >
-              <Camera className="mr-1.5 inline h-3.5 w-3.5" />
-              Vistoria
-            </a>
+            </Button>
+            <Button asChild size="sm" className="min-h-[44px] md:min-h-0">
+              <a href={`/os/${order.number}/vistoria`}>
+                <Camera className="h-3.5 w-3.5" />
+                Vistoria
+              </a>
+            </Button>
           </div>
         </div>
 

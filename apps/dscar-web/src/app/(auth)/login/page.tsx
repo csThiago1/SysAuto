@@ -195,11 +195,11 @@ export default function LoginPage(): React.ReactElement {
           // Override CSS variables para garantir dark mode na login
           // mesmo quando o app está em modo claro (.light)
           "--foreground": "0 0% 95%",
-          "--primary": "0 82% 42%",
+          "--primary": "2 97% 46%",
           "--primary-foreground": "0 0% 100%",
           "--border": "0 0% 18%",
           "--input": "0 0% 18%",
-          "--ring": "0 82% 42%",
+          "--ring": "2 97% 46%",
         } as React.CSSProperties}>
         {/* Neon animated background */}
         <div
