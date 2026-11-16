@@ -10,7 +10,8 @@ export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
   const request = req as unknown as NextRequest;
   const { pathname } = request.nextUrl;
   if (pathname.startsWith("/convite")) return; // link de convite: público, logado ou não
-  const isLoggedIn = !!req.auth;
+  // Sessão cuja renovação foi recusada fica com accessToken vazio: vale como deslogada.
+  const isLoggedIn = !!req.auth?.accessToken;
   const isAuthPage =
     pathname.startsWith("/login") ||
     pathname.startsWith("/esqueci-senha") ||

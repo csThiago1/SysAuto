@@ -188,7 +188,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token;
       }
 
-      const refreshed = await refreshAccessToken(BACKEND_URL, refreshToken);
+      let refreshed: Awaited<ReturnType<typeof refreshAccessToken>>;
+      try {
+        refreshed = await refreshAccessToken(BACKEND_URL, refreshToken);
+      } catch {
+        // Rede/servidor fora do ar: mantém a sessão e tenta na próxima request.
+        return token;
+      }
       if (!refreshed) {
         token.error = "RefreshTokenExpired";
         return token;

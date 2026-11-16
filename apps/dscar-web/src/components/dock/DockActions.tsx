@@ -1,6 +1,8 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { sair } from "@/lib/sair";
+
+import { useSession } from "next-auth/react";
 import { Search, LogOut } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -79,7 +81,7 @@ export function AccountSheetBlock(): React.ReactElement {
         />
         <button
           type="button"
-          onClick={() => void signOut({ callbackUrl: "/login" })}
+          onClick={() => void sair()}
           className="flex h-10 items-center gap-1.5 rounded-lg border border-border px-3 text-sm text-muted-foreground"
         >
           <LogOut className="h-4 w-4" />

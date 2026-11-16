@@ -1,8 +1,10 @@
 "use client";
 
+import { sair } from "@/lib/sair";
+
 import React from "react";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+
 import { useSession } from "next-auth/react";
 import { LogOut, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -74,7 +76,7 @@ export function AppHeader(): React.ReactElement {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => void signOut({ callbackUrl: "/login" })}
+          onClick={() => void sair()}
           title="Sair"
         >
           <LogOut className="h-4 w-4 text-muted-foreground" />

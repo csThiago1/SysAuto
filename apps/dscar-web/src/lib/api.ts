@@ -1,5 +1,6 @@
 import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
 import { signOut } from "next-auth/react";
+import { API_CACHE } from "./sair";
 import { toast } from "sonner";
 import { enqueueMutation, isQueueable } from "@/lib/offline/queue";
 
@@ -65,9 +66,9 @@ export async function apiFetch<T>(
   }
 
   if (res.status === 401) {
-    // Retry único: o proxy renova a sessão server-side ao consultar auth(),
-    // então repetir a request usa o access token já atualizado. Só desloga
-    // se o retry também voltar 401 (refresh de fato expirado/revogado).
+    // Retry único: o proxy (embrulhado em auth()) renova a sessão e devolve o
+    // cookie novo, então repetir a request usa o access token atualizado. Só
+    // desloga se o retry também voltar 401 (refresh de fato recusado).
     await new Promise((r) => setTimeout(r, 300));
     try {
       res = await fetch(input, init);
@@ -83,8 +84,11 @@ export async function apiFetch<T>(
         toast.error("Sessão expirada. Fazendo logout...");
         // redirect: false evita que o signOut navegue sozinho e causa loop
         // quando o endpoint /api/auth/signout falha
-        signOut({ redirect: false }).finally(() => {
-          window.location.href = "/login";
+        // apaga o cache de respostas da API do PWA antes de sair (LGPD)
+        caches.delete(API_CACHE).catch(() => false).finally(() => {
+          signOut({ redirect: false }).finally(() => {
+            window.location.href = "/login";
+          });
         });
       }
       throw new Error("unauthorized");

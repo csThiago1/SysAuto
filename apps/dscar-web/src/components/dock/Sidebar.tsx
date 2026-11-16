@@ -1,9 +1,11 @@
 "use client";
 
+import { sair } from "@/lib/sair";
+
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { ChevronRight, LogOut, Plus } from "lucide-react";
 import type { PaddockRole, ExtraPermission } from "@paddock/types";
 import { NotificationBell } from "@/components/header/NotificationBell";
@@ -194,7 +196,7 @@ export function Sidebar(): React.ReactElement {
                 <ThemeToggle />
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => void signOut({ callbackUrl: "/login" })}>
+              <DropdownMenuItem onClick={() => void sair()}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair
               </DropdownMenuItem>

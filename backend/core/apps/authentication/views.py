@@ -239,6 +239,9 @@ class LoginView(APIView):
 
 # ─── RefreshView ─────────────────────────────────────────────────────────────
 
+ROTATION_GRACE = datetime.timedelta(seconds=60)
+
+
 class RefreshView(APIView):
     """
     POST /api/v1/auth/refresh/
@@ -291,9 +294,10 @@ class RefreshView(APIView):
 
         # Find stored token by hash
         token_hash = hashlib.sha256(raw_refresh.encode()).hexdigest()
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
         try:
             stored = RefreshToken.objects.select_related("user").get(
-                token_hash=token_hash, is_revoked=False
+                token_hash=token_hash, is_revoked=False, expires_at__gt=now
             )
         except RefreshToken.DoesNotExist:
             return Response(
@@ -301,9 +305,14 @@ class RefreshView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        # Revoke old token (rotation)
-        stored.is_revoked = True
-        stored.save(update_fields=["is_revoked"])
+        # Rotação com tolerância: o token usado ainda vale ROTATION_GRACE. A
+        # página, o /api/auth/session e o proxy renovam juntos ao reabrir o app,
+        # às vezes em instâncias diferentes da Vercel, com o MESMO refresh;
+        # revogando na hora, só o primeiro passava e os outros deslogavam.
+        # Logout e troca de senha continuam revogando tudo (is_revoked).
+        if stored.expires_at > now + ROTATION_GRACE:
+            stored.expires_at = now + ROTATION_GRACE
+            stored.save(update_fields=["expires_at"])
 
         user = stored.user
         if not user.is_active:

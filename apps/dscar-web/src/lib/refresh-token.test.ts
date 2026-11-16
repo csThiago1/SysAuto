@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { refreshAccessToken } from "./refresh-token"
+import { RefreshTransitorio, refreshAccessToken } from "./refresh-token"
 
 const PAR = { access: "novo-access", refresh: "novo-refresh" }
 
@@ -30,6 +30,15 @@ describe("refreshAccessToken", () => {
     expect(a).toEqual(PAR)
     expect(b).toEqual(PAR)
     expect(c).toEqual(PAR)
+  })
+
+  it("falha passageira (502, rede) lança e não fica em cache", async () => {
+    const f = vi.fn().mockResolvedValueOnce(new Response("", { status: 502 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(PAR), { status: 200 }))
+    vi.stubGlobal("fetch", f)
+    await expect(refreshAccessToken("http://api", "token-d")).rejects.toBeInstanceOf(RefreshTransitorio)
+    expect(await refreshAccessToken("http://api", "token-d")).toEqual(PAR)
+    expect(f).toHaveBeenCalledTimes(2)
   })
 
   it("devolve null quando o backend recusa", async () => {
