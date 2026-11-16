@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Montserrat, Rajdhani } from "next/font/google";
+import { Outfit, Rajdhani } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
 // ─── Fontes DS Car ────────────────────────────────────────────────────────────
-const montserrat = Montserrat({
+// Outfit no lugar da Fieldwork Hum do manual da marca (paga, sem licença web).
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-montserrat",
+  variable: "--font-outfit",
   display: "swap",
   weight: ["400", "500", "600", "700", "800"],
 });
@@ -55,7 +56,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`dark ${montserrat.variable} ${rajdhani.variable}`}
+      className={`dark ${outfit.variable} ${rajdhani.variable}`}
       suppressHydrationWarning
     >
       <head>

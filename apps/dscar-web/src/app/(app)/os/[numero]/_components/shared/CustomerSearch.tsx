@@ -1,5 +1,6 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
 import { useEffect, useRef, useState } from "react"
 import { Loader2, Search, UserPlus, X, CheckCircle2 } from "lucide-react"
 import { z } from "zod"
@@ -239,16 +240,16 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
           >
             Cancelar
           </button>
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={handleCreate}
             disabled={!canCreate || createMutation.isPending}
             data-testid="cadastrar-cliente-btn"
-            className="flex items-center gap-1 rounded bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {createMutation.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
             {createMutation.isPending ? "Salvando..." : "Cadastrar"}
-          </button>
+          </Button>
         </div>
       </div>
     )

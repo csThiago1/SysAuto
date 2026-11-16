@@ -1,5 +1,6 @@
 "use client"
 
+import { NativeSelect } from "@/components/ui/native-select"
 import { useState } from "react"
 import { CheckCircle2, XCircle, AlertTriangle, Lock, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -122,8 +123,9 @@ export function TransitionRequirementsPanel({
           <span className="text-primary">{primaryTargetLabel}</span>:
         </h3>
         {allowedTransitions.length > 1 && (
-          <select
-            className="text-xs border rounded px-2 py-1 bg-background"
+          <NativeSelect
+            wrapperClassName="w-auto"
+            className="h-7 w-auto text-xs"
             value={primaryTarget}
             onChange={(e) =>
               setSelectedTarget(e.target.value as ServiceOrderStatus)
@@ -134,7 +136,7 @@ export function TransitionRequirementsPanel({
                 {SERVICE_ORDER_STATUS_CONFIG[s]?.label ?? s}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         )}
       </div>
 

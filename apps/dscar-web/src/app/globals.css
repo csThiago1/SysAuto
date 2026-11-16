@@ -8,129 +8,109 @@
 :root {
   --font-inter:       'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-rajdhani:    'Rajdhani', ui-sans-serif, system-ui, sans-serif;
-  --font-montserrat:  'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  --font-outfit:      'Outfit', ui-sans-serif, system-ui, sans-serif;
 
-  /* Dark theme — DS Car ERP workspace noturno */
-  --background:          0 0% 4%;
-  --foreground:          0 0% 95%;
+  /* Dark theme — Box de corrida. Paleta do manual da marca (MIV DS Car):
+     preto #000, grafite #303030, alumínio #afafaf, gelo #e8e8e8, vermelho #ea0e03. */
+  --background:          0 0% 2%;
+  --foreground:          0 0% 91%;
 
-  /* 6%, nao 7%: os cards deixaram de ser `bg-card/50`. Meio-tom de 7% sobre
-     um fundo de 4% dava ~5,5% — este valor mantem o escuro como estava. */
   --card:                0 0% 6%;
-  --card-foreground:     0 0% 95%;
+  --card-foreground:     0 0% 91%;
 
-  --popover:             0 0% 8%;
-  --popover-foreground:  0 0% 95%;
+  --popover:             0 0% 9%;
+  --popover-foreground:  0 0% 91%;
 
-  /* Vermelho DS Car como cor de marca */
-  --primary:             0 82% 42%;
+  --primary:             2 97% 46%;
   --primary-foreground:  0 0% 100%;
 
-  --secondary:           0 0% 14%;
-  --secondary-foreground:0 0% 95%;
+  --secondary:           0 0% 19%;
+  --secondary-foreground:0 0% 91%;
 
-  --muted:               0 0% 14%;
-  --muted-foreground:    0 0% 55%;
+  --muted:               0 0% 13%;
+  --muted-foreground:    0 0% 69%;
 
-  --accent:              207 14% 38%;
-  --accent-foreground:   0 0% 95%;
+  --accent:              0 0% 19%;
+  --accent-foreground:   0 0% 91%;
 
-  --destructive:         0 80% 40%;
+  --destructive:         2 97% 46%;
   --destructive-foreground: 0 0% 100%;
 
-  --border:              0 0% 18%;
-  --input:               0 0% 18%;
-  --ring:                0 82% 42%;
+  --border:              0 0% 19%;
+  --input:               0 0% 19%;
+  --ring:                2 97% 52%;
 
-  /* Cor da sombra por tema. No escuro a elevacao vem do TOM (card mais claro
-     que o fundo), entao a sombra e so um assentamento preto discreto. */
+  /* No escuro a elevacao vem do TOM; a sombra e so um assentamento. */
   --shadow-color:        0 0% 0%;
   --shadow-alpha:        0.5;
 
+  /* Texto de ESTADO sobre superficie, por tema (bandeiras do manual
+     clareadas o bastante para AA no escuro). */
+  --success-fg:          134 70% 52%;
+  --warning-fg:          53 100% 55%;
+  --error-fg:            2 100% 64%;
+  --info-fg:             220 95% 70%;
 
-  /* ── Cores de ESTADO, por tema ─────────────────────────────────────────
-     As escalas success/warning/error/info no tailwind.config sao hex fixo e
-     iguais nos dois temas. O degrau -400 e o "texto sobre superficie" e vinha
-     calibrado so pro escuro — no papel ficava ilegivel. Estas variaveis dao
-     a ele um valor por tema; o config aponta o -400 para ca. */
-  --success-fg:          142 69% 58%;
-  --warning-fg:          43 96% 56%;
-  --error-fg:            0 100% 67%;
-  --info-fg:             213 94% 68%;
-
-  --radius: 0.5rem;
+  --radius: 2px;
 
   --sidebar-bg:          0 0% 8%;
-  --sidebar-bg-hover:    0 82% 38%;
+  --sidebar-bg-hover:    2 97% 40%;
   --sidebar-text:        0 0% 72%;
   --sidebar-text-active: 0 0% 100%;
-  --sidebar-accent:      0 82% 42%;
-  --sidebar-border:      0 0% 16%;
+  --sidebar-accent:      2 97% 46%;
+  --sidebar-border:      0 0% 19%;
 }
 
-/* ─── Light Theme — Coolors Palette ───────────────────────────────────────── */
-/* #22223B · #4A4E69 · #9A8C98 · #C9ADA7 · #F2E9E4                          */
+/* ─── Light Theme — Box de corrida claro ────────────────────────────────────── */
+/* Mesma paleta do manual: gelo #e8e8e8 de fundo, papel branco, preto no texto. */
 .light {
-  /* A prancheta e o papel.
-     Contraste e RAZAO, nao diferenca: no escuro o card (6%) e ~50% mais claro
-     que o fundo (4%) e por isso os planos se separam sozinhos. No claro,
-     97% sobre 92% e uma razao de 1,13 — o olho le como UMA superficie so, e a
-     tela vira um campo bege sem hierarquia. Duas correcoes: o fundo desce
-     (prancheta) e o papel sobe pro branco, dobrando o degrau; e a elevacao
-     passa a ser carregada por SOMBRA, que e o recurso que o tema claro tem e
-     o escuro nao. */
-  --background:          24 20% 88%;
-  --foreground:          240 27% 18%;
+  /* Fundo gelo e papel branco: o degrau entre os dois separa os planos, e a
+     sombra neutra carrega a elevacao (o claro tem sombra, o escuro tem tom). */
+  --background:          0 0% 91%;
+  --foreground:          0 0% 6%;
 
-  --card:                30 40% 98%;
-  --card-foreground:     240 27% 18%;
+  --card:                0 0% 100%;
+  --card-foreground:     0 0% 6%;
 
-  --popover:             30 40% 98%;
-  --popover-foreground:  240 27% 18%;
+  --popover:             0 0% 100%;
+  --popover-foreground:  0 0% 6%;
 
-  --primary:             0 82% 42%;
+  --primary:             2 97% 46%;
   --primary-foreground:  0 0% 100%;
 
-  --secondary:           11 18% 82%;
-  --secondary-foreground:240 27% 18%;
+  --secondary:           0 0% 86%;
+  --secondary-foreground:0 0% 6%;
 
-  /* Escurecido: a 46% de luminosidade o texto secundario batia 4.11:1 sobre o
-     papel (#f0e9e5) — abaixo do piso AA de 4.5. Rotulo de campo, placeholder e
-     eyebrow usam este token, entao o tema inteiro herdava a falha. */
-  --muted:               11 18% 85%;
-  --muted-foreground:    273 10% 36%;
+  /* 35%: passa AA (4.5:1) sobre o papel e sobre o gelo. */
+  --muted:               0 0% 94%;
+  --muted-foreground:    0 0% 35%;
 
-  --accent:              11 18% 82%;
-  --accent-foreground:   240 27% 18%;
+  --accent:              0 0% 86%;
+  --accent-foreground:   0 0% 6%;
 
-  --destructive:         0 72% 45%;
+  --destructive:         2 97% 42%;
   --destructive-foreground: 0 0% 100%;
 
-  /* 74%, entre os dois extremos ja tentados: a 78% o fio sumia, a 68% ele
-     competia com a sombra e cada card virava um retangulo desenhado. Com a
-     sombra assumindo a separacao, a borda volta a ser fio, nao moldura. */
-  --border:              20 16% 74%;
-  --input:               20 16% 74%;
-  --ring:                0 82% 42%;
+  --border:              0 0% 80%;
+  --input:               0 0% 80%;
+  --ring:                2 97% 46%;
 
-  /* Sombra QUENTE. Preto sobre bege acinzenta e a peca parece encardida —
-     a sombra precisa ser da familia do papel que ela escurece. */
-  --shadow-color:        24 35% 26%;
-  --shadow-alpha:        0.16;
+  --shadow-color:        0 0% 0%;
+  --shadow-alpha:        0.12;
 
-  /* Mesmos papeis, escurecidos para passar AA sobre o papel (#f0e9e5). */
-  --success-fg:          142 74% 26%;
-  --warning-fg:          32 90% 33%;
-  --error-fg:            0 100% 38%;
-  --info-fg:             224 76% 43%;
+  /* Bandeiras escurecidas para AA sobre o papel. */
+  --success-fg:          134 89% 26%;
+  --warning-fg:          45 100% 28%;
+  --error-fg:            2 97% 40%;
+  --info-fg:             220 91% 40%;
 
 
-  --sidebar-bg:          21 28% 92%;
-  --sidebar-bg-hover:    11 18% 85%;
-  --sidebar-text:        273 7% 46%;
-  --sidebar-text-active: 0 82% 36%;
-  --sidebar-accent:      0 82% 42%;
-  --sidebar-border:      11 18% 78%;
+  --sidebar-bg:          0 0% 100%;
+  --sidebar-bg-hover:    0 0% 91%;
+  --sidebar-text:        0 0% 35%;
+  --sidebar-text-active: 2 97% 40%;
+  --sidebar-accent:      2 97% 46%;
+  --sidebar-border:      0 0% 80%;
 }
 
 /* ─── Logo themed — inverte para dark no tema claro ────────────────────────── */
@@ -151,7 +131,7 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

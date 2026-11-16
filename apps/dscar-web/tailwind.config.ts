@@ -13,6 +13,16 @@ const config: Config = {
     extend: {
       // ─── Paleta DS Car + shadcn/ui semantic aliases ──────────────────────────
       colors: {
+        // Bandeiras do manual da marca (MIV DS Car): status de OS e destaques
+        flag: {
+          amarela:  "#ffe000",
+          azul:     "#0b53e6",
+          verde:    "#0aa52b",
+          vermelha: "#ea0e03",
+          grafite:  "#303030",
+          aluminio: "#afafaf",
+          gelo:     "#e8e8e8",
+        },
         // shadcn/ui CSS variable aliases (obrigatórios para @apply border-border, bg-background, etc.)
         background:   "hsl(var(--background))",
         foreground:   "hsl(var(--foreground))",
@@ -190,7 +200,7 @@ const config: Config = {
       // Inter: sans-serif principal — legibilidade em formulários e tabelas
       // Rajdhani: condensada técnica — usada em placas veiculares, badges de OS e números
       fontFamily: {
-        sans:  ["var(--font-montserrat)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans:  ["var(--font-outfit)", "ui-sans-serif", "system-ui", "sans-serif"],
         plate: ["var(--font-rajdhani)", "ui-sans-serif", "system-ui", "sans-serif"],
         mono:  ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
@@ -227,11 +237,13 @@ const config: Config = {
       // ─── Border Radius ───────────────────────────────────────────────────────
       borderRadius: {
         "none":  "0",
-        "sm":    "0.25rem",   // inputs internos
-        "DEFAULT":"0.375rem", // botões
-        "md":    "0.5rem",    // cards
-        "lg":    "0.75rem",   // modais, drawers
-        "xl":    "1rem",      // badges grandes
+        // Box de corrida: cantos quase retos (manual da marca, versões retas)
+        "sm":    "2px",
+        "DEFAULT":"2px",
+        "md":    "3px",
+        "lg":    "4px",
+        "xl":    "6px",
+        "2xl":   "8px",
         "full":  "9999px",    // chips de status arredondados
       },
 
