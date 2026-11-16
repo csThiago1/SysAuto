@@ -33,6 +33,7 @@ export const metadata: Metadata = {
     title: "DS Car",
   },
   icons: {
+    icon: "/icons/icon-192.png",
     apple: "/icons/apple-touch-icon.png",
   },
 };
