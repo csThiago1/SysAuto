@@ -283,7 +283,7 @@ export const MOBILE_TABS: NavItem[] = [
 ];
 
 /** Sub-rotas de fluxo onde o FAB "Nova OS" não deve aparecer. */
-export const FAB_HIDDEN_SUBPATHS = ["/recepcao", "/vistoria"];
+export const FAB_HIDDEN_SUBPATHS = ["/recepcao", "/vistoria", "/checklist"];
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 

@@ -20,14 +20,23 @@ const STATUS_OPTIONS: Array<{ value: ChecklistStatus; label: string; cls: string
   { value: "critical", label: "Crítico", cls: "bg-error-500/15 text-error-400" },
 ];
 
+// Entrada (spec 5.2): ok→presente, attention→com avaria, critical→faltando, sem migrar o enum.
+const ENTRY_LABELS: Record<Exclude<ChecklistStatus, "pending">, string> = {
+  ok: "Presente",
+  attention: "Com avaria",
+  critical: "Faltando",
+};
+
 interface ChecklistSectionProps {
   osId: string;
   checklistType: "entrada" | "saida";
+  disabled?: boolean;
 }
 
 export function ChecklistSection({
   osId,
   checklistType,
+  disabled = false,
 }: ChecklistSectionProps): React.ReactElement {
   const qc = useQueryClient();
   const queryKey = ["os-checklist", osId, checklistType];
@@ -90,7 +99,7 @@ export function ChecklistSection({
                     key={opt.value}
                     type="button"
                     aria-pressed={item.status === opt.value}
-                    disabled={upsert.isPending}
+                    disabled={disabled || upsert.isPending}
                     onClick={() =>
                       upsert.mutate({
                         category: item.category,
@@ -105,7 +114,9 @@ export function ChecklistSection({
                         : "bg-muted text-muted-foreground/60"
                     )}
                   >
-                    {opt.label}
+                    {checklistType === "entrada" && opt.value !== "pending"
+                      ? ENTRY_LABELS[opt.value]
+                      : opt.label}
                   </button>
                 ))}
               </span>

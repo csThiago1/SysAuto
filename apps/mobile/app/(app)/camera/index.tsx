@@ -190,10 +190,12 @@ export default function CameraScreen(): React.ReactElement {
         localUri: destFile.uri,
       });
 
-      // 7. Retorna para a tela de origem via navigate (troca de tab — não replace)
-      const destination = (returnTo != null && returnTo.length > 0)
+      // 7. Retorna para a tela de origem via navigate (troca de tab — não replace).
+      // returnTo com `stop` (checklist de entrada em paradas) recebe de volta o photoId capturado.
+      const back = (returnTo != null && returnTo.length > 0)
         ? returnTo
         : `/(app)/checklist/${osId ?? ''}`;
+      const destination = /[?&]stop=/.test(back) ? `${back}&photoId=${uuid}` : back;
       await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       router.navigate(destination as any);

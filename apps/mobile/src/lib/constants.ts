@@ -5,6 +5,11 @@ export const API_BASE_URL = isDev
   ? 'http://MacBook-Pro-de-Thiago.local:8000'
   : 'https://api.dscar.paddock.solutions';
 
+// ERP web (Next): serve os assets públicos do carro 3D em /car-3d/. EXPO_PUBLIC_WEB_URL sobrescreve.
+export const WEB_BASE_URL =
+  process.env.EXPO_PUBLIC_WEB_URL ??
+  (isDev ? 'http://MacBook-Pro-de-Thiago.local:3001' : 'https://dscar.paddock.solutions');
+
 export const DEFAULT_TENANT = isDev ? 'dscar.localhost' : 'dscar.paddock.solutions';
 
 /** Retorna o domínio de tenant correto para o ambiente atual. */

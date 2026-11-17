@@ -60,7 +60,9 @@ class SignatureService:
         except Exception as exc:
             raise ValidationError({"signature_png_base64": f"Base64 inválido: {exc}"})
 
-        if len(png_bytes) < 100:
+        # Aceite por link remoto não tem desenho: o hash cobre só os metadados.
+        remote_accept = method == "REMOTE_LINK" and not signature_png_base64
+        if len(png_bytes) < 100 and not remote_accept:
             raise ValidationError(
                 {"signature_png_base64": "PNG muito pequeno — assinatura inválida."},
             )
@@ -96,11 +98,10 @@ class SignatureService:
             service_order.save(update_fields=["updated_at"])
 
         logger.info(
-            "Assinatura capturada: id=%s document_type=%s method=%s signer=%s",
+            "Assinatura capturada: id=%s document_type=%s method=%s",
             signature.pk,
             document_type,
             method,
-            signer_name,
         )
         return signature
 

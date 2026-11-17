@@ -16,6 +16,19 @@ from .views import (
     ServiceOrderViewSet,
 )
 from .views.apontamento import ApontamentoGlobalListView, ApontamentoViewSet
+from .views.checklist import (
+    BudgetMatchReportView,
+    BudgetMatchView,
+    BudgetPanelRuleView,
+    ChecklistDamageViewSet,
+    CustomerBelongingViewSet,
+    EntryChecklistFinalizeView,
+    EntryChecklistHistoryView,
+    EntryChecklistReopenView,
+    EntryChecklistSendRemoteView,
+    EntryChecklistSignView,
+    EntryChecklistStateView,
+)
 
 router = DefaultRouter()
 router.register(r"", ServiceOrderViewSet, basename="service-order")
@@ -38,18 +51,68 @@ pareceres_router.register(r"", ServiceOrderParecerViewSet, basename="service-ord
 apontamento_router = SimpleRouter()
 apontamento_router.register(r"", ApontamentoViewSet, basename="apontamento")
 
+checklist_damage_router = SimpleRouter()
+checklist_damage_router.register(r"", ChecklistDamageViewSet, basename="checklist-damage")
+
+belonging_router = SimpleRouter()
+belonging_router.register(r"", CustomerBelongingViewSet, basename="belonging")
+
 urlpatterns = [
     path("dashboard/stats/", DashboardStatsView.as_view(), name="service-order-dashboard-stats"),
     path("calendar/", CalendarView.as_view(), name="service-order-calendar"),
     # vehicle-history/ é gerado automaticamente pelo router via @action no ServiceOrderViewSet
     # prefixo explícito ANTES do DefaultRouter em "" (senão vira pk)
     path("apontamentos/", ApontamentoGlobalListView.as_view(), name="apontamento-global"),
+    path("checklist/panel-rules/", BudgetPanelRuleView.as_view(), name="checklist-panel-rules"),
     path("service-catalog/", include(catalog_router.urls)),
     path("holidays/", include(holiday_router.urls)),
     path("versions/", include(versions_router.urls)),
     path("events/", include(events_router.urls)),
     path("pareceres/", include(pareceres_router.urls)),
     path("<uuid:service_order_pk>/apontamentos/", include(apontamento_router.urls)),
+    path("<uuid:service_order_pk>/checklist-damages/", include(checklist_damage_router.urls)),
+    path("<uuid:service_order_pk>/belongings/", include(belonging_router.urls)),
+    # Antes de checklist/<checklist_type>/: senão "budget-match" vira um tipo de checklist.
+    path(
+        "<uuid:service_order_pk>/checklist/budget-match/",
+        BudgetMatchView.as_view(),
+        name="checklist-budget-match",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/budget-match/report/",
+        BudgetMatchReportView.as_view(),
+        name="checklist-budget-match-report",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/",
+        EntryChecklistStateView.as_view(),
+        name="entry-checklist-state",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/history/",
+        EntryChecklistHistoryView.as_view(),
+        name="entry-checklist-history",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/finalize/",
+        EntryChecklistFinalizeView.as_view(),
+        name="entry-checklist-finalize",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/reopen/",
+        EntryChecklistReopenView.as_view(),
+        name="entry-checklist-reopen",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/sign/",
+        EntryChecklistSignView.as_view(),
+        name="entry-checklist-sign",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/send-remote/",
+        EntryChecklistSendRemoteView.as_view(),
+        name="entry-checklist-send-remote",
+    ),
     path("<uuid:service_order_pk>/payments/", include("apps.payments.urls")),
     path("", include(router.urls)),
 ]

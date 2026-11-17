@@ -34,6 +34,15 @@ export const CHECKLIST_CATALOG: CatalogItem[] = [
   { category: "interior", itemKey: "painel", label: "Painel" },
 ];
 
+/** Na entrada, lataria, vidros e iluminação são marcados no carro 3D. */
+const ENTRY_3D_CATEGORIES: ReadonlySet<string> = new Set(["bodywork", "glass", "lighting"]);
+
+export function catalogFor(checklistType: string): CatalogItem[] {
+  return checklistType === "entrada"
+    ? CHECKLIST_CATALOG.filter((c) => !ENTRY_3D_CATEGORIES.has(c.category))
+    : CHECKLIST_CATALOG;
+}
+
 export const CATEGORY_LABELS: Record<string, string> = {
   bodywork: "Lataria / Pintura",
   glass: "Vidros",
@@ -44,7 +53,8 @@ export const CATEGORY_LABELS: Record<string, string> = {
   mechanical: "Mecânico Visual",
 };
 
-/** Mescla catálogo com o estado salvo no servidor (itens fora do catálogo entram no fim). */
+/** Mescla catálogo com o estado salvo no servidor (itens fora do catálogo entram no fim,
+ *  então os registros antigos de lataria/vidros/iluminação da entrada continuam legíveis). */
 export function mergeChecklist(
   serverItems: ServerChecklistItem[],
   checklistType: string
@@ -54,11 +64,12 @@ export function mergeChecklist(
       .filter((i) => i.checklist_type === checklistType)
       .map((i) => [`${i.category}:${i.item_key}`, i])
   );
-  const merged = CHECKLIST_CATALOG.map((c) => ({
+  const catalog = catalogFor(checklistType);
+  const merged = catalog.map((c) => ({
     ...c,
     status: byKey.get(`${c.category}:${c.itemKey}`)?.status ?? ("pending" as const),
   }));
-  const catalogKeys = new Set(CHECKLIST_CATALOG.map((c) => `${c.category}:${c.itemKey}`));
+  const catalogKeys = new Set(catalog.map((c) => `${c.category}:${c.itemKey}`));
   for (const item of serverItems) {
     if (item.checklist_type !== checklistType) continue;
     const key = `${item.category}:${item.item_key}`;

@@ -14,6 +14,8 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "@paddock/types": path.resolve(__dirname, "../../packages/types/src/index.ts"),
+      "@paddock/car-3d/core": path.resolve(__dirname, "../../packages/car-3d/src/core.ts"),
+      "@paddock/car-3d": path.resolve(__dirname, "../../packages/car-3d/src/index.ts"),
     },
   },
 });

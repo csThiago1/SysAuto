@@ -29,18 +29,10 @@ import { VALID_TRANSITIONS } from '@paddock/types';
 import type { ServiceOrderStatus } from '@paddock/types';
 import { getStatusLabel, getStatusColor } from '@/components/os/OSStatusBadge';
 import { api } from '@/lib/api';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface RemotePhoto {
-  id: string;
-  url: string;
-  slot?: string;
-}
+import { parseBeforePhotos, type BeforePhoto } from '@/lib/beforePhotos';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const BEFORE_FOLDER = 'vistoria_inicial';
 const AFTER_FOLDER = 'vistoria_final';
 const CHECKLIST_TYPE = 'vistoria_final';
 
@@ -112,7 +104,7 @@ const RepairChecklist = React.memo(function RepairChecklist({
 interface ComparativeSlotProps {
   slotKey: string;
   label: string;
-  beforePhoto: RemotePhoto | undefined;
+  beforePhoto: BeforePhoto | undefined;
   afterPhoto: PhotoQueueItem | undefined;
   onAddAfter: (slotKey: string) => void;
 }
@@ -202,7 +194,7 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [observacoes, setObservacoes] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [beforePhotos, setBeforePhotos] = useState<RemotePhoto[]>([]);
+  const [beforePhotos, setBeforePhotos] = useState<BeforePhoto[]>([]);
   const [beforeLoaded, setBeforeLoaded] = useState<boolean>(false);
   const [showConcluir, setShowConcluir] = useState<boolean>(false);
 
@@ -211,14 +203,11 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
   const currentStatus = order?.status as ServiceOrderStatus | undefined;
   const nextStatuses = currentStatus != null ? (VALID_TRANSITIONS[currentStatus] ?? []) : [];
 
-  // Load before photos from API (vistoria_inicial folder)
+  // Fotos de "antes": checklist_entrada (novo) ou vistoria_inicial (OS antigas)
   React.useEffect(() => {
     if (osId == null || beforeLoaded) return;
-    void api.get<{ results?: RemotePhoto[] } | RemotePhoto[]>(
-      `/service-orders/${osId}/photos/?folder=${BEFORE_FOLDER}`,
-    ).then((data) => {
-      const photos = Array.isArray(data) ? data : (data.results ?? []);
-      setBeforePhotos(photos);
+    void api.get<unknown>(`/service-orders/${osId}/photos/`).then((data) => {
+      setBeforePhotos(parseBeforePhotos(data));
       setBeforeLoaded(true);
     }).catch(() => {
       setBeforeLoaded(true);
@@ -234,8 +223,8 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
   const showUpload = pendingCount > 0 && isOnline;
 
   // Map before photos by slot
-  const beforeBySlot = useMemo<Map<string, RemotePhoto>>(() => {
-    const map = new Map<string, RemotePhoto>();
+  const beforeBySlot = useMemo<Map<string, BeforePhoto>>(() => {
+    const map = new Map<string, BeforePhoto>();
     for (const p of beforePhotos) {
       if (p.slot != null && p.slot.length > 0) map.set(p.slot, p);
     }

@@ -27,6 +27,7 @@ from apps.service_orders.models import (
     ApontamentoHoras,
     ChecklistItem,
     ChecklistItemStatus,
+    EntryChecklist,
     OSPhotoFolder,
     ServiceOrder,
     ServiceOrderLabor,
@@ -181,6 +182,7 @@ class ServiceOrderBatch10Test(TenantTestCase):
 
     def test_01_private_soft_blocks_satisfeitos_de_verdade(self) -> None:
         order = self._create_order("BT01A11")
+        EntryChecklist.objects.create(service_order=order, finalized_at=timezone.now())
         self._add_photos(order, OSPhotoFolder.INITIAL_SURVEY, 12)
         order = self._transition(order, "initial_survey")
         order = self._transition(order, "budget")

@@ -278,9 +278,9 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
               Importar orçamento
             </Button>
             <Button asChild size="sm" className="min-h-[44px] md:min-h-0">
-              <a href={`/os/${order.number}/vistoria`}>
+              <a href={`/os/${order.number}/checklist`}>
                 <Camera className="h-3.5 w-3.5" />
-                Vistoria
+                Checklist
               </a>
             </Button>
           </div>

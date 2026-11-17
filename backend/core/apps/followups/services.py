@@ -7,6 +7,7 @@ Consumido por outros apps SEMPRE por estas funções (regra de isolamento):
 
 import logging
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from django.utils import timezone
 
@@ -17,6 +18,9 @@ from apps.followups.models import (
     FollowUpStatus,
     FollowUpTrigger,
 )
+
+if TYPE_CHECKING:
+    from apps.service_orders.models import ServiceOrder
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +72,65 @@ def schedule_for_delivery(order_id: str, delivered_at: object | None = None) -> 
         created += int(was_created)
 
     return created
+
+
+def upsert_pre_existing_damage(order: "ServiceOrder", panel_labels: list[str]) -> FollowUp | None:
+    """
+    Mantém o retorno "Oferecer orçamento particular" da OS em dia com o cruzamento.
+
+    Um retorno por OS (constraint rule+service_order), reescrito a cada cruzamento.
+    Lista vazia dispensa o retorno em aberto; nova lista reabre só o que foi
+    dispensado por lista vazia. Retorno concluído ou dispensado pelo consultor
+    não é tocado (as notes dele são histórico).
+
+    Args:
+        order: OS cruzada com o orçamento.
+        panel_labels: Rótulos das peças com dano fora do orçamento.
+
+    Returns:
+        O retorno criado/atualizado, ou None (lista vazia, opt-out ou regra inativa).
+    """
+    rule = FollowUpRule.objects.filter(
+        is_active=True, trigger_event=FollowUpTrigger.PRE_EXISTING_DAMAGE
+    ).first()
+    if rule is None:
+        return None
+
+    if not panel_labels:
+        FollowUp.objects.filter(
+            rule=rule,
+            service_order=order,
+            status__in=[FollowUpStatus.PENDING, FollowUpStatus.SCHEDULED],
+        ).update(status=FollowUpStatus.SKIPPED, completed_at=None, updated_at=timezone.now())
+        return None
+
+    if _opted_out(order):
+        logger.info("OS %s: cliente optou por não receber retornos.", order.pk)
+        return None
+
+    followup, _ = FollowUp.objects.get_or_create(
+        rule=rule,
+        service_order=order,
+        defaults={
+            "due_at": timezone.now(),
+            "channel": FollowUpChannel.TASK,
+            "assigned_to": order.consultant,
+        },
+    )
+    # ponytail: o skip automático (lista vazia) deixa completed_at vazio; skip manual
+    # e opt-out preenchem. Só o automático é reaberto.
+    if followup.status == FollowUpStatus.SKIPPED and followup.completed_at is None:
+        # Volta para a fila: dispatch_due avisa o consultor e passa para pending.
+        followup.status = FollowUpStatus.SCHEDULED
+        followup.due_at = timezone.now()
+        followup.dispatched_at = None
+    elif followup.status not in (FollowUpStatus.SCHEDULED, FollowUpStatus.PENDING):
+        # Concluído ou dispensado pelo consultor: as notes dele são histórico.
+        return followup
+
+    followup.notes = "Peças fora do orçamento: " + ", ".join(panel_labels)
+    followup.save(update_fields=["notes", "status", "due_at", "dispatched_at", "updated_at"])
+    return followup
 
 
 def dispatch(followup: FollowUp) -> bool:

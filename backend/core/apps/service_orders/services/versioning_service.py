@@ -6,7 +6,7 @@ import logging
 from decimal import Decimal
 from typing import Any
 
-from django.db import transaction
+from django.db import connection, transaction
 from rest_framework.exceptions import ValidationError
 
 from .vehicle import apply_catalog_vehicle, apply_vehicle_text
@@ -366,6 +366,16 @@ class _ServiceOrderVersioningMixin:
             ServiceOrder.objects.filter(pk=service_order.pk).update(
                 total_seguradora_oficial=new_version.total_seguradora,
             )
+
+        # Cruzamento do checklist com o orçamento novo. Cobre também o import Cilia:
+        # create_version_from_parsed aplica a 1ª versão por aqui. robust: broker fora do
+        # ar não derruba a aplicação já gravada (finalizar o checklist recruza).
+        from apps.service_orders.tasks import task_run_budget_match
+
+        order_id, schema = str(service_order.pk), connection.schema_name
+        transaction.on_commit(
+            lambda: task_run_budget_match.delay(order_id, schema), robust=True
+        )
 
         return new_version
 

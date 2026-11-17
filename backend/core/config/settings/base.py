@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from celery.schedules import crontab
-from decouple import config
+from decouple import Csv, config
 
 # ─── Caminhos ────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -392,6 +392,10 @@ RESEND_API_KEY = config("RESEND_API_KEY", default="")
 EMAIL_FROM = config("EMAIL_FROM", default="noreply@paddock.solutions")
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3001")
 
+# ─── Checklist 3D ────────────────────────────────────────────────────────────
+# Schemas que podem usar modelos 3D CC BY-NC-SA (uso não comercial, com crédito).
+CAR3D_NC_TENANTS = config("CAR3D_NC_TENANTS", default="tenant_dscar", cast=Csv())
+
 # ─── Cilia Web Service ───────────────────────────────────────────────────────
 CILIA_BASE_URL = config("CILIA_BASE_URL", default="https://sistema.cilia.com.br")
 CILIA_AUTH_TOKEN = config("CILIA_AUTH_TOKEN", default="")
@@ -422,3 +426,8 @@ if FOCUS_NFE_AMBIENTE == "producao" and DEBUG:
     from django.core.exceptions import ImproperlyConfigured  # noqa: E402
 
     raise ImproperlyConfigured("FOCUS_NFE_AMBIENTE=producao não é permitido quando DEBUG=True.")
+
+# ─── Proxy do Next (/api/proxy) ───────────────────────────────────────────────
+# Mesmo valor no web (PROXY_SHARED_SECRET). Com ele o Django aceita o X-Client-IP
+# que o proxy repassa (IP do aparelho na assinatura). Vazio = usa REMOTE_ADDR.
+PROXY_SHARED_SECRET = config("PROXY_SHARED_SECRET", default="")

@@ -1,0 +1,107 @@
+{% extends "pdf_engine/base.html" %}
+
+{% block title %}Cruzamento Checklist x Orçamento — OS #{{ order.number }}{% endblock %}
+
+{% block extra_styles %}
+        body { font-family: Montserrat, Arial, sans-serif; }
+        .ck-header {
+            background: #000;
+            color: #fff;
+            padding: 10px 14px;
+            border-bottom: 4px solid #ea0e03;
+            margin-bottom: 16px;
+        }
+        .ck-header table { margin: 0; }
+        .ck-header td { border: none; color: #fff; padding: 0; vertical-align: middle; }
+        .ck-header tr:nth-child(even) { background: transparent; }
+        .ck-header img { height: 38px; width: auto; }
+        .ck-header h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.04em; }
+        .ck-header p { margin: 2px 0 0; font-size: 9px; color: #ccc; }
+        .section-title { border-bottom: 2px solid #ea0e03; }
+        .seal { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 8px; font-weight: 700; text-transform: uppercase; }
+        .seal-no_orcamento { background: #e6f4ea; color: #1e6b34; }
+        .seal-fora_do_orcamento { background: #fdecea; color: #ea0e03; }
+        .seal-sem_orcamento { background: #eee; color: #555; }
+        .divergent { color: #ea0e03; font-weight: 700; }
+        .damages tr { page-break-inside: avoid; }
+{% endblock %}
+
+{% block doc_header %}
+<div class="ck-header">
+    <table>
+        <tr>
+            {% if logo_base64 %}<td style="width: 110px;"><img src="{{ logo_base64 }}" alt="DS Car" /></td>{% endif %}
+            <td>
+                <h1>CRUZAMENTO CHECKLIST x ORÇAMENTO</h1>
+                <p>{{ company.razao_social|default:"DS Car Centro Automotivo" }}{% if company.cnpj_formatted %} · CNPJ {{ company.cnpj_formatted }}{% endif %}</p>
+            </td>
+            <td class="right">
+                <h1>OS #{{ order.number }}</h1>
+                <p>{{ location_date }}</p>
+            </td>
+        </tr>
+    </table>
+</div>
+{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">01</span>Veículo</h2>
+        <div class="info-grid">
+            <div class="info-row">
+                <span class="info-label">Cliente</span>
+                <span class="info-value bold">{{ order.customer_name|default:"—" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Veículo</span>
+                <span class="info-value bold">{{ vehicle.make }} {{ vehicle.model }}{% if vehicle.color %} — {{ vehicle.color }}{% endif %}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Placa / Ano</span>
+                <span class="info-value bold">{{ vehicle.plate|default:"—" }} · {{ vehicle.year|default:"—" }}</span>
+            </div>
+        </div>
+        <p class="muted">Relatório calculado a partir do orçamento atual. Não altera o checklist de entrada assinado.</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">02</span>Danos da Entrada</h2>
+        {% if damages %}
+        <table class="damages">
+            <thead>
+                <tr>
+                    <th style="width: 26px;">Nº</th>
+                    <th>Peça</th>
+                    <th>Cruzamento</th>
+                    <th>Relação declarada</th>
+                    <th>Itens do orçamento</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in damages %}
+                <tr>
+                    <td class="bold">{{ d.number }}</td>
+                    <td>{{ d.panel }}</td>
+                    <td><span class="seal seal-{{ d.budget_match }}">{{ d.budget_match_label }}</span></td>
+                    <td{% if d.divergent %} class="divergent"{% endif %}>{{ d.relation }}{% if d.divergent %} · diverge{% endif %}</td>
+                    <td>{{ d.items|join:", "|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="muted">Nenhum dano registrado na entrada.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">03</span>Itens do Orçamento Não Mapeados</h2>
+        {% if unmapped %}
+        <ul class="check-list">
+            {% for description in unmapped %}<li>{{ description }}</li>{% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted">Todos os itens do orçamento foram ligados a uma peça.</p>
+        {% endif %}
+    </div>
+{% endblock %}

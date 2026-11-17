@@ -212,6 +212,8 @@ export async function uploadPendingPhotos(): Promise<void> {
           body.append('slot', slot);
           body.append('checklist_type', checklistType);
           body.append('caption', observation ?? '');
+          // Danos/pertences do checklist referenciam a foto por este uuid (photo_client_uuids)
+          body.append('client_uuid', id);
 
           const response = await fetch(url, {
             method: 'POST',

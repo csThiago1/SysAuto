@@ -22,6 +22,7 @@ class FollowUpTrigger(models.TextChoices):
     """Evento que dispara o agendamento."""
 
     OS_DELIVERED = "delivered", _("OS entregue")
+    PRE_EXISTING_DAMAGE = "pre_existing_damage", _("Dano fora do orçamento")
 
 
 class FollowUpChannel(models.TextChoices):

@@ -30,6 +30,9 @@
       ],
       "@paddock/utils": [
         "../../packages/utils/src"
+      ],
+      "@paddock/car-3d": [
+        "../../packages/car-3d/src"
       ]
     },
     "target": "ES2017"

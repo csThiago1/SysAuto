@@ -84,6 +84,18 @@ def _make_order(**kwargs) -> MagicMock:
     _fiscal_docs.filter.return_value.exists.return_value = False
     order.fiscal_documents = _fiscal_docs
 
+    _entry_checklists = MagicMock()
+    _entry_checklists.filter.return_value.exists.return_value = kwargs.get(
+        "has_finalized_entry_checklist", True
+    )
+    order.entry_checklists = _entry_checklists
+
+    _belongings = MagicMock()
+    _belongings.filter.return_value.exists.return_value = kwargs.get(
+        "has_unreturned_belongings", False
+    )
+    order.belongings = _belongings
+
     return order
 
 
@@ -319,6 +331,80 @@ class TestValidateToInitialSurvey:
         # Deve ter warnings mas nenhum hard ou soft block
         assert len(result.warnings) > 0
         assert result.can_proceed is True
+
+
+# ── TestEntryChecklistRequirement ─────────────────────────────────────────────
+
+
+class TestEntryChecklistRequirement:
+    def test_initial_survey_soft_blocks_without_finalized_checklist(self) -> None:
+        """Sem checklist de entrada finalizado → soft block (override de MANAGER)."""
+        order = _make_order(has_finalized_entry_checklist=False)
+        result = TransitionValidator.validate(order, "initial_survey")
+        assert (
+            ValidationBlock(code="ENTRY_CHECKLIST", message="Checklist de entrada não finalizado")
+            in result.soft_blocks
+        )
+        assert "ENTRY_CHECKLIST" not in [b.code for b in result.hard_blocks]
+        assert result.can_proceed is False
+        order.entry_checklists.filter.assert_called_with(
+            checklist_type="entrada", finalized_at__isnull=False, is_active=True
+        )
+
+    def test_initial_survey_ok_with_finalized_checklist(self) -> None:
+        order = _make_order(has_finalized_entry_checklist=True)
+        result = TransitionValidator.validate(order, "initial_survey")
+        assert result.soft_blocks == []
+        assert result.can_proceed is True
+
+    def test_signature_pending_never_blocks(self) -> None:
+        """Checklist finalizado com assinatura pendente não gera nenhum bloco de assinatura."""
+        checklist = MagicMock(finalized_at="2026-11-09T10:00:00Z", signature_status="pendente")
+        order = _make_order()
+
+        def _filter(**kwargs: object) -> MagicMock:
+            qs = MagicMock()
+            # Só "existe" se o filtro ignorar a assinatura, como deve.
+            qs.exists.return_value = "signature_status" not in kwargs and bool(
+                checklist.finalized_at
+            )
+            return qs
+
+        order.entry_checklists.filter.side_effect = _filter
+        result = TransitionValidator.validate(order, "initial_survey")
+        all_codes = [b.code for b in result.hard_blocks + result.soft_blocks + result.warnings]
+        assert not [c for c in all_codes if "SIGN" in c]
+        assert result.can_proceed is True
+
+    @patch.object(TransitionValidator, "_has_fiscal_document", return_value=True)
+    @patch.object(TransitionValidator, "_has_signature", return_value=True)
+    @patch.object(TransitionValidator, "_has_receivables", return_value=True)
+    @patch.object(TransitionValidator, "_complement_all_billed", return_value=True)
+    def test_delivered_warns_unreturned_belongings(
+        self, mock_comp, mock_recv, mock_sig, mock_nf
+    ) -> None:
+        """Pertence ativo sem devolução → aviso, não bloqueio."""
+        order = _make_order(status="ready", mileage_out=55000, has_unreturned_belongings=True)
+        result = TransitionValidator.validate(order, "delivered")
+        assert (
+            ValidationBlock(
+                code="BELONGINGS_NOT_RETURNED", message="Há pertences do cliente não devolvidos"
+            )
+            in result.warnings
+        )
+        assert result.can_proceed is True
+        order.belongings.filter.assert_called_with(is_active=True, returned_at__isnull=True)
+
+    @patch.object(TransitionValidator, "_has_fiscal_document", return_value=True)
+    @patch.object(TransitionValidator, "_has_signature", return_value=True)
+    @patch.object(TransitionValidator, "_has_receivables", return_value=True)
+    @patch.object(TransitionValidator, "_complement_all_billed", return_value=True)
+    def test_delivered_no_warning_when_belongings_returned(
+        self, mock_comp, mock_recv, mock_sig, mock_nf
+    ) -> None:
+        order = _make_order(status="ready", mileage_out=55000, has_unreturned_belongings=False)
+        result = TransitionValidator.validate(order, "delivered")
+        assert "BELONGINGS_NOT_RETURNED" not in [w.code for w in result.warnings]
 
 
 # ── TestValidateToBudget ──────────────────────────────────────────────────────

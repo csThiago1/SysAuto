@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { api } from '@/lib/api';
+import { z } from 'zod';
+import { api, ApiError } from '@/lib/api';
 
 // ─── MMKV storage (mesmo padrão do photo.store) ───────────────────────────────
 
@@ -80,6 +81,9 @@ interface ChecklistItemsState {
     checklistType: string,
   ): { ok: number; attention: number; critical: number; pending: number; total: number };
 
+  /** OS cujo checklist o backend recusou com 409 checklist_locked: não reenvia mais. */
+  locked: Record<string, true>;
+
   /** Remove todos os itens de uma OS (ex: ao trocar de tenant) */
   clearOS(osId: string): void;
 }
@@ -88,6 +92,7 @@ export const useChecklistItemsStore = create<ChecklistItemsState>()(
   persist(
     (set, get) => ({
       items: {},
+      locked: {},
 
       setItemStatus(osId, checklistType, category, itemKey, status) {
         const key = buildKey(osId, checklistType, category, itemKey);
@@ -140,7 +145,8 @@ export const useChecklistItemsStore = create<ChecklistItemsState>()(
               next[k] = v;
             }
           }
-          return { items: next };
+          const { [osId]: _removed, ...locked } = state.locked;
+          return { items: next, locked };
         });
       },
     }),
@@ -153,6 +159,8 @@ export const useChecklistItemsStore = create<ChecklistItemsState>()(
 
 // ─── Upload (sync offline → backend) ─────────────────────────────────────────
 
+const LockedBodySchema = z.object({ code: z.string().optional() });
+
 interface ChecklistItemPayload {
   checklist_type: string;
   category: string;
@@ -164,9 +172,11 @@ interface ChecklistItemPayload {
 /**
  * Sincroniza todos os itens de uma OS com o backend.
  * Chama o endpoint bulk upsert — idempotente, seguro para reenviar.
+ * 409 checklist_locked é definitivo (como no entry-checklist.store): devolve 'locked' e não tenta de novo.
  */
-export async function syncChecklistItems(osId: string): Promise<void> {
-  const { items } = useChecklistItemsStore.getState();
+export async function syncChecklistItems(osId: string): Promise<'synced' | 'locked'> {
+  const { items, locked } = useChecklistItemsStore.getState();
+  if (locked[osId]) return 'locked';
   const prefix = `${osId}:`;
 
   const payload: ChecklistItemPayload[] = [];
@@ -185,7 +195,15 @@ export async function syncChecklistItems(osId: string): Promise<void> {
     });
   }
 
-  if (payload.length === 0) return;
+  if (payload.length === 0) return 'synced';
 
-  await api.post(`/service-orders/${osId}/checklist-items/bulk/`, { items: payload });
+  try {
+    await api.post(`/service-orders/${osId}/checklist-items/bulk/`, { items: payload });
+  } catch (err: unknown) {
+    const code = err instanceof ApiError && err.status === 409 ? LockedBodySchema.safeParse(err.data).data?.code : undefined;
+    if (code !== 'checklist_locked') throw err;
+    useChecklistItemsStore.setState((s) => ({ locked: { ...s.locked, [osId]: true } }));
+    return 'locked';
+  }
+  return 'synced';
 }
