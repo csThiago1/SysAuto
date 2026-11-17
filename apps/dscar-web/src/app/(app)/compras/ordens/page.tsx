@@ -13,6 +13,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { formatDate, formatCurrency } from "@paddock/utils"
 import { ScrollFade } from "@/components/ui/scroll-fade"
 import { cn } from "@/lib/utils"
@@ -135,13 +137,13 @@ function NovaOCDialog({
           Informe o numero da OS para criar uma nova OC vinculada.
         </p>
         <div>
-          <input
+          <Input
             type="text"
             placeholder="Numero da OS (ex: 42)"
             data-testid="nova-oc-os-input"
             value={osInput}
             onChange={(e) => { setOsInput(e.target.value); setError("") }}
-            className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border"
+            className="w-full"
           />
           {error && (
             <p className="mt-1 text-xs text-error-400">{error}</p>
@@ -221,7 +223,7 @@ export default function OrdensCompraPage() {
               <Link
                 key={oc.id}
                 href={`/compras/ordens/${oc.id}`}
-                className="relative block rounded-[11px] bg-card px-3 py-2.5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98] hover:bg-primary/5"
+                className="relative block rounded-md bg-card px-3 py-2.5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98] hover:bg-primary/5"
               >
                 <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", cfg.dot)} />
 
@@ -262,82 +264,82 @@ export default function OrdensCompraPage() {
       {/* ── Table ── */}
       <div className="hidden md:block rounded-md border border-border bg-muted/50">
         <ScrollFade>
-        <table className="w-full">
-          <thead>
-            <tr className="bg-muted/30 border-b border-border">
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Numero</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">OS</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Status</th>
-              <th className="label-mono text-muted-foreground text-right px-4 py-3">Valor Total</th>
-              <th className="label-mono text-muted-foreground text-center px-4 py-3">Itens</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Criado por</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Data</th>
-              <th className="label-mono text-muted-foreground text-center px-4 py-3">PDF</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/30 border-border">
+              <TableHead className="py-3">Numero</TableHead>
+              <TableHead className="py-3">OS</TableHead>
+              <TableHead className="py-3">Status</TableHead>
+              <TableHead className="text-right py-3">Valor Total</TableHead>
+              <TableHead className="text-center py-3">Itens</TableHead>
+              <TableHead className="py-3">Criado por</TableHead>
+              <TableHead className="py-3">Data</TableHead>
+              <TableHead className="text-center py-3">PDF</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {isLoading ? (
               [...Array(5)].map((_, i) => (
-                <tr key={i} className="border-b border-white/5">
+                <TableRow key={i} className="border-white/5">
                   {[...Array(8)].map((__, j) => (
-                    <td key={j} className="px-4 py-3">
+                    <TableCell key={j}>
                       <div className="h-4 bg-muted/50 rounded animate-pulse w-20" />
-                    </td>
+                    </TableCell>
                   ))}
-                </tr>
+                </TableRow>
               ))
             ) : !ordens?.length ? (
-              <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-muted-foreground text-sm">
+              <TableRow>
+                <TableCell colSpan={8} className="py-10 text-center text-muted-foreground text-sm">
                   Nenhuma ordem de compra encontrada.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               ordens.map((oc: OrdemCompra) => (
-                <tr
+                <TableRow
                   key={oc.id}
-                  className="border-b border-white/5 hover:bg-muted/30 cursor-pointer transition-colors"
+                  className="border-white/5 cursor-pointer"
                 >
-                  <td className="px-4 py-3">
+                  <TableCell>
                     <Link
                       href={`/compras/ordens/${oc.id}`}
                       className="font-mono text-sm text-primary font-medium hover:underline"
                     >
                       {oc.numero}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <Link
                       href={`/os/${oc.os_number}`}
                       className="font-mono text-sm text-primary/70 hover:text-primary hover:underline"
                     >
                       {oc.os_number ? `#${oc.os_number}` : "--"}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <StatusBadge status={oc.status} />
-                  </td>
-                  <td className="px-4 py-3 text-right">
+                  </TableCell>
+                  <TableCell className="text-right">
                     <span className="font-mono text-sm text-foreground/70">
                       {formatCurrency(oc.valor_total)}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
+                  </TableCell>
+                  <TableCell className="text-center">
                     <span className="font-mono text-sm text-muted-foreground">
                       {oc.total_itens}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <span className="text-sm text-muted-foreground">
                       {oc.criado_por_nome || "--"}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <span className="text-xs text-muted-foreground font-mono">
                       {formatDate(oc.created_at)}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
+                  </TableCell>
+                  <TableCell className="text-center">
                     <a
                       href={`/api/proxy/purchasing/ordens-compra/${oc.id}/pdf/`}
                       target="_blank"
@@ -349,12 +351,12 @@ export default function OrdensCompraPage() {
                     >
                       <FileText size={14} />
                     </a>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
         </ScrollFade>
       </div>
 

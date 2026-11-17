@@ -51,8 +51,24 @@ _DEV_ACCESS_CODE = "paddock" + "123"
 # ─── Rate limit for auth endpoints ─────────────────────────────────────────────
 
 class AuthRateThrottle(AnonRateThrottle):
-    """5 requests/min per IP for auth endpoints."""
+    """5 tentativas/min por e-mail (ou por IP, quando não há e-mail).
+
+    O login chega pelo servidor da Vercel: para o backend, a empresa inteira
+    tem um IP só. Por IP — e com o escopo "anon", o mesmo do throttle padrão —
+    5 requisições anônimas quaisquer (ex.: refresh) travavam o login de todos.
+    """
+
+    scope = "auth"
     rate = "5/minute"
+
+    def get_cache_key(self, request: Request, view: APIView) -> str:
+        email = str(request.data.get("email", "") or "").strip().lower()
+        ident = (
+            hashlib.sha256(email.encode()).hexdigest()
+            if email
+            else self.get_ident(request)
+        )
+        return self.cache_format % {"scope": self.scope, "ident": ident}
 
 
 # ─── Helper: resolve user + permissions ─────────────────────────────────────────
@@ -223,6 +239,11 @@ class LoginView(APIView):
 
 # ─── RefreshView ─────────────────────────────────────────────────────────────
 
+# 24h, não segundos: toda resposta do proxy regrava o cookie, e uma request lenta
+# (upload, PDF) pode devolver o refresh anterior DEPOIS da rotação.
+ROTATION_GRACE = datetime.timedelta(hours=24)
+
+
 class RefreshView(APIView):
     """
     POST /api/v1/auth/refresh/
@@ -234,6 +255,10 @@ class RefreshView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes: list = []
+    # Sem throttle: exige refresh token assinado. No padrão "anon" (20/min por IP,
+    # e a Vercel é um IP só) as renovações da empresa toda disputavam a mesma cota
+    # e as que estouravam derrubavam a sessão de quem estava usando.
+    throttle_classes: list = []
 
     @extend_schema(
         request=RefreshRequestSerializer,
@@ -271,9 +296,10 @@ class RefreshView(APIView):
 
         # Find stored token by hash
         token_hash = hashlib.sha256(raw_refresh.encode()).hexdigest()
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
         try:
             stored = RefreshToken.objects.select_related("user").get(
-                token_hash=token_hash, is_revoked=False
+                token_hash=token_hash, is_revoked=False, expires_at__gt=now
             )
         except RefreshToken.DoesNotExist:
             return Response(
@@ -281,9 +307,14 @@ class RefreshView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        # Revoke old token (rotation)
-        stored.is_revoked = True
-        stored.save(update_fields=["is_revoked"])
+        # Rotação com tolerância: o token usado ainda vale ROTATION_GRACE. A
+        # página, o /api/auth/session e o proxy renovam juntos ao reabrir o app,
+        # às vezes em instâncias diferentes da Vercel, com o MESMO refresh;
+        # revogando na hora, só o primeiro passava e os outros deslogavam.
+        # Logout (LogoutView) e reset de senha revogam de verdade (is_revoked).
+        if stored.expires_at > now + ROTATION_GRACE:
+            stored.expires_at = now + ROTATION_GRACE
+            stored.save(update_fields=["expires_at"])
 
         user = stored.user
         if not user.is_active:
@@ -294,6 +325,29 @@ class RefreshView(APIView):
 
         logger.info("Token refresh para user_id=%s", user.pk)
         return Response(_issue_tokens(user))
+
+
+class LogoutView(APIView):
+    """
+    POST /api/v1/auth/logout/ — revoga o refresh token desta sessão.
+
+    Chamado pelo servidor do front no signOut (events.signOut do next-auth),
+    com o refresh que vive só no cookie criptografado. Sempre 204: logout
+    não revela se o token existia.
+    Body: {"refresh_token": "<jwt>"}
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+    throttle_classes: list = []
+
+    def post(self, request: Request) -> Response:
+        """Revoga o refresh informado (idempotente)."""
+        raw: str = str(request.data.get("refresh_token", "") or "").strip()
+        if raw:
+            token_hash = hashlib.sha256(raw.encode()).hexdigest()
+            RefreshToken.objects.filter(token_hash=token_hash).update(is_revoked=True)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # ─── MeView ──────────────────────────────────────────────────────────────────

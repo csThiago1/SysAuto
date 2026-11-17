@@ -89,7 +89,7 @@ export function SignatureSection({
   const signed = !sign && (signatures ?? []).length > 0;
 
   return (
-    <div className="rounded-[11px] bg-card px-3 py-2.5">
+    <div className="rounded-md bg-card px-3 py-2.5">
       {signed ? (
         <p className="flex items-center gap-2 text-sm text-success-400">
           <CheckCircle2 className="h-4 w-4" />

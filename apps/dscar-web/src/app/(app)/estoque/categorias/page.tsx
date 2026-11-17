@@ -23,15 +23,12 @@ import {
   useCategoriaInsumoUpdate,
   useCategoriaInsumoDelete,
 } from "@/hooks/useInventoryProduct"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 // ─── Input class tokens ─────────────────────────────────────────────────────
 
-const INPUT_CLS =
-  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-
-// ─── Tab type ────────────────────────────────────────────────────────────────
-
-type Tab = "tipos" | "cat_produto" | "cat_insumo"
 
 // ─── TipoPeca Tab ────────────────────────────────────────────────────────────
 
@@ -124,35 +121,32 @@ function TiposPecaTab() {
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 CÓDIGO
               </label>
-              <input
+              <Input
                 value={form.codigo}
                 onChange={(e) => setForm((f) => ({ ...f, codigo: e.target.value }))}
                 placeholder="EX: PRC"
-                className={INPUT_CLS}
               />
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 NOME
               </label>
-              <input
+              <Input
                 value={form.nome}
                 onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
                 placeholder="Procura"
-                className={INPUT_CLS}
               />
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 ORDEM
               </label>
-              <input
+              <Input
                 type="number"
                 value={form.ordem}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, ordem: Number(e.target.value) }))
                 }
-                className={INPUT_CLS}
               />
             </div>
           </div>
@@ -184,53 +178,51 @@ function TiposPecaTab() {
         </div>
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border">
+                <TableHead className="py-2.5">
                   CÓDIGO
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left">
+                </TableHead>
+                <TableHead className="py-2.5">
                   NOME
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left">
+                </TableHead>
+                <TableHead className="py-2.5">
                   ORDEM
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-right">
+                </TableHead>
+                <TableHead className="py-2.5 text-right">
                   AÇÕES
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {items.map((item) =>
                 editingId === item.id ? (
-                  <tr
+                  <TableRow
                     key={item.id}
-                    className="border-b border-white/5 bg-muted/30"
+                    className="border-white/5 bg-muted/30"
                   >
-                    <td className="px-4 py-2">
-                      <input
+                    <TableCell className="py-2">
+                      <Input
                         value={editForm.codigo}
                         onChange={(e) =>
                           setEditForm((f) => ({ ...f, codigo: e.target.value }))
                         }
                         onKeyDown={handleEditKeyDown}
-                        className={INPUT_CLS}
                         autoFocus
                       />
-                    </td>
-                    <td className="px-4 py-2">
-                      <input
+                    </TableCell>
+                    <TableCell className="py-2">
+                      <Input
                         value={editForm.nome}
                         onChange={(e) =>
                           setEditForm((f) => ({ ...f, nome: e.target.value }))
                         }
                         onKeyDown={handleEditKeyDown}
-                        className={INPUT_CLS}
                       />
-                    </td>
-                    <td className="px-4 py-2">
-                      <input
+                    </TableCell>
+                    <TableCell className="py-2">
+                      <Input
                         type="number"
                         value={editForm.ordem}
                         onChange={(e) =>
@@ -240,10 +232,9 @@ function TiposPecaTab() {
                           }))
                         }
                         onKeyDown={handleEditKeyDown}
-                        className={INPUT_CLS}
                       />
-                    </td>
-                    <td className="px-4 py-2 text-right">
+                    </TableCell>
+                    <TableCell className="py-2 text-right">
                       <div className="flex justify-end gap-1">
                         <button
                           type="button"
@@ -261,23 +252,23 @@ function TiposPecaTab() {
                           <X className="h-4 w-4" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
-                  <tr
+                  <TableRow
                     key={item.id}
-                    className="border-b border-white/5 hover:bg-muted/30 transition-colors"
+                    className="border-white/5"
                   >
-                    <td className="px-4 py-2.5 font-mono text-sm text-foreground/70">
+                    <TableCell className="py-2.5 font-mono text-sm text-foreground/70">
                       {item.codigo}
-                    </td>
-                    <td className="px-4 py-2.5 text-sm text-foreground">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-sm text-foreground">
                       {item.nome}
-                    </td>
-                    <td className="px-4 py-2.5 text-sm text-foreground/60">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-sm text-foreground/60">
                       {item.ordem}
-                    </td>
-                    <td className="px-4 py-2.5 text-right">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-right">
                       <div className="flex justify-end gap-1">
                         <button
                           type="button"
@@ -294,12 +285,12 @@ function TiposPecaTab() {
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>
@@ -441,49 +432,45 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 CÓDIGO
               </label>
-              <input
+              <Input
                 value={form.codigo}
                 onChange={(e) => setForm((f) => ({ ...f, codigo: e.target.value }))}
                 placeholder="EX: MOT"
-                className={INPUT_CLS}
               />
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 NOME
               </label>
-              <input
+              <Input
                 value={form.nome}
                 onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
                 placeholder="Motor"
-                className={INPUT_CLS}
               />
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 MARGEM %
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.01"
                 value={form.margem_padrao_pct}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, margem_padrao_pct: e.target.value }))
                 }
-                className={INPUT_CLS}
               />
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 ORDEM
               </label>
-              <input
+              <Input
                 type="number"
                 value={form.ordem}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, ordem: Number(e.target.value) }))
                 }
-                className={INPUT_CLS}
               />
             </div>
           </div>
@@ -515,35 +502,35 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
         </div>
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border">
+                <TableHead className="py-2.5">
                   CÓDIGO
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left">
+                </TableHead>
+                <TableHead className="py-2.5">
                   NOME
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left">
+                </TableHead>
+                <TableHead className="py-2.5">
                   MARGEM %
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left">
+                </TableHead>
+                <TableHead className="py-2.5">
                   ORDEM
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-right">
+                </TableHead>
+                <TableHead className="py-2.5 text-right">
                   AÇÕES
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {items.map((item) =>
                 editingId === item.id ? (
-                  <tr
+                  <TableRow
                     key={item.id}
-                    className="border-b border-white/5 bg-muted/30"
+                    className="border-white/5 bg-muted/30"
                   >
-                    <td className="px-4 py-2">
-                      <input
+                    <TableCell className="py-2">
+                      <Input
                         value={editForm.codigo}
                         onChange={(e) =>
                           setEditForm((f) => ({
@@ -552,22 +539,20 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
                           }))
                         }
                         onKeyDown={handleEditKeyDown}
-                        className={INPUT_CLS}
                         autoFocus
                       />
-                    </td>
-                    <td className="px-4 py-2">
-                      <input
+                    </TableCell>
+                    <TableCell className="py-2">
+                      <Input
                         value={editForm.nome}
                         onChange={(e) =>
                           setEditForm((f) => ({ ...f, nome: e.target.value }))
                         }
                         onKeyDown={handleEditKeyDown}
-                        className={INPUT_CLS}
                       />
-                    </td>
-                    <td className="px-4 py-2">
-                      <input
+                    </TableCell>
+                    <TableCell className="py-2">
+                      <Input
                         type="number"
                         step="0.01"
                         value={editForm.margem_padrao_pct}
@@ -578,11 +563,10 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
                           }))
                         }
                         onKeyDown={handleEditKeyDown}
-                        className={INPUT_CLS}
                       />
-                    </td>
-                    <td className="px-4 py-2">
-                      <input
+                    </TableCell>
+                    <TableCell className="py-2">
+                      <Input
                         type="number"
                         value={editForm.ordem}
                         onChange={(e) =>
@@ -592,10 +576,9 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
                           }))
                         }
                         onKeyDown={handleEditKeyDown}
-                        className={INPUT_CLS}
                       />
-                    </td>
-                    <td className="px-4 py-2 text-right">
+                    </TableCell>
+                    <TableCell className="py-2 text-right">
                       <div className="flex justify-end gap-1">
                         <button
                           type="button"
@@ -613,26 +596,26 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
                           <X className="h-4 w-4" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
-                  <tr
+                  <TableRow
                     key={item.id}
-                    className="border-b border-white/5 hover:bg-muted/30 transition-colors"
+                    className="border-white/5"
                   >
-                    <td className="px-4 py-2.5 font-mono text-sm text-foreground/70">
+                    <TableCell className="py-2.5 font-mono text-sm text-foreground/70">
                       {item.codigo}
-                    </td>
-                    <td className="px-4 py-2.5 text-sm text-foreground">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-sm text-foreground">
                       {item.nome}
-                    </td>
-                    <td className="px-4 py-2.5 font-mono text-sm text-foreground/70">
+                    </TableCell>
+                    <TableCell className="py-2.5 font-mono text-sm text-foreground/70">
                       {item.margem_padrao_pct}%
-                    </td>
-                    <td className="px-4 py-2.5 text-sm text-foreground/60">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-sm text-foreground/60">
                       {item.ordem}
-                    </td>
-                    <td className="px-4 py-2.5 text-right">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-right">
                       <div className="flex justify-end gap-1">
                         <button
                           type="button"
@@ -649,12 +632,12 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>
@@ -776,8 +759,6 @@ function CategoriaInsumoTab() {
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
 export default function CategoriasPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("tipos")
-
   return (
     <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Header */}
@@ -793,47 +774,17 @@ export default function CategoriasPage() {
         </div>
       </div>
 
-      {/* Tab bar */}
-      <div className="flex gap-0 border-b border-border">
-        <button
-          type="button"
-          className={`px-4 py-2.5 text-sm transition-colors ${
-            activeTab === "tipos"
-              ? "text-foreground border-b-2 border-primary font-medium"
-              : "text-muted-foreground hover:text-foreground/60"
-          }`}
-          onClick={() => setActiveTab("tipos")}
-        >
-          Tipos de Peça
-        </button>
-        <button
-          type="button"
-          className={`px-4 py-2.5 text-sm transition-colors ${
-            activeTab === "cat_produto"
-              ? "text-foreground border-b-2 border-primary font-medium"
-              : "text-muted-foreground hover:text-foreground/60"
-          }`}
-          onClick={() => setActiveTab("cat_produto")}
-        >
-          Categorias de Produto
-        </button>
-        <button
-          type="button"
-          className={`px-4 py-2.5 text-sm transition-colors ${
-            activeTab === "cat_insumo"
-              ? "text-foreground border-b-2 border-primary font-medium"
-              : "text-muted-foreground hover:text-foreground/60"
-          }`}
-          onClick={() => setActiveTab("cat_insumo")}
-        >
-          Categorias de Insumo
-        </button>
-      </div>
+      <Tabs variant="underline" defaultValue="tipos" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="tipos">Tipos de Peça</TabsTrigger>
+          <TabsTrigger value="cat_produto">Categorias de Produto</TabsTrigger>
+          <TabsTrigger value="cat_insumo">Categorias de Insumo</TabsTrigger>
+        </TabsList>
 
-      {/* Tab content */}
-      {activeTab === "tipos" && <TiposPecaTab />}
-      {activeTab === "cat_produto" && <CategoriaProdutoTab />}
-      {activeTab === "cat_insumo" && <CategoriaInsumoTab />}
+        <TabsContent value="tipos" className="mt-0"><TiposPecaTab /></TabsContent>
+        <TabsContent value="cat_produto" className="mt-0"><CategoriaProdutoTab /></TabsContent>
+        <TabsContent value="cat_insumo" className="mt-0"><CategoriaInsumoTab /></TabsContent>
+      </Tabs>
     </div>
   )
 }

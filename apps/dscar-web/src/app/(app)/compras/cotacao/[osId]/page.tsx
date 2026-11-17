@@ -13,6 +13,7 @@ import {
   useAprovacoes,
   useEnviarParaAprovacao,
 } from "@/hooks/usePurchasing"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import type { StatusPedidoCompra } from "@paddock/types"
 import type { AprovacaoCotacao, PedidoCompra, RespostaCotacao } from "@/hooks/usePurchasing"
 import { QuotationBuilder } from "@/components/purchasing/QuotationBuilder"
@@ -62,30 +63,30 @@ function ComparativoTable({
 
   return (
     <ScrollFade>
-      <table className="w-full text-xs">
-        <thead>
-          <tr className="border-b border-border">
-            <th className="label-mono text-muted-foreground text-left px-3 py-2">Peca</th>
+      <Table className="text-xs">
+        <TableHeader>
+          <TableRow className="border-border">
+            <TableHead className="px-3 py-2">Peca</TableHead>
             {uniqueSuppliers.map((s) => (
-              <th key={s.id} className="label-mono text-muted-foreground text-left px-3 py-2">
+              <TableHead key={s.id} className="px-3 py-2">
                 {s.name}
-              </th>
+              </TableHead>
             ))}
-          </tr>
-        </thead>
-        <tbody>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {pedidos.map((p) => (
-            <tr key={p.id} className="border-b border-white/5">
-              <td className="px-3 py-2">
+            <TableRow key={p.id} className="border-white/5">
+              <TableCell className="px-3 py-2">
                 <p className="text-foreground/80">{p.descricao}</p>
                 {p.codigo_referencia && (
                   <p className="text-muted-foreground font-mono">{p.codigo_referencia}</p>
                 )}
-              </td>
+              </TableCell>
               {uniqueSuppliers.map((s) => {
                 const resp = respostas.find((r) => r.pedido_compra === p.id && r.supplier === s.id)
                 return (
-                  <td key={s.id} className="px-3 py-2">
+                  <TableCell key={s.id} className="px-3 py-2">
                     {resp ? (
                       <div className="space-y-0.5">
                         <p className="font-mono font-semibold text-foreground">
@@ -104,13 +105,13 @@ function ComparativoTable({
                     ) : (
                       <span className="text-muted-foreground/40">—</span>
                     )}
-                  </td>
+                  </TableCell>
                 )
               })}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </ScrollFade>
   )
 }
@@ -253,42 +254,42 @@ export default function CotacaoOSPage({ params }: { params: Promise<{ osId: stri
         </div>
 
         <ScrollFade className="bg-muted/50 rounded-md border border-border">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="px-3 py-2 w-8" />
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">Peca</th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">Ref</th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">Qtd</th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border">
+                <TableHead className="px-3 py-2 w-8" />
+                <TableHead className="px-3 py-2">Peca</TableHead>
+                <TableHead className="px-3 py-2">Ref</TableHead>
+                <TableHead className="px-3 py-2">Qtd</TableHead>
+                <TableHead className="px-3 py-2">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {isLoading ? (
                 [...Array(3)].map((_, i) => (
-                  <tr key={i} className="border-b border-white/5">
+                  <TableRow key={i} className="border-white/5">
                     {[...Array(5)].map((__, j) => (
-                      <td key={j} className="px-3 py-2">
+                      <TableCell key={j} className="px-3 py-2">
                         <div className="h-4 bg-muted/50 rounded animate-pulse w-20" />
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 ))
               ) : !pedidos?.length ? (
-                <tr>
-                  <td colSpan={5} className="px-3 py-8 text-center text-muted-foreground text-sm">
+                <TableRow>
+                  <TableCell colSpan={5} className="px-3 py-8 text-center text-muted-foreground text-sm">
                     Nenhuma peca encontrada para esta OS.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 pedidos.map((p) => (
-                  <tr
+                  <TableRow
                     key={p.id}
                     className={`border-b border-white/5 transition-colors ${
                       selectedIds.has(p.id) ? "bg-info-500/5" : "hover:bg-white/[0.02]"
                     }`}
                   >
-                    <td className="px-3 py-2">
+                    <TableCell className="px-3 py-2">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(p.id)}
@@ -296,20 +297,20 @@ export default function CotacaoOSPage({ params }: { params: Promise<{ osId: stri
                         disabled={p.status === "solicitado"}
                         className="w-3.5 h-3.5 rounded border border-border accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
                       />
-                    </td>
-                    <td className="px-3 py-2 text-sm text-foreground/80">{p.descricao}</td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground font-mono">
+                    </TableCell>
+                    <TableCell className="px-3 py-2 text-sm text-foreground/80">{p.descricao}</TableCell>
+                    <TableCell className="px-3 py-2 text-xs text-muted-foreground font-mono">
                       {p.codigo_referencia || "—"}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-foreground/70 font-mono">{p.quantidade}</td>
-                    <td className="px-3 py-2">
+                    </TableCell>
+                    <TableCell className="px-3 py-2 text-xs text-foreground/70 font-mono">{p.quantidade}</TableCell>
+                    <TableCell className="px-3 py-2">
                       <StatusBadge status={p.status} />
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </ScrollFade>
 
         <div className="flex items-center gap-2 mt-3">

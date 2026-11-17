@@ -1,5 +1,6 @@
 "use client"
 
+import { Input } from "@/components/ui/input"
 import { useEffect, useRef, useState } from "react"
 import { Controller, type UseFormReturn } from "react-hook-form"
 import { Search, ArrowLeftRight, Loader2, Phone, Mail, Calendar } from "lucide-react"
@@ -17,7 +18,6 @@ import { fillEmpty, locationGroup } from "@/lib/prefill"
 const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
 // Um unico sistema de campo na tela de OS — antes cada secao tinha o seu.
 const LABEL = FORM_LABEL
-const INPUT_EDIT = FORM_INPUT
 const INPUT_READONLY = `${FORM_INPUT} text-muted-foreground cursor-default select-all`
 
 interface CustomerSectionProps {
@@ -56,11 +56,11 @@ function PersonInlineSearch({ onSelect, onCancel }: PersonInlineSearchProps) {
       <div className="relative flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-          <input
+          <Input
             type="text"
             autoFocus
             placeholder="Buscar por nome..."
-            className={`${INPUT_EDIT} pl-8`}
+            className="pl-8"
             value={query}
             onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
             onFocus={() => { if (query.length >= 2) setOpen(true) }}
@@ -371,10 +371,9 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
               label="telefone"
             />
           ) : (
-            <input
+            <Input
               type="tel"
               inputMode="numeric"
-              className={INPUT_EDIT}
               // Mascara e aparencia: o estado guarda so os digitos, que e o que
               // o backend indexa e o que o WhatsApp precisa.
               value={formatPhone(phoneValue)}
@@ -397,13 +396,12 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
               label="e-mail"
             />
           ) : (
-            <input
+            <Input
               // type="text" (não "email"): o valor inicial vem do contato salvo e, em
               // dados legados/corrompidos, pode não ter "@" — a validação nativa do
               // browser bloqueia o submit do form inteiro em silêncio nesse caso.
               type="text"
               inputMode="email"
-              className={INPUT_EDIT}
               value={email}
               onChange={(e) => handleEmailChange(e.target.value)}
               placeholder="email@exemplo.com"
@@ -451,9 +449,8 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
           <div>
             <label className={LABEL}>CEP</label>
             <div className="relative">
-              <input
+              <Input
                 type="text"
-                className={INPUT_EDIT}
                 inputMode="numeric"
                 value={formatCEP(addr.zip_code)}
                 onChange={(e) => handleAddrChange("zip_code", onlyDigits(e.target.value))}
@@ -468,9 +465,8 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
           </div>
           <div>
             <label className={LABEL}>Rua / Av.</label>
-            <input
+            <Input
               type="text"
-              className={INPUT_EDIT}
               value={addr.street}
               onChange={(e) => handleAddrChange("street", e.target.value)}
               placeholder="Av. Eduardo Ribeiro"
@@ -478,9 +474,8 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
           </div>
           <div>
             <label className={LABEL}>Nº</label>
-            <input
+            <Input
               type="text"
-              className={INPUT_EDIT}
               value={addr.number}
               onChange={(e) => handleAddrChange("number", e.target.value)}
               placeholder="123"
@@ -490,9 +485,8 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
         <div className="grid grid-cols-2 gap-x-2 gap-y-5">
           <div>
             <label className={LABEL}>Complemento</label>
-            <input
+            <Input
               type="text"
-              className={INPUT_EDIT}
               value={addr.complement}
               onChange={(e) => handleAddrChange("complement", e.target.value)}
               placeholder="Sala 1"
@@ -500,9 +494,8 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
           </div>
           <div>
             <label className={LABEL}>Bairro</label>
-            <input
+            <Input
               type="text"
-              className={INPUT_EDIT}
               value={addr.neighborhood}
               onChange={(e) => handleAddrChange("neighborhood", e.target.value)}
               placeholder="Centro"
@@ -512,9 +505,8 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
         <div className="grid grid-cols-[1fr_44px] gap-x-2 gap-y-5">
           <div>
             <label className={LABEL}>Cidade</label>
-            <input
+            <Input
               type="text"
-              className={INPUT_EDIT}
               value={addr.city}
               onChange={(e) => handleAddrChange("city", e.target.value)}
               placeholder="Manaus"
@@ -522,9 +514,8 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
           </div>
           <div>
             <label className={LABEL}>UF</label>
-            <input
+            <Input
               type="text"
-              className={INPUT_EDIT}
               value={addr.state}
               onChange={(e) => handleAddrChange("state", e.target.value.toUpperCase())}
               placeholder="AM"

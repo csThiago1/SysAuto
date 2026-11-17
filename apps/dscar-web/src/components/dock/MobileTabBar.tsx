@@ -40,14 +40,14 @@ function TabButton({ item, active, badge, onClick }: TabButtonProps) {
       aria-label={item.label}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] transition-colors",
+        "relative flex flex-1 flex-col items-center gap-0.5 py-2 text-xs transition-colors",
         active ? "text-primary font-semibold" : "text-muted-foreground"
       )}
     >
       <item.icon className="h-5 w-5" />
       <span className="truncate max-w-[64px]">{item.label.split(" ")[0]}</span>
       {badge != null && (
-        <span className="absolute top-1 right-1/2 translate-x-4 min-w-[16px] h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold font-mono flex items-center justify-center px-1 leading-none">
+        <span className="absolute top-1 right-1/2 translate-x-4 min-w-[16px] h-4 rounded-full bg-primary text-primary-foreground text-2xs font-bold font-mono flex items-center justify-center px-1 leading-none">
           {badge > 9 ? "9+" : badge}
         </span>
       )}
@@ -126,7 +126,7 @@ export function MobileTabBar(): React.ReactElement {
             <button
               type="button"
               aria-label="Conta e mais módulos"
-              className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] text-muted-foreground"
+              className="flex flex-1 flex-col items-center gap-0.5 py-2 text-xs text-muted-foreground"
             >
               <LayoutGrid className="h-5 w-5" />
               <span>Mais</span>
@@ -166,7 +166,7 @@ export function MobileTabBar(): React.ReactElement {
                     >
                       <item.icon className="h-5 w-5" />
                     </span>
-                    <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                    <span className="text-xs text-muted-foreground text-center leading-tight">
                       {item.label}
                     </span>
                   </button>

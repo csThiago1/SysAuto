@@ -49,7 +49,7 @@ export function VersionHistory({ budgetId }: Props) {
       {versions.map((v) => (
         <div
           key={v.id}
-          className="rounded-xl border border-border bg-muted/50 p-4 space-y-2"
+          className="rounded-md border border-border bg-muted/50 p-4 space-y-2"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

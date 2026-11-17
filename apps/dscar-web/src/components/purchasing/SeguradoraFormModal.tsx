@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { Button } from "@/components/ui/button"
 
@@ -78,12 +79,12 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
             <label className="label-mono text-muted-foreground mb-1.5 block">
               Descricao *
             </label>
-            <input
+            <Input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ex: Parachoque dianteiro, Farol esquerdo..."
-              className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border"
+              className="w-full"
             />
           </div>
 
@@ -114,12 +115,12 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                   R$
                 </span>
-                <input
+                <Input
                   type="text"
                   value={unitPrice}
                   onChange={(e) => setUnitPrice(e.target.value)}
                   placeholder="0,00"
-                  className="w-full bg-muted/50 border border-border text-foreground rounded-md pl-9 pr-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border"
+                  className="w-full pl-9 pr-3"
                 />
               </div>
             </div>
@@ -130,12 +131,12 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
             <label className="label-mono text-muted-foreground mb-1.5 block">
               Quantidade
             </label>
-            <input
+            <Input
               type="number"
               min="1"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:border-border"
+              className="w-full"
             />
           </div>
         </div>

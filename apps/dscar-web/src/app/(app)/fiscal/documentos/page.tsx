@@ -8,6 +8,8 @@
  * com filtros por tipo, status e busca por ref.
  */
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import { FileText, RefreshCw, XCircle, CheckCircle2, Clock, AlertCircle, Mail, X, ArrowRightLeft } from "lucide-react"
@@ -55,7 +57,7 @@ const STATUS_CONFIG: Record<
     label: "Rejeitada",
     icon: AlertCircle,
     color: "text-error-400",
-    bg: "bg-red-400/10",
+    bg: "bg-error-500/10",
     dot: "bg-error-400",
   },
   cancelled: {
@@ -141,12 +143,12 @@ function SubstituirDialog({ doc, open, onClose }: SubstituirDialogProps) {
             <label className="text-xs font-medium text-foreground">
               ID da Ordem de Serviço <span className="text-muted-foreground">(UUID)</span>
             </label>
-            <input
+            <Input
               type="text"
               value={serviceOrderId}
               onChange={(e) => setServiceOrderId(e.target.value)}
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+              className="w-full font-mono"
             />
           </div>
 
@@ -282,18 +284,14 @@ function SendEmailDialog({
         <div className="space-y-4 mt-4">
           {/* Input */}
           <div className="flex gap-2">
-            <input
+            <Input
               type="email"
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="email@exemplo.com"
               disabled={emails.length >= 10}
-              className={cn(
-                "flex-1 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground",
-                "placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
+              className="flex-1"
             />
             <Button
               type="button"
@@ -595,29 +593,29 @@ function FiscalDocRow({
 
   return (
     <>
-    <tr className={cn("border-border hover:bg-muted/30 transition-colors", !isRejected && "border-b")}>
+    <TableRow className={cn(isRejected && "border-b-0")}>
       {/* Tipo */}
-      <td className="py-3 px-4 text-xs font-mono text-foreground/70">
+      <TableCell className="text-xs font-mono text-foreground/70">
         {DOC_TYPE_LABELS[doc.document_type] ?? doc.document_type.toUpperCase()}
-      </td>
+      </TableCell>
 
       {/* Ref */}
-      <td className="py-3 px-4 text-xs font-mono text-muted-foreground max-w-[180px] truncate">
+      <TableCell className="text-xs font-mono text-muted-foreground max-w-[180px] truncate">
         {doc.ref ?? "—"}
-      </td>
+      </TableCell>
 
       {/* Número */}
-      <td className="py-3 px-4 text-xs text-foreground/70">
+      <TableCell className="text-xs text-foreground/70">
         {doc.numero ?? "—"}
-      </td>
+      </TableCell>
 
       {/* Valor */}
-      <td className="py-3 px-4 text-xs text-foreground/80 text-right tabular-nums">
+      <TableCell className="text-xs text-foreground/80 text-right tabular-nums">
         {valorFmt}
-      </td>
+      </TableCell>
 
       {/* Status */}
-      <td className="py-3 px-4">
+      <TableCell>
         <span
           className={cn(
             "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs",
@@ -628,18 +626,18 @@ function FiscalDocRow({
           <Icon className="h-3 w-3" />
           {cfg.label}
         </span>
-      </td>
+      </TableCell>
 
       {/* Ambiente */}
-      <td className="py-3 px-4 text-xs text-muted-foreground">
+      <TableCell className="text-xs text-muted-foreground">
         {doc.environment === "homologacao" ? "Homolog." : "Produção"}
-      </td>
+      </TableCell>
 
       {/* Data */}
-      <td className="py-3 px-4 text-xs text-muted-foreground">{dateFmt}</td>
+      <TableCell className="text-xs text-muted-foreground">{dateFmt}</TableCell>
 
       {/* Ações — downloads inline + menu dropdown para operações */}
-      <td className="py-3 px-4 text-right">
+      <TableCell className="text-right">
         <div className="flex items-center justify-end gap-1.5">
           {/* Downloads — sempre visíveis */}
           {doc.pdf_url && (
@@ -676,11 +674,11 @@ function FiscalDocRow({
             />
           )}
         </div>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
     {isRejected && (
-      <tr className="border-b border-border bg-error-500/5">
-        <td colSpan={8} className="py-2 px-4">
+      <TableRow className="bg-error-500/5">
+        <TableCell colSpan={8} >
           <div className="flex items-start gap-2">
             <AlertCircle className="h-3.5 w-3.5 text-error-400 mt-0.5 shrink-0" />
             <div className="min-w-0 space-y-0.5">
@@ -693,8 +691,8 @@ function FiscalDocRow({
               )}
             </div>
           </div>
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     )}
     </>
   )
@@ -738,7 +736,7 @@ function FiscalDocCard({
   const sefazHint = isRejected ? explainSefazError(doc.mensagem_sefaz) : null
 
   return (
-    <div className="relative rounded-[11px] bg-card px-3 py-2.5">
+    <div className="relative rounded-md bg-card px-3 py-2.5">
       <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", cfg.dot)} />
 
       <div className="flex items-baseline justify-between gap-2">
@@ -958,39 +956,38 @@ export default function FiscalDocumentosPage() {
       )}
 
       {/* Tabela (desktop) */}
-      <div className="hidden md:block rounded-xl bg-muted/30 border border-white/[0.07]">
+      <div className="hidden md:block rounded-md bg-muted/30 border border-white/[0.07]">
         <ScrollFade>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border">
+        <Table>
+          <TableHeader>
+            <TableRow>
               {["Tipo", "Ref", "Número", "Valor", "Status", "Ambiente", "Emissão", ""].map(
                 (h) => (
-                  <th
+                  <TableHead
                     key={h}
                     className={cn(
-                      "py-2.5 px-4 text-xs font-semibold text-muted-foreground text-left",
                       h === "Valor" && "text-right"
                     )}
                   >
                     {h}
-                  </th>
+                  </TableHead>
                 )
               )}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {isLoading ? (
-              <tr>
-                <td colSpan={8} className="py-12 text-center text-xs text-muted-foreground">
+              <TableRow>
+                <TableCell colSpan={8} className="py-12 text-center text-xs text-muted-foreground">
                   Carregando...
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : docs.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="py-12 text-center text-xs text-muted-foreground">
+              <TableRow>
+                <TableCell colSpan={8} className="py-12 text-center text-xs text-muted-foreground">
                   Nenhum documento fiscal encontrado.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               docs.map((doc) => (
                 <FiscalDocRow
@@ -1005,8 +1002,8 @@ export default function FiscalDocumentosPage() {
                 />
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
         </ScrollFade>
       </div>
 

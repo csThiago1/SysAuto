@@ -8,6 +8,8 @@
  * e tabela com historico de inutilizacoes realizadas.
  */
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { Ban, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -86,26 +88,26 @@ export default function InutilizacaoPage() {
       {/* Formulario */}
       <form
         onSubmit={handleSubmit}
-        className="rounded-xl bg-muted/30 border border-white/[0.07] p-6 space-y-4 max-w-xl"
+        className="rounded-md bg-muted/30 border border-white/[0.07] p-6 space-y-4 max-w-xl"
       >
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
               Serie
             </label>
-            <input
+            <Input
               type="number"
               min={1}
               value={serie}
               onChange={(e) => setSerie(Number(e.target.value))}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground"
+              className="w-full"
             />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
               Numero Inicial
             </label>
-            <input
+            <Input
               type="number"
               min={1}
               value={numeroInicial}
@@ -113,14 +115,14 @@ export default function InutilizacaoPage() {
                 setNumeroInicial(e.target.value ? Number(e.target.value) : "")
               }
               placeholder="Ex: 10"
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground"
+              className="w-full"
             />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
               Numero Final
             </label>
-            <input
+            <Input
               type="number"
               min={1}
               value={numeroFinal}
@@ -128,7 +130,7 @@ export default function InutilizacaoPage() {
                 setNumeroFinal(e.target.value ? Number(e.target.value) : "")
               }
               placeholder="Ex: 15"
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground"
+              className="w-full"
             />
           </div>
         </div>
@@ -172,39 +174,38 @@ export default function InutilizacaoPage() {
           Historico de Inutilizacoes
         </h2>
 
-        <div className="rounded-xl bg-muted/30 border border-white/[0.07] overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
+        <div className="rounded-md bg-muted/30 border border-white/[0.07] overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
                 {["Serie", "Faixa", "Justificativa", "Data"].map((h) => (
-                  <th
+                  <TableHead
                     key={h}
-                    className="py-2.5 px-4 text-xs font-semibold text-muted-foreground text-left"
                   >
                     {h}
-                  </th>
+                  </TableHead>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {loadingHistorico ? (
-                <tr>
-                  <td
+                <TableRow>
+                  <TableCell
                     colSpan={4}
                     className="py-12 text-center text-xs text-muted-foreground"
                   >
                     Carregando...
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : historico.length === 0 ? (
-                <tr>
-                  <td
+                <TableRow>
+                  <TableCell
                     colSpan={4}
                     className="py-12 text-center text-xs text-muted-foreground"
                   >
                     Nenhuma inutilizacao encontrada.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 historico.map((item) => {
                   const payload = item.payload as Record<string, unknown>
@@ -219,29 +220,28 @@ export default function InutilizacaoPage() {
                     }
                   )
                   return (
-                    <tr
+                    <TableRow
                       key={item.id}
-                      className="border-b border-border hover:bg-muted/30 transition-colors"
                     >
-                      <td className="py-3 px-4 text-xs font-mono text-foreground/70">
+                      <TableCell className="text-xs font-mono text-foreground/70">
                         {String(payload.serie ?? "—")}
-                      </td>
-                      <td className="py-3 px-4 text-xs text-foreground/70">
+                      </TableCell>
+                      <TableCell className="text-xs text-foreground/70">
                         {String(payload.numero_inicial ?? "?")} -{" "}
                         {String(payload.numero_final ?? "?")}
-                      </td>
-                      <td className="py-3 px-4 text-xs text-foreground/70 max-w-[300px] truncate">
+                      </TableCell>
+                      <TableCell className="text-xs text-foreground/70 max-w-[300px] truncate">
                         {String(payload.justificativa ?? "—")}
-                      </td>
-                      <td className="py-3 px-4 text-xs text-muted-foreground">
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
                         {dateFmt}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
 
         {historico.length > 0 && (

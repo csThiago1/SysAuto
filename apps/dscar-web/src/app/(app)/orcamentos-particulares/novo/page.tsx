@@ -183,7 +183,7 @@ export default function NovoBudgetPage() {
         </div>
 
         {/* Veículo */}
-        <div className="space-y-3 rounded-xl border border-border bg-white/[0.02] p-4">
+        <div className="space-y-3 rounded-md border border-border bg-white/[0.02] p-4">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</p>
 
           {/* Placa */}

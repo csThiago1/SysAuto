@@ -1,5 +1,6 @@
 "use client"
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { useMemo, useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -236,79 +237,79 @@ export function ImportReconcileModal({ orderId, payload, open, onClose, onApplie
 
         {/* Tabela editável */}
         <div className="rounded-md border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted text-xs uppercase tracking-wide">
-              <tr>
-                <th className="px-2 py-2 text-left w-16">Tipo</th>
-                <th className="px-2 py-2 text-left">Descrição</th>
-                <th className="px-2 py-2 text-left w-20">Cód.</th>
-                <th className="px-2 py-2 text-left w-24">Fornec.</th>
-                <th className="px-2 py-2 text-right w-20">Qtd</th>
-                <th className="px-2 py-2 text-right w-28">Unit. (R$)</th>
-                <th className="px-2 py-2 text-right w-20">Desc. %</th>
-                <th className="px-2 py-2 text-right w-28">Total (R$)</th>
-                <th className="px-2 py-2 text-center w-10"></th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader className="bg-muted text-xs uppercase tracking-wide">
+              <TableRow>
+                <TableHead className="px-2 py-2 w-16">Tipo</TableHead>
+                <TableHead className="px-2 py-2">Descrição</TableHead>
+                <TableHead className="px-2 py-2 w-20">Cód.</TableHead>
+                <TableHead className="px-2 py-2 w-24">Fornec.</TableHead>
+                <TableHead className="px-2 py-2 text-right w-20">Qtd</TableHead>
+                <TableHead className="px-2 py-2 text-right w-28">Unit. (R$)</TableHead>
+                <TableHead className="px-2 py-2 text-right w-20">Desc. %</TableHead>
+                <TableHead className="px-2 py-2 text-right w-28">Total (R$)</TableHead>
+                <TableHead className="px-2 py-2 text-center w-10"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {items.map((it, idx) => (
-                <tr key={`${it.index}-${idx}`} className="border-t hover:bg-muted/40">
-                  <td className="px-2 py-1">
+                <TableRow key={`${it.index}-${idx}`}>
+                  <TableCell className="px-2 py-1">
                     <span className={cn(
-                      "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase",
+                      "rounded px-1.5 py-0.5 text-xs font-semibold uppercase",
                       it.item_type === "PART" ? "bg-info-500/10 text-info-400" : "bg-success-500/10 text-success-600",
                     )}>
                       {it.item_type === "PART" ? "Peça" : "Serv."}
                     </span>
-                  </td>
-                  <td className="px-2 py-1">
+                  </TableCell>
+                  <TableCell className="px-2 py-1">
                     <Input
                       value={it.description}
                       onChange={(e) => updateItem(idx, "description", e.target.value)}
                       className="h-7 text-xs"
                     />
-                  </td>
-                  <td className="px-2 py-1">
+                  </TableCell>
+                  <TableCell className="px-2 py-1">
                     <Input
                       value={it.external_code}
                       onChange={(e) => updateItem(idx, "external_code", e.target.value)}
                       className="h-7 text-xs"
                     />
-                  </td>
-                  <td className="px-2 py-1 text-xs">{it.supplier === "SEGURADORA" ? "Segurad." : "Oficina"}</td>
-                  <td className="px-2 py-1">
+                  </TableCell>
+                  <TableCell className="px-2 py-1 text-xs">{it.supplier === "SEGURADORA" ? "Segurad." : "Oficina"}</TableCell>
+                  <TableCell className="px-2 py-1">
                     <Input
                       type="number" step="0.01"
                       value={it.quantity}
                       onChange={(e) => updateItem(idx, "quantity", e.target.value)}
                       className="h-7 text-xs text-right"
                     />
-                  </td>
-                  <td className="px-2 py-1">
+                  </TableCell>
+                  <TableCell className="px-2 py-1">
                     <Input
                       type="number" step="0.01"
                       value={it.unit_price}
                       onChange={(e) => updateItem(idx, "unit_price", e.target.value)}
                       className="h-7 text-xs text-right"
                     />
-                  </td>
-                  <td className="px-2 py-1">
+                  </TableCell>
+                  <TableCell className="px-2 py-1">
                     <Input
                       type="number" step="0.01"
                       value={it.discount_pct}
                       onChange={(e) => updateItem(idx, "discount_pct", e.target.value)}
                       className="h-7 text-xs text-right"
                     />
-                  </td>
-                  <td className="px-2 py-1">
+                  </TableCell>
+                  <TableCell className="px-2 py-1">
                     <Input
                       type="number" step="0.01"
                       value={it.net_price}
                       onChange={(e) => updateItem(idx, "net_price", e.target.value)}
                       className="h-7 text-xs text-right font-semibold"
                     />
-                  </td>
-                  <td className="px-2 py-1 text-center">
+                  </TableCell>
+                  <TableCell className="px-2 py-1 text-center">
                     <button
                       onClick={() => removeItem(idx)}
                       className="text-error-400 hover:text-error-700"
@@ -316,11 +317,11 @@ export function ImportReconcileModal({ orderId, payload, open, onClose, onApplie
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
 
         <div className="flex gap-2 mt-3">
@@ -378,7 +379,7 @@ function CategoryCard({ label, parser, source, diff, isGrandTotal, onAutoAdjust 
       "rounded-lg border p-3",
       ok ? "border-success-500/30 bg-success-500/5" : "border-error-500/30 bg-error-500/5",
     )}>
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className="mt-1 text-xs flex justify-between">
         <span className="text-muted-foreground">Importado</span>
         <span className="font-semibold">R$ {formatBRL(parser)}</span>
@@ -397,7 +398,7 @@ function CategoryCard({ label, parser, source, diff, isGrandTotal, onAutoAdjust 
       {!ok && !isGrandTotal && onAutoAdjust && (
         <button
           onClick={onAutoAdjust}
-          className="mt-2 w-full text-[10px] uppercase tracking-wide rounded border border-warning-500/40 px-2 py-1 text-warning-600 hover:bg-warning-500/10"
+          className="mt-2 w-full text-xs uppercase tracking-wide rounded border border-warning-500/40 px-2 py-1 text-warning-600 hover:bg-warning-500/10"
         >
           + Linha de ajuste
         </button>

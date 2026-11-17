@@ -11,6 +11,7 @@ import { useVacations, useVacationBalance, useCreateVacation, useCancelVacation 
 import { DateField } from "@/components/ui/date-field"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 interface TabFeriasProps {
   employee: Employee;
@@ -126,13 +127,13 @@ export function TabFerias({ employee }: TabFeriasProps): React.ReactElement {
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Dias de gozo (20-30)</label>
-              <input type="number" min={20} max={30} required className="rounded border border-border px-2 py-1.5 text-sm"
+              <Input type="number" min={20} max={30} required
                 value={form.days_taken}
                 onChange={(e) => setForm((p) => ({ ...p, days_taken: parseInt(e.target.value, 10) || 30 }))} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Abono pecuniário (0-10)</label>
-              <input type="number" min={0} max={10} className="rounded border border-border px-2 py-1.5 text-sm"
+              <Input type="number" min={0} max={10}
                 value={form.days_sold ?? 0}
                 onChange={(e) => setForm((p) => ({ ...p, days_sold: parseInt(e.target.value, 10) || 0 }))} />
             </div>

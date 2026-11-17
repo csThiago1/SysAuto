@@ -5,6 +5,7 @@
  * KPIs, fluxo de caixa, aging e acesso rapido.
  */
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
@@ -101,24 +102,24 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
             <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}</div>
           ) : data?.fluxo_caixa_30d?.length ? (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead><tr className="border-b border-border text-left text-muted-foreground">
-                  <th className="py-2 pr-4 font-medium">Semana</th>
-                  <th className="py-2 pr-4 font-medium">Periodo</th>
-                  <th className="py-2 pr-4 font-medium text-right">Entradas</th>
-                  <th className="py-2 pr-4 font-medium text-right">Saidas</th>
-                  <th className="py-2 font-medium text-right">Saldo</th>
-                </tr></thead>
-                <tbody>{data.fluxo_caixa_30d.map((r) => (
-                  <tr key={r.semana} className="border-b border-border/50">
-                    <td className="py-2 pr-4 font-medium text-foreground">S{r.semana}</td>
-                    <td className="py-2 pr-4 text-muted-foreground text-xs">{r.inicio} a {r.fim}</td>
-                    <td className="py-2 pr-4 text-right text-success-400 font-mono">{formatCurrency(r.entradas)}</td>
-                    <td className="py-2 pr-4 text-right text-error-400 font-mono">{formatCurrency(r.saidas)}</td>
-                    <td className="py-2 text-right font-mono font-semibold text-foreground">{formatCurrency(r.saldo)}</td>
-                  </tr>
-                ))}</tbody>
-              </table>
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>Semana</TableHead>
+                  <TableHead>Periodo</TableHead>
+                  <TableHead className="text-right">Entradas</TableHead>
+                  <TableHead className="text-right">Saidas</TableHead>
+                  <TableHead className="text-right">Saldo</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>{data.fluxo_caixa_30d.map((r) => (
+                  <TableRow key={r.semana}>
+                    <TableCell className="font-medium text-foreground">S{r.semana}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">{r.inicio} a {r.fim}</TableCell>
+                    <TableCell className="text-right text-success-400 font-mono">{formatCurrency(r.entradas)}</TableCell>
+                    <TableCell className="text-right text-error-400 font-mono">{formatCurrency(r.saidas)}</TableCell>
+                    <TableCell className="text-right font-mono font-semibold text-foreground">{formatCurrency(r.saldo)}</TableCell>
+                  </TableRow>
+                ))}</TableBody>
+              </Table>
             </div>
           ) : <p className="text-sm text-muted-foreground">Sem dados para o periodo.</p>}
         </div>
@@ -134,20 +135,20 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
               {isLoading ? (
                 <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-6 w-full" />)}</div>
               ) : sec.rows.length > 0 ? (
-                <table className="w-full text-sm">
-                  <thead><tr className="border-b border-border text-left text-muted-foreground">
-                    <th className="py-2 pr-4 font-medium">Faixa</th>
-                    <th className="py-2 pr-4 font-medium text-right">Qtd</th>
-                    <th className="py-2 font-medium text-right">Total</th>
-                  </tr></thead>
-                  <tbody>{sec.rows.map((r) => (
-                    <tr key={r.faixa} className="border-b border-border/50">
-                      <td className="py-2 pr-4 text-foreground">{r.faixa}</td>
-                      <td className="py-2 pr-4 text-right text-muted-foreground font-mono">{r.count}</td>
-                      <td className="py-2 text-right font-mono font-semibold text-foreground">{formatCurrency(r.total)}</td>
-                    </tr>
-                  ))}</tbody>
-                </table>
+                <Table>
+                  <TableHeader><TableRow>
+                    <TableHead>Faixa</TableHead>
+                    <TableHead className="text-right">Qtd</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow></TableHeader>
+                  <TableBody>{sec.rows.map((r) => (
+                    <TableRow key={r.faixa}>
+                      <TableCell className="text-foreground">{r.faixa}</TableCell>
+                      <TableCell className="text-right text-muted-foreground font-mono">{r.count}</TableCell>
+                      <TableCell className="text-right font-mono font-semibold text-foreground">{formatCurrency(r.total)}</TableCell>
+                    </TableRow>
+                  ))}</TableBody>
+                </Table>
               ) : <p className="text-sm text-muted-foreground">Nenhum registro.</p>}
             </div>
           ))}

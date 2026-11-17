@@ -14,6 +14,7 @@ import { usePayslips, useClosePayslip } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui";
 import type { Payslip } from "@paddock/types";
+import { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 const fmt = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -24,26 +25,26 @@ function PayslipRow({ payslip }: { payslip: Payslip }): React.ReactElement {
   const close = useClosePayslip();
 
   return (
-    <tr className="border-b border-white/5 last:border-0 hover:bg-muted/30 transition-colors">
-      <td className="px-4 py-3 text-sm text-foreground font-medium">
+    <TableRow>
+      <TableCell className="text-sm text-foreground font-medium">
         {payslip.employee_name}
-      </td>
-      <td className="px-4 py-3 text-sm text-foreground/70 text-right tabular-nums">
+      </TableCell>
+      <TableCell className="text-sm text-foreground/70 text-right tabular-nums">
         {fmt.format(parseFloat(payslip.base_salary))}
-      </td>
-      <td className="px-4 py-3 text-sm text-foreground/70 text-right tabular-nums">
+      </TableCell>
+      <TableCell className="text-sm text-foreground/70 text-right tabular-nums">
         {fmt.format(parseFloat(payslip.total_bonuses))}
-      </td>
-      <td className="px-4 py-3 text-sm text-foreground/70 text-right tabular-nums">
+      </TableCell>
+      <TableCell className="text-sm text-foreground/70 text-right tabular-nums">
         {fmt.format(parseFloat(payslip.total_allowances))}
-      </td>
-      <td className="px-4 py-3 text-sm text-error-400 text-right tabular-nums">
+      </TableCell>
+      <TableCell className="text-sm text-error-400 text-right tabular-nums">
         -{fmt.format(parseFloat(payslip.total_deductions))}
-      </td>
-      <td className="px-4 py-3 text-sm font-bold text-foreground text-right tabular-nums">
+      </TableCell>
+      <TableCell className="text-sm font-bold text-foreground text-right tabular-nums">
         {fmt.format(parseFloat(payslip.net_pay))}
-      </td>
-      <td className="px-4 py-3 text-right">
+      </TableCell>
+      <TableCell className="text-right">
         {payslip.is_closed ? (
           <span className="inline-flex items-center gap-1 text-xs text-success-400 font-medium">
             <Lock className="h-3 w-3" />
@@ -58,8 +59,8 @@ function PayslipRow({ payslip }: { payslip: Payslip }): React.ReactElement {
             Fechar
           </button>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -147,7 +148,7 @@ export default function FolhaMonthPage({
                   <button
                     onClick={handleCloseAll}
                     disabled={closeAll.isPending}
-                    className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50"
+                    className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-error-700 disabled:opacity-50"
                   >
                     {closeAll.isPending ? "Fechando..." : "Confirmar fechamento"}
                   </button>
@@ -209,61 +210,61 @@ export default function FolhaMonthPage({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="font-semibold">
                       Colaborador
-                    </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    </TableHead>
+                    <TableHead className="text-right font-semibold">
                       Salário base
-                    </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    </TableHead>
+                    <TableHead className="text-right font-semibold">
                       Bônus
-                    </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    </TableHead>
+                    <TableHead className="text-right font-semibold">
                       Vales
-                    </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    </TableHead>
+                    <TableHead className="text-right font-semibold">
                       Descontos
-                    </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    </TableHead>
+                    <TableHead className="text-right font-semibold">
                       Líquido
-                    </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    </TableHead>
+                    <TableHead className="text-right font-semibold">
                       Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {payslips.map((p) => (
                     <PayslipRow key={p.id} payslip={p} />
                   ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t-2 border-border bg-muted/30">
-                    <td className="px-4 py-2.5 text-xs font-semibold text-foreground/70">
+                </TableBody>
+                <TableFooter>
+                  <TableRow className="border-t-2 bg-muted/30">
+                    <TableCell className="py-2.5 text-xs font-semibold text-foreground/70">
                       Total ({payslips.length})
-                    </td>
-                    <td className="px-4 py-2.5 text-sm font-semibold text-foreground text-right tabular-nums">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-sm font-semibold text-foreground text-right tabular-nums">
                       {fmt.format(totals.base)}
-                    </td>
-                    <td className="px-4 py-2.5 text-sm font-semibold text-foreground text-right tabular-nums">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-sm font-semibold text-foreground text-right tabular-nums">
                       {fmt.format(totals.bonuses)}
-                    </td>
-                    <td className="px-4 py-2.5 text-sm font-semibold text-foreground text-right tabular-nums">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-sm font-semibold text-foreground text-right tabular-nums">
                       {fmt.format(totals.allowances)}
-                    </td>
-                    <td className="px-4 py-2.5 text-sm font-semibold text-error-400 text-right tabular-nums">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-sm font-semibold text-error-400 text-right tabular-nums">
                       -{fmt.format(totals.deductions)}
-                    </td>
-                    <td className="px-4 py-2.5 text-sm font-bold text-primary/90 text-right tabular-nums">
+                    </TableCell>
+                    <TableCell className="py-2.5 text-sm font-bold text-primary/90 text-right tabular-nums">
                       {fmt.format(totals.net)}
-                    </td>
-                    <td />
-                  </tr>
-                </tfoot>
-              </table>
+                    </TableCell>
+                    <TableCell />
+                  </TableRow>
+                </TableFooter>
+              </Table>
             </div>
           )}
         </div>

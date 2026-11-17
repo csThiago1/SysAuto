@@ -26,7 +26,7 @@ const formatPct = (v: string) => {
 const pctColor = (v: string) => {
   const n = Math.abs(parseFloat(v))
   if (n < 0.1) return "text-success-400"
-  if (n < 0.2) return "text-yellow-400"
+  if (n < 0.2) return "text-warning-400"
   return "text-error-400"
 }
 
@@ -151,7 +151,7 @@ export default function VarianciasPage() {
             {apenasAlertas && (
               <Badge
                 variant="outline"
-                className="border-yellow-500/30 text-yellow-400 bg-yellow-400/10"
+                className="border-warning-500/30 text-warning-400 bg-warning-500/10"
               >
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 Filtro ativo
@@ -198,7 +198,7 @@ export default function VarianciasPage() {
                       </TableCell>
                       <TableCell className="text-center">
                         {p.alerta && (
-                          <AlertTriangle className="h-4 w-4 text-yellow-400 inline-block" />
+                          <AlertTriangle className="h-4 w-4 text-warning-400 inline-block" />
                         )}
                       </TableCell>
                     </TableRow>

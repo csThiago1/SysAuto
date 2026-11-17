@@ -1,4 +1,5 @@
 "use client"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 import { useState } from "react"
 import { FileText, Plus } from "lucide-react"
@@ -16,14 +17,14 @@ const STATUS_LABELS: Record<NFeEntradaStatus, string> = {
 }
 
 const STATUS_COLORS: Record<NFeEntradaStatus, string> = {
-  importada: "text-yellow-400 bg-yellow-400/10",
-  validada: "text-blue-400 bg-blue-400/10",
+  importada: "text-warning-400 bg-warning-500/10",
+  validada: "text-info-400 bg-info-500/10",
   estoque_gerado: "text-success-400 bg-success-400/10",
 }
 
 const STATUS_STRIPE: Record<NFeEntradaStatus, string> = {
-  importada: "bg-yellow-400",
-  validada: "bg-blue-400",
+  importada: "bg-warning-500",
+  validada: "bg-info-500",
   estoque_gerado: "bg-success-500",
 }
 
@@ -80,7 +81,7 @@ export default function NFeRecebidaPage() {
               <div
                 key={nfe.id}
                 onClick={() => (window.location.href = `/estoque/nfe-recebida/${nfe.id}`)}
-                className="relative cursor-pointer overflow-hidden rounded-[11px] bg-muted/30 py-2.5 pl-4 pr-3"
+                className="relative cursor-pointer overflow-hidden rounded-md bg-muted/30 py-2.5 pl-4 pr-3"
               >
                 <span
                   aria-hidden
@@ -97,7 +98,7 @@ export default function NFeRecebidaPage() {
                     </p>
                   </div>
                   <span
-                    className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-medium ${STATUS_COLORS[status]}`}
+                    className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}
                   >
                     {STATUS_LABELS[status]}
                   </span>
@@ -123,49 +124,49 @@ export default function NFeRecebidaPage() {
         {/* Desktop table */}
         <div className="hidden md:block rounded-lg border border-border">
         <ScrollFade>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-muted-foreground text-xs">
-                <th className="px-4 py-3 text-left">Número</th>
-                <th className="px-4 py-3 text-left">Emitente</th>
-                <th className="px-4 py-3 text-left">Data Emissão</th>
-                <th className="px-4 py-3 text-right">Valor Total</th>
-                <th className="px-4 py-3 text-right">Itens</th>
-                <th className="px-4 py-3 text-left">Status</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border bg-muted/50 text-muted-foreground text-xs">
+                <TableHead className="py-3">Número</TableHead>
+                <TableHead className="py-3">Emitente</TableHead>
+                <TableHead className="py-3">Data Emissão</TableHead>
+                <TableHead className="py-3 text-right">Valor Total</TableHead>
+                <TableHead className="py-3 text-right">Itens</TableHead>
+                <TableHead className="py-3">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {notas.map((nfe) => (
-                <tr
+                <TableRow
                   key={nfe.id}
-                  className="border-b border-white/5 hover:bg-muted/50 transition-colors cursor-pointer"
+                  className="border-white/5 hover:bg-muted/50 cursor-pointer"
                   onClick={() => window.location.href = `/estoque/nfe-recebida/${nfe.id}`}
                 >
-                  <td className="px-4 py-3 text-foreground font-medium">
+                  <TableCell className="text-foreground font-medium">
                     {nfe.numero || "—"}{nfe.serie ? ` / ${nfe.serie}` : ""}
-                  </td>
-                  <td className="px-4 py-3 text-foreground/80">{nfe.emitente_nome || "—"}</td>
-                  <td className="px-4 py-3 text-foreground/60">
+                  </TableCell>
+                  <TableCell className="text-foreground/80">{nfe.emitente_nome || "—"}</TableCell>
+                  <TableCell className="text-foreground/60">
                     {nfe.data_emissao
                       ? new Date(nfe.data_emissao).toLocaleDateString("pt-BR")
                       : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-right text-foreground/80">
+                  </TableCell>
+                  <TableCell className="text-right text-foreground/80">
                     {parseFloat(nfe.valor_total).toLocaleString("pt-BR", {
                       style: "currency",
                       currency: "BRL",
                     })}
-                  </td>
-                  <td className="px-4 py-3 text-right text-foreground/60">{nfe.total_itens}</td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell className="text-right text-foreground/60">{nfe.total_itens}</TableCell>
+                  <TableCell>
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[nfe.status as NFeEntradaStatus]}`}>
                       {STATUS_LABELS[nfe.status as NFeEntradaStatus]}
                     </span>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </ScrollFade>
         </div>
         </>

@@ -102,7 +102,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       {/* Closure checklist */}
       {cs && (
         <div className={cn(
-          "rounded-xl border p-4",
+          "rounded-md border p-4",
           cs.is_closed
             ? "bg-success-500/10 border-success-500/20"
             : "bg-card border-border"
@@ -149,7 +149,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       {isReady && (
         <div
           className={cn(
-            "flex flex-col gap-3 rounded-xl border px-5 py-4 sm:flex-row sm:items-center sm:justify-between",
+            "flex flex-col gap-3 rounded-md border px-5 py-4 sm:flex-row sm:items-center sm:justify-between",
             deliveryBlocked
               ? "bg-warning-500/10 border-warning-500/20"
               : "bg-success-500/10 border-success-500/20",
@@ -215,7 +215,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       <div className="space-y-4">
 
       {/* Financial summary */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-md overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <DollarSign className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
@@ -290,7 +290,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       <div className="space-y-4">
 
       {/* KM section */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-md overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <Car className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
@@ -336,7 +336,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
 
       {/* Budget approval signature — hard block pra waiting_auth → authorized (particular) */}
       {order.customer_type === "private" && !isCancelled && (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="bg-card border border-border rounded-md overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
             <PenLine className="h-4 w-4 text-muted-foreground" />
             <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
@@ -354,7 +354,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       )}
 
       {/* Fiscal */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-md overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <FileText className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">Fiscal</h2>

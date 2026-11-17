@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 
 interface EstoqueBuscaModalProps {
@@ -106,7 +107,7 @@ export function EstoqueBuscaModal({
 
         {/* Search */}
         <div className="mt-4">
-          <input
+          <Input
             type="text"
             placeholder="Buscar por nome, SKU, codigo fabricante..."
             value={busca}
@@ -114,7 +115,7 @@ export function EstoqueBuscaModal({
               setBusca(e.target.value)
               setSelected(null)
             }}
-            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border"
+            className="w-full"
           />
         </div>
 
@@ -250,11 +251,11 @@ export function EstoqueBuscaModal({
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                     R$
                   </span>
-                  <input
+                  <Input
                     type="text"
                     value={valorCobrado}
                     onChange={(e) => setValorCobrado(e.target.value)}
-                    className="w-full bg-muted/50 border border-border text-foreground rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-border"
+                    className="w-full pl-9 pr-3"
                     placeholder="0,00"
                   />
                 </div>

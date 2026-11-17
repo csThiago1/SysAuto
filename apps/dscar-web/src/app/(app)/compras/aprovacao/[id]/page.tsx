@@ -12,6 +12,7 @@ import {
   useAprovarCotacao,
   useRejeitarCotacao,
 } from "@/hooks/usePurchasing"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import type { PedidoCompra, RespostaCotacao } from "@/hooks/usePurchasing"
 
 // ─── Rejeitar dialog ──────────────────────────────────────────────────────────
@@ -291,34 +292,34 @@ export default function AprovacaoPage({ params }: { params: Promise<{ id: string
             </div>
           ) : (
             <div className="bg-muted/50 rounded-md border border-border overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="label-mono text-muted-foreground text-left px-3 py-2">Peca</th>
+              <Table className="text-xs">
+                <TableHeader>
+                  <TableRow className="border-border">
+                    <TableHead className="px-3 py-2">Peca</TableHead>
                     {uniqueSuppliers.map((s) => (
-                      <th key={s.id} className="label-mono text-muted-foreground text-left px-3 py-2 min-w-32">
+                      <TableHead key={s.id} className="px-3 py-2 min-w-32">
                         {s.name}
-                      </th>
+                      </TableHead>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {(pedidos ?? []).map((p: PedidoCompra) => (
-                    <tr key={p.id} className="border-b border-white/5">
-                      <td className="px-3 py-2">
+                    <TableRow key={p.id} className="border-white/5">
+                      <TableCell className="px-3 py-2">
                         <p className="text-foreground/80">{p.descricao}</p>
                         {p.codigo_referencia && (
                           <p className="text-muted-foreground font-mono">{p.codigo_referencia}</p>
                         )}
                         <p className="text-muted-foreground mt-0.5">Qtd: {p.quantidade}</p>
-                      </td>
+                      </TableCell>
                       {uniqueSuppliers.map((s) => {
                         const resp = (respostas ?? []).find(
                           (r: RespostaCotacao) => r.pedido_compra === p.id && r.supplier === s.id,
                         )
                         const isSelected = selections.get(p.id) === resp?.id
                         return (
-                          <td
+                          <TableCell
                             key={s.id}
                             className={`px-3 py-2 transition-colors ${
                               isSelected ? "bg-success-500/8 border-l-2 border-success-500/40" : ""
@@ -372,13 +373,13 @@ export default function AprovacaoPage({ params }: { params: Promise<{ id: string
                             ) : (
                               <span className="text-muted-foreground/40">—</span>
                             )}
-                          </td>
+                          </TableCell>
                         )
                       })}
-                    </tr>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
         </div>

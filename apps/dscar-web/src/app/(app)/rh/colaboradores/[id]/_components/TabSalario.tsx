@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui";
 import { DateField } from "@/components/ui/date-field"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 interface TabSalarioProps {
   employee: Employee;
@@ -81,11 +82,10 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
               <label className="text-xs text-muted-foreground">
                 Salário anterior (R$)
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.01"
                 required
-                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.previous_salary}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -99,12 +99,11 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
               <label className="text-xs text-muted-foreground">
                 Novo salário (R$)
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.01"
                 required
                 min="0.01"
-                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.new_salary || ""}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -122,10 +121,9 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Motivo</label>
-              <input
+              <Input
                 type="text"
                 placeholder="Promoção, dissídio, mérito..."
-                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.reason ?? ""}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, reason: e.target.value }))

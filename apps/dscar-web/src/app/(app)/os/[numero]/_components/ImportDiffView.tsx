@@ -1,5 +1,6 @@
 "use client"
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ScrollFade } from "@/components/ui/scroll-fade"
@@ -61,46 +62,46 @@ export function ImportDiffView({ diffResult, onApply, onCancel, isApplying }: Pr
 
       {/* Diff table — desktop */}
       <ScrollFade className="mb-5 hidden rounded-lg border border-border md:block">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-surface-800">
-              <th className="px-3 py-2 text-left font-semibold text-foreground/60">Item</th>
-              <th className="px-3 py-2 text-center font-semibold text-foreground/60">Tipo</th>
-              <th className="px-3 py-2 text-right font-semibold text-foreground/60">Anterior</th>
-              <th className="px-3 py-2 text-right font-semibold text-foreground/60">Novo</th>
-              <th className="px-3 py-2 text-center font-semibold text-foreground/60">Alteração</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-surface-800">
+              <TableHead className="px-3 py-2 font-semibold text-foreground/60">Item</TableHead>
+              <TableHead className="px-3 py-2 text-center font-semibold text-foreground/60">Tipo</TableHead>
+              <TableHead className="px-3 py-2 text-right font-semibold text-foreground/60">Anterior</TableHead>
+              <TableHead className="px-3 py-2 text-right font-semibold text-foreground/60">Novo</TableHead>
+              <TableHead className="px-3 py-2 text-center font-semibold text-foreground/60">Alteração</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {diff_items.map((item: VersionDiffItem, i: number) => {
               const style = CHANGE_STYLES[item.change_type]
               return (
-                <tr key={i} className={cn("border-t border-white/5", style.bg)}>
-                  <td className={cn("px-3 py-2", item.change_type === "removed" ? "line-through text-error-400" : "text-foreground")}>
+                <TableRow key={i} className={style.bg}>
+                  <TableCell className={cn("px-3 py-2", item.change_type === "removed" ? "line-through text-error-400" : "text-foreground")}>
                     {item.description}
                     {item.is_executed && (
-                      <span className="ml-2 rounded bg-warning-500/15 px-1.5 py-0.5 text-[10px] text-warning-400">Executado</span>
+                      <span className="ml-2 rounded bg-warning-500/15 px-1.5 py-0.5 text-xs text-warning-400">Executado</span>
                     )}
-                  </td>
-                  <td className="px-3 py-2 text-center">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-center">
                     <span className={cn("rounded px-2 py-0.5 text-[11px]",
                       item.item_type === "PART" ? "bg-info-900/50 text-info-400" : "bg-warning-900/50 text-warning-400",
                     )}>{item.item_type === "PART" ? "Peça" : "MO"}</span>
-                  </td>
-                  <td className="px-3 py-2 text-right text-foreground/60">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-right text-foreground/60">
                     {item.old_value ? `R$ ${fmtMoney(item.old_value)}` : "—"}
-                  </td>
-                  <td className={cn("px-3 py-2 text-right", style.text)}>
+                  </TableCell>
+                  <TableCell className={cn("px-3 py-2 text-right", style.text)}>
                     {item.new_value ? `R$ ${fmtMoney(item.new_value)}` : "—"}
-                  </td>
-                  <td className="px-3 py-2 text-center">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-center">
                     <span className={cn("rounded px-2 py-0.5 text-[11px]", `${style.bg} ${style.text}`)}>{style.label}</span>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </ScrollFade>
 
       {/* Diff cards — mobile */}
@@ -113,7 +114,7 @@ export function ImportDiffView({ diffResult, onApply, onCancel, isApplying }: Pr
                 <span className={cn("text-sm", item.change_type === "removed" ? "line-through text-error-400" : "text-foreground")}>
                   {item.description}
                   {item.is_executed && (
-                    <span className="ml-2 rounded bg-warning-500/15 px-1.5 py-0.5 text-[10px] text-warning-400">Executado</span>
+                    <span className="ml-2 rounded bg-warning-500/15 px-1.5 py-0.5 text-xs text-warning-400">Executado</span>
                   )}
                 </span>
                 <span className={cn("shrink-0 rounded px-2 py-0.5 text-[11px]", `${style.bg} ${style.text}`)}>{style.label}</span>

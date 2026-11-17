@@ -1,5 +1,6 @@
 "use client"
 
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useEffect, useRef, useState } from "react"
 import { Loader2, Search, UserPlus, X, CheckCircle2 } from "lucide-react"
@@ -21,9 +22,6 @@ interface CustomerSearchProps {
   onChange: (customer: SelectedCustomer | null) => void
   disabled?: boolean
 }
-
-const INPUT =
-  "flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
 const inlineCustomerSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -182,39 +180,39 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
         </div>
 
         {/* Nome */}
-        <input
+        <Input
           type="text"
           placeholder="Nome completo *"
           autoFocus
-          className={INPUT}
+          className="h-8"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
         />
 
         {/* CPF + Telefone */}
         <div className="grid grid-cols-2 gap-1.5">
-          <input
+          <Input
             type="text"
             placeholder="CPF (opcional)"
-            className={INPUT}
+            className="h-8"
             value={formatCPF(newCpf)}
             onChange={(e) => setNewCpf(onlyDigits(e.target.value).slice(0, 11))}
           />
-          <input
+          <Input
             type="tel"
             placeholder="(92) 99999-9999 *"
             inputMode="numeric"
-            className={INPUT}
+            className="h-8"
             value={formatPhone(newPhone)}
             onChange={(e) => setNewPhone(onlyDigits(e.target.value))}
           />
         </div>
 
         {/* Email */}
-        <input
+        <Input
           type="email"
           placeholder="E-mail *"
-          className={INPUT}
+          className="h-8"
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
         />
@@ -265,11 +263,11 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
       <div className="relative flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-          <input
+          <Input
             ref={inputRef}
             type="text"
             placeholder="Buscar por nome, CPF ou telefone..."
-            className={`${INPUT} pl-8`}
+            className="h-8 pl-8"
             value={query}
             onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
             onFocus={() => { if (query.length >= 3) setOpen(true) }}

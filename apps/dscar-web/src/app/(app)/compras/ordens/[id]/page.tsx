@@ -15,6 +15,8 @@ import {
   useAprovarOC,
   useRejeitarOC,
 } from "@/hooks/usePurchasing"
+import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { OrdemCompraDetail } from "@/components/purchasing/OrdemCompraDetail"
 import { TipoQualidadeBadge } from "@/components/purchasing/TipoQualidadeBadge"
 import { ScrollFade } from "@/components/ui/scroll-fade"
@@ -72,24 +74,24 @@ function AddItemForm({
         {/* Fornecedor nome */}
         <div className="space-y-1">
           <label className="label-mono text-muted-foreground">FORNECEDOR</label>
-          <input
+          <Input
             type="text"
             value={form.fornecedor_nome}
             onChange={(e) => update("fornecedor_nome", e.target.value)}
             placeholder="Nome do fornecedor"
-            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border"
+            className="w-full"
           />
         </div>
 
         {/* Descricao */}
         <div className="space-y-1">
           <label className="label-mono text-muted-foreground">DESCRICAO</label>
-          <input
+          <Input
             type="text"
             value={form.descricao}
             onChange={(e) => update("descricao", e.target.value)}
             placeholder="Descricao da peca"
-            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border"
+            className="w-full"
           />
         </div>
 
@@ -112,36 +114,36 @@ function AddItemForm({
         {/* Quantidade */}
         <div className="space-y-1">
           <label className="label-mono text-muted-foreground">QTD</label>
-          <input
+          <Input
             type="number"
             min="1"
             value={form.quantidade}
             onChange={(e) => update("quantidade", e.target.value)}
-            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border"
+            className="w-full"
           />
         </div>
 
         {/* Valor unitario */}
         <div className="space-y-1">
           <label className="label-mono text-muted-foreground">VALOR UNIT</label>
-          <input
+          <Input
             type="text"
             value={form.valor_unitario}
             onChange={(e) => update("valor_unitario", e.target.value)}
             placeholder="0.00"
-            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm font-mono text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border"
+            className="w-full font-mono"
           />
         </div>
 
         {/* Prazo entrega */}
         <div className="space-y-1">
           <label className="label-mono text-muted-foreground">PRAZO</label>
-          <input
+          <Input
             type="text"
             value={form.prazo_entrega ?? ""}
             onChange={(e) => update("prazo_entrega", e.target.value)}
             placeholder="Ex: 3 dias"
-            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border"
+            className="w-full"
           />
         </div>
 
@@ -179,19 +181,19 @@ function DraftItemsManager({ ocId }: { ocId: string }) {
 
       {/* Desktop table */}
       <ScrollFade className="hidden rounded-md border border-border bg-muted/50 md:block">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="label-mono text-muted-foreground text-left px-4 py-2.5">DESCRICAO</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-2.5">FORNECEDOR</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-2.5">TIPO</th>
-              <th className="label-mono text-muted-foreground text-right px-4 py-2.5">QTD</th>
-              <th className="label-mono text-muted-foreground text-right px-4 py-2.5">UNIT</th>
-              <th className="label-mono text-muted-foreground text-right px-4 py-2.5">TOTAL</th>
-              <th className="label-mono text-muted-foreground text-center px-4 py-2.5">ACAO</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="border-border">
+              <TableHead className="py-2.5">DESCRICAO</TableHead>
+              <TableHead className="py-2.5">FORNECEDOR</TableHead>
+              <TableHead className="py-2.5">TIPO</TableHead>
+              <TableHead className="text-right py-2.5">QTD</TableHead>
+              <TableHead className="text-right py-2.5">UNIT</TableHead>
+              <TableHead className="text-right py-2.5">TOTAL</TableHead>
+              <TableHead className="text-center py-2.5">ACAO</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {oc.itens.map((item) => (
               <DraftItemRow
                 key={item.id}
@@ -202,8 +204,8 @@ function DraftItemsManager({ ocId }: { ocId: string }) {
                 onRemoveEnd={() => setRemovingId(null)}
               />
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </ScrollFade>
 
       {/* Mobile cards */}
@@ -311,39 +313,39 @@ function DraftItemRow({
   }
 
   return (
-    <tr
+    <TableRow
       className={`border-b border-white/5 hover:bg-white/[0.02] transition-colors ${
         isRemoving ? "opacity-50" : ""
       }`}
     >
-      <td className="px-4 py-2.5">
+      <TableCell className="py-2.5">
         <span className="text-sm text-foreground/70">{item.descricao}</span>
         {item.codigo_referencia && (
           <span className="ml-1.5 text-xs text-muted-foreground font-mono">
             {item.codigo_referencia}
           </span>
         )}
-      </td>
-      <td className="px-4 py-2.5">
+      </TableCell>
+      <TableCell className="py-2.5">
         <span className="text-sm text-muted-foreground">{item.fornecedor_nome || "--"}</span>
-      </td>
-      <td className="px-4 py-2.5">
+      </TableCell>
+      <TableCell className="py-2.5">
         <TipoQualidadeBadge tipo={item.tipo_qualidade} />
-      </td>
-      <td className="px-4 py-2.5 text-right">
+      </TableCell>
+      <TableCell className="py-2.5 text-right">
         <span className="text-sm font-mono text-foreground/60">{item.quantidade}</span>
-      </td>
-      <td className="px-4 py-2.5 text-right">
+      </TableCell>
+      <TableCell className="py-2.5 text-right">
         <span className="text-sm font-mono text-foreground/60">
           {formatCurrency(item.valor_unitario)}
         </span>
-      </td>
-      <td className="px-4 py-2.5 text-right">
+      </TableCell>
+      <TableCell className="py-2.5 text-right">
         <span className="text-sm font-mono font-bold text-foreground">
           {formatCurrency(item.valor_total)}
         </span>
-      </td>
-      <td className="px-4 py-2.5 text-center">
+      </TableCell>
+      <TableCell className="py-2.5 text-center">
         <button
           type="button"
           onClick={() => void handleRemove()}
@@ -353,8 +355,8 @@ function DraftItemRow({
         >
           <Trash2 size={14} />
         </button>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 }
 

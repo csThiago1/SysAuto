@@ -1,5 +1,6 @@
 "use client"
 
+import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table"
 import { useState, useMemo } from "react"
 import { ChevronDown, ChevronRight, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -93,13 +94,13 @@ export function ServiceGroupedView({
 
             {isExpanded && (
               <ScrollFade>
-                <table className="w-full text-sm">
-                  <tbody>
+                <Table>
+                  <TableBody>
                     {group.items.map((item) => (
                       <ServiceSubRow key={item.id} item={item} {...subRowProps} />
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </ScrollFade>
             )}
           </div>
@@ -109,23 +110,23 @@ export function ServiceGroupedView({
       {/* Flat items: manual, complement, single-operation imported */}
       {flatItems.length > 0 && (
         <ScrollFade className="rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <tbody>
+          <Table>
+            <TableBody>
               {flatItems.map((item) => {
                 const { svcType, partName } = parseServiceDescription(item.description)
                 return (
-                  <tr key={item.id} className="border-t border-white/5 first:border-t-0">
-                    <td className="py-2.5 px-4 text-foreground/90 font-medium">{partName}</td>
-                    <td className="py-2.5 px-3 text-xs text-muted-foreground">{svcType || "Serviço"}</td>
-                    <td className="py-2.5 px-3 text-right text-foreground/60 font-mono">{item.quantity}h</td>
-                    <td className="py-2.5 px-3 text-right text-muted-foreground font-mono">
+                  <TableRow key={item.id}>
+                    <TableCell className="py-2.5 px-4 text-foreground/90 font-medium">{partName}</TableCell>
+                    <TableCell className="py-2.5 px-3 text-xs text-muted-foreground">{svcType || "Serviço"}</TableCell>
+                    <TableCell className="py-2.5 px-3 text-right text-foreground/60 font-mono">{item.quantity}h</TableCell>
+                    <TableCell className="py-2.5 px-3 text-right text-muted-foreground font-mono">
                       {formatCurrency(Number(item.unit_price))}/h
-                    </td>
-                    <td className="py-2.5 px-4 text-right font-mono font-semibold text-foreground/90">
+                    </TableCell>
+                    <TableCell className="py-2.5 px-4 text-right font-mono font-semibold text-foreground/90">
                       {formatCurrency(item.total)}
-                    </td>
+                    </TableCell>
                     {!isBlocked && (
-                      <td className="py-2.5 px-3 text-center w-16">
+                      <TableCell className="py-2.5 px-3 text-center w-16">
                         <div className="flex items-center gap-1 justify-center">
                           <button
                             type="button"
@@ -144,13 +145,13 @@ export function ServiceGroupedView({
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>
-                      </td>
+                      </TableCell>
                     )}
-                  </tr>
+                  </TableRow>
                 )
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </ScrollFade>
       )}
     </div>

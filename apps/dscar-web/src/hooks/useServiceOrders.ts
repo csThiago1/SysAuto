@@ -18,7 +18,9 @@ export function useServiceOrders(
   pageSize: number = 20,
   enabled: boolean = true
 ): ReturnType<typeof useQuery<PaginatedResponse<ServiceOrder>>> {
-  const params = new URLSearchParams({ ...filters, page: String(page), page_size: String(pageSize) }).toString();
+  // page_size nos filtros vence o padrão: o kanban pedia 150 e recebia 20 (o default sobrescrevia)
+  const { page_size, ...rest } = filters;
+  const params = new URLSearchParams({ ...rest, page: String(page), page_size: page_size ?? String(pageSize) }).toString();
   return useQuery<PaginatedResponse<ServiceOrder>>({
     queryKey: ["service-orders", filters, page, pageSize],
     queryFn: () => apiFetch<PaginatedResponse<ServiceOrder>>(`${API}/service-orders/?${params}`),
@@ -35,12 +37,16 @@ export function useServiceOrder(
   });
 }
 
-export function useDashboardStats(role?: string): ReturnType<typeof useQuery<AnyDashboardStats>> {
+export function useDashboardStats(
+  role?: string,
+  enabled: boolean = true
+): ReturnType<typeof useQuery<AnyDashboardStats>> {
   const param = role ? `?role=${role}` : ""
   return useQuery<AnyDashboardStats>({
     queryKey: ["dashboard-stats", role ?? "legacy"],
     queryFn: () =>
       apiFetch<AnyDashboardStats>(`${API}/service-orders/dashboard/stats/${param}`),
+    enabled,
   })
 }
 

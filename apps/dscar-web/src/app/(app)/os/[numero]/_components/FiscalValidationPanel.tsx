@@ -7,6 +7,7 @@
  * com correção inline de NCM e link direto pro cadastro do cliente.
  */
 
+import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import Link from "next/link"
 import type { Route } from "next"
@@ -139,11 +140,11 @@ function NcmInlineFix({
       <span className="text-xs text-foreground/70 truncate flex-1 min-w-0">
         {part.description}
       </span>
-      <input
+      <Input
         value={ncm}
         onChange={(e) => setNcm(e.target.value.replace(/\D/g, "").slice(0, 8))}
         placeholder="NCM (8 dígitos)"
-        className="h-7 w-32 rounded border border-border bg-muted/30 text-xs text-foreground/80 px-2 font-mono focus:outline-none focus:border-primary"
+        className="h-7 w-32 font-mono text-xs"
         aria-label={`NCM de ${part.description}`}
       />
       <Button

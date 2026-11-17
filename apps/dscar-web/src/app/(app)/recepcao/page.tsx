@@ -118,7 +118,7 @@ export default function RecepcaoPage(): React.ReactElement {
             />
             <span
               className={cn(
-                "text-[10px]",
+                "text-xs",
                 i === step ? "font-semibold text-primary" : "text-muted-foreground"
               )}
             >
@@ -129,7 +129,7 @@ export default function RecepcaoPage(): React.ReactElement {
       </ol>
 
       <FormProvider {...form}>
-        <div className="rounded-[11px] bg-card px-3 py-3">
+        <div className="rounded-md bg-card px-3 py-3">
           {step === 0 && <StepPlaca />}
           {step === 1 && <StepCliente />}
           {step === 2 && (

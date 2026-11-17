@@ -1,9 +1,11 @@
 "use client";
 
+import { sair } from "@/lib/sair";
+
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { ChevronRight, LogOut, Plus } from "lucide-react";
 import type { PaddockRole, ExtraPermission } from "@paddock/types";
 import { NotificationBell } from "@/components/header/NotificationBell";
@@ -29,6 +31,7 @@ import {
 } from "./nav-config";
 import { Placar, usePlacar } from "./Placar";
 import { SearchTrigger } from "./DockActions";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 /** Seções do dia a dia; o resto vai para "Gestão", recolhido. */
 const OFICINA = new Set(["GERAL", "CRM"]);
@@ -123,7 +126,11 @@ export function Sidebar(): React.ReactElement {
   const oficina = sections.filter((s) => OFICINA.has(s.label)).flatMap((s) => s.items);
   const gestao = sections.filter((s) => !OFICINA.has(s.label)).flatMap((s) => s.items);
   const gestaoAtiva = gestao.some((i) => isGroupActive(pathname, i));
-  const counts = { "/os": usePlacar().patio };
+  // A barra fica escondida (CSS) no celular: sempre desenhada (sem pular no
+  // desktop), mas o placar só busca dados em tela md+. O sino divide a query de
+  // atrasadas com a barra de abas do celular, então não pesa a mais.
+  const desktop = useIsDesktop();
+  const counts = { "/os": usePlacar(desktop).patio };
 
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card md:flex">
@@ -134,7 +141,7 @@ export function Sidebar(): React.ReactElement {
           <img src="/logo-ticket-preta.svg" alt="DS Car Centro Automotivo" className="h-20 w-auto shrink-0 dark:hidden" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-ticket-branca.svg" alt="" aria-hidden className="hidden h-20 w-auto shrink-0 dark:block" />
-          <Placar torre className="min-w-0 flex-1" />
+          <Placar torre ativo={desktop} className="min-w-0 flex-1" />
         </div>
         {podeAbrirOS(role) && (
           <Link
@@ -194,7 +201,7 @@ export function Sidebar(): React.ReactElement {
                 <ThemeToggle />
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => void signOut({ callbackUrl: "/login" })}>
+              <DropdownMenuItem onClick={() => void sair()}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair
               </DropdownMenuItem>

@@ -244,7 +244,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                             <div className="flex gap-2">
                               {/* Payment method */}
                               <div className="flex-1 min-w-0">
-                                <label className="label-mono text-muted-foreground text-[9px] mb-1 block">
+                                <label className="label-mono text-muted-foreground text-xs mb-1 block">
                                   FORMA PGTO
                                 </label>
                                 <NativeSelect
@@ -273,7 +273,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
 
                               {/* Payment term */}
                               <div className="flex-1 min-w-0">
-                                <label className="label-mono text-muted-foreground text-[9px] mb-1 block">
+                                <label className="label-mono text-muted-foreground text-xs mb-1 block">
                                   PRAZO
                                 </label>
                                 <NativeSelect

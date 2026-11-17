@@ -1006,7 +1006,7 @@ def upload_payslip_to_s3(pdf_bytes: bytes, payslip: "Payslip") -> str:
     from django.conf import settings
 
     key = f"payslips/{payslip.employee.id}/{payslip.reference_month}.pdf"
-    s3 = boto3.client("s3")
+    s3 = boto3.session.Session().client("s3")  # default session não é thread-safe (gthread)
     s3.put_object(
         Bucket=settings.AWS_S3_BUCKET,
         Key=key,

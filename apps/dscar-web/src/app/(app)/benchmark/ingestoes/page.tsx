@@ -191,7 +191,7 @@ function IngestaoDetail({ ingestaoId, logErro }: { ingestaoId: string; logErro: 
   return (
     <div className="border-t border-border px-4 py-3 space-y-3">
       {logErro && (
-        <div className="text-xs text-error-400 bg-red-400/10 rounded px-3 py-2 font-mono">
+        <div className="text-xs text-error-400 bg-error-500/10 rounded px-3 py-2 font-mono">
           {logErro.slice(0, 500)}
         </div>
       )}
@@ -219,7 +219,7 @@ function IngestaoDetail({ ingestaoId, logErro }: { ingestaoId: string; logErro: 
                   </TableCell>
                   <TableCell className="py-1.5 text-xs text-right">
                     {a.alias_match_confianca ? (
-                      <span className={parseFloat(a.alias_match_confianca) >= 0.85 ? "text-success-400" : "text-yellow-400"}>
+                      <span className={parseFloat(a.alias_match_confianca) >= 0.85 ? "text-success-400" : "text-warning-400"}>
                         {(parseFloat(a.alias_match_confianca) * 100).toFixed(0)}%
                       </span>
                     ) : (

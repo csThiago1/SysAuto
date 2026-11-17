@@ -62,7 +62,7 @@ export function PhotoCaptureGrid({
         className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border text-muted-foreground disabled:opacity-50"
       >
         <Camera className="h-6 w-6" />
-        <span className="text-[10px]">Adicionar</span>
+        <span className="text-xs">Adicionar</span>
       </button>
       <input
         ref={inputRef}

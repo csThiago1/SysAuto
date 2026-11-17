@@ -1,5 +1,6 @@
 "use client"
 
+import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Plus, Search } from "lucide-react"
@@ -33,7 +34,6 @@ const addSchema = z.object({
 type AddForm = z.infer<typeof addSchema>
 
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
-const INPUT  = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 
 interface Props {
   osId: string
@@ -155,8 +155,8 @@ export function ServicesTab({ osId, osStatus }: Props) {
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                <input
-                  className={`${INPUT} pl-8`}
+                <Input
+                  className="h-8 pl-8"
                   placeholder="Buscar no catálogo..."
                   value={catalogSearch}
                   onChange={(e) => { setCatalogSearch(e.target.value); setShowCatalog(true) }}
@@ -186,8 +186,8 @@ export function ServicesTab({ osId, osStatus }: Props) {
           <div className="space-y-2">
             <div>
               <label className={LABEL}>Descrição *</label>
-              <input
-                className={errors.description ? `${INPUT} border-red-400` : INPUT}
+              <Input
+                className={cn("h-8", errors.description && "border-error-400")}
                 placeholder="Descrição do serviço"
                 data-testid="service-description-input"
                 {...register("description")} aria-invalid={!!errors.description}
@@ -199,12 +199,12 @@ export function ServicesTab({ osId, osStatus }: Props) {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className={LABEL}>Qtd.</label>
-                <input className={INPUT} type="number" step="0.01" min="0.01" {...register("quantity")} aria-invalid={!!errors.quantity} />
+                <Input className="h-8" type="number" step="0.01" min="0.01" {...register("quantity")} aria-invalid={!!errors.quantity} />
               </div>
               <div>
                 <label className={LABEL}>Valor Unit. (R$) *</label>
-                <input
-                  className={errors.unit_price ? `${INPUT} border-red-400` : INPUT}
+                <Input
+                  className={cn("h-8", errors.unit_price && "border-error-400")}
                   placeholder="0.00"
                   {...register("unit_price")} aria-invalid={!!errors.unit_price}
                 />
@@ -229,7 +229,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
               {showDiscount && (
                 <div>
                   <label className={LABEL}>Desconto (R$)</label>
-                  <input className={INPUT} placeholder="0.00" {...register("discount")} aria-invalid={!!errors.discount} />
+                  <Input className="h-8" placeholder="0.00" {...register("discount")} aria-invalid={!!errors.discount} />
                 </div>
               )}
             </div>
@@ -290,7 +290,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-muted/20 p-10 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-border bg-muted/20 p-10 text-center">
           <Search className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
             {isBlocked

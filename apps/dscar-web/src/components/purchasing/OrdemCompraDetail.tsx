@@ -29,6 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -438,42 +439,42 @@ export function OrdemCompraDetail({
         <div className="space-y-0">
           <div className="section-divider">ITENS DA ORDEM DE COMPRA — RECEBIMENTO</div>
           <div className="bg-muted/50 rounded-lg border border-border overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border">
+                  <TableHead className="py-2.5">
                     PEÇA
-                  </th>
-                  <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+                  </TableHead>
+                  <TableHead className="py-2.5">
                     FORNECEDOR
-                  </th>
-                  <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
+                  </TableHead>
+                  <TableHead className="text-right py-2.5">
                     QTD
-                  </th>
-                  <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
+                  </TableHead>
+                  <TableHead className="text-right py-2.5">
                     TOTAL
-                  </th>
-                  <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+                  </TableHead>
+                  <TableHead className="py-2.5">
                     PREVISÃO
-                  </th>
-                  <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+                  </TableHead>
+                  <TableHead className="py-2.5">
                     STATUS
-                  </th>
-                  <th className="label-mono text-muted-foreground text-center px-4 py-2.5">
+                  </TableHead>
+                  <TableHead className="text-center py-2.5">
                     AÇÃO
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {oc.itens.map((item) => {
                   const previsao = formatDataPrevista(item.data_prevista)
                   const podeReceber = item.status_entrega !== "recebido"
                   return (
-                    <tr
+                    <TableRow
                       key={item.id}
-                      className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
+                      className="border-border last:border-b-0"
                     >
-                      <td className="px-4 py-3">
+                      <TableCell>
                         <p className="text-sm text-foreground/80">{item.descricao}</p>
                         {item.codigo_referencia && (
                           <p className="text-xs text-muted-foreground font-mono">
@@ -485,23 +486,23 @@ export function OrdemCompraDetail({
                             Recebido em {new Date(item.data_recebimento + "T00:00:00").toLocaleDateString("pt-BR")}
                           </p>
                         )}
-                      </td>
-                      <td className="px-4 py-3">
+                      </TableCell>
+                      <TableCell>
                         <span className="text-sm text-muted-foreground">
                           {item.fornecedor_nome || "--"}
                         </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
+                      </TableCell>
+                      <TableCell className="text-right">
                         <span className="text-sm font-mono text-foreground/60">
                           {item.quantidade}
                         </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
+                      </TableCell>
+                      <TableCell className="text-right">
                         <span className="text-sm font-mono font-bold text-foreground">
                           {formatCurrency(item.valor_total)}
                         </span>
-                      </td>
-                      <td className="px-4 py-3">
+                      </TableCell>
+                      <TableCell>
                         <span
                           className={`text-xs font-mono ${
                             previsao.vencida && item.status_entrega !== "recebido"
@@ -514,11 +515,11 @@ export function OrdemCompraDetail({
                           )}
                           {previsao.text}
                         </span>
-                      </td>
-                      <td className="px-4 py-3">
+                      </TableCell>
+                      <TableCell>
                         <EntregaStatusBadge status={item.status_entrega} />
-                      </td>
-                      <td className="px-4 py-3 text-center">
+                      </TableCell>
+                      <TableCell className="text-center">
                         {podeReceber ? (
                           <button
                             type="button"
@@ -536,12 +537,12 @@ export function OrdemCompraDetail({
                             OK
                           </span>
                         )}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )
                 })}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
       )}
@@ -583,36 +584,36 @@ export function OrdemCompraDetail({
             </div>
 
             <div className="bg-muted/50 rounded-b-md border border-t-0 border-border overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border">
+                    <TableHead className="py-2.5">
                       DESCRICAO
-                    </th>
-                    <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+                    </TableHead>
+                    <TableHead className="py-2.5">
                       TIPO
-                    </th>
-                    <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
+                    </TableHead>
+                    <TableHead className="text-right py-2.5">
                       QTD
-                    </th>
-                    <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
+                    </TableHead>
+                    <TableHead className="text-right py-2.5">
                       UNIT
-                    </th>
-                    <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
+                    </TableHead>
+                    <TableHead className="text-right py-2.5">
                       TOTAL
-                    </th>
-                    <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+                    </TableHead>
+                    <TableHead className="py-2.5">
                       PRAZO
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {items.map((item) => (
-                    <tr
+                    <TableRow
                       key={item.id}
-                      className="border-b border-border hover:bg-muted transition-colors"
+                      className="border-border hover:bg-muted"
                     >
-                      <td className="px-4 py-2.5">
+                      <TableCell className="py-2.5">
                         <span className="text-sm text-foreground/70">
                           {item.descricao}
                         </span>
@@ -621,34 +622,34 @@ export function OrdemCompraDetail({
                             {item.codigo_referencia}
                           </span>
                         )}
-                      </td>
-                      <td className="px-4 py-2.5">
+                      </TableCell>
+                      <TableCell className="py-2.5">
                         <TipoQualidadeBadge tipo={item.tipo_qualidade} />
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
+                      </TableCell>
+                      <TableCell className="py-2.5 text-right">
                         <span className="text-sm font-mono text-foreground/60">
                           {item.quantidade}
                         </span>
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
+                      </TableCell>
+                      <TableCell className="py-2.5 text-right">
                         <span className="text-sm font-mono text-foreground/60">
                           {formatCurrency(item.valor_unitario)}
                         </span>
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
+                      </TableCell>
+                      <TableCell className="py-2.5 text-right">
                         <span className="text-sm font-mono font-bold text-foreground">
                           {formatCurrency(item.valor_total)}
                         </span>
-                      </td>
-                      <td className="px-4 py-2.5">
+                      </TableCell>
+                      <TableCell className="py-2.5">
                         <span className="text-xs text-muted-foreground">
                           {item.prazo_entrega || "--"}
                         </span>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
         )

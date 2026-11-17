@@ -154,7 +154,7 @@ export default function AuditoriaMotorPage() {
                       ) : (
                         <Badge
                           variant="outline"
-                          className="border-error-500/30 text-error-400 bg-red-400/10 gap-1"
+                          className="border-error-500/30 text-error-400 bg-error-500/10 gap-1"
                         >
                           <XCircle className="h-3 w-3" />
                           Erro

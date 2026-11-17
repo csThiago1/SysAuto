@@ -1,4 +1,5 @@
 "use client"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 import { use } from "react"
 import { ArrowLeft, CheckCircle, AlertCircle, Package, Layers } from "lucide-react"
@@ -149,46 +150,46 @@ export default function NFeEntradaDetailPage({ params }: { params: Promise<{ id:
       <div className="space-y-2">
         <h2 className="text-sm font-semibold text-foreground/70">Itens da NF-e</h2>
         <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-muted-foreground text-xs">
-                <th className="px-4 py-3 text-left w-8">#</th>
-                <th className="px-4 py-3 text-left">Descrição</th>
-                <th className="px-4 py-3 text-right">Qtd</th>
-                <th className="px-4 py-3 text-right">Vl. Unit. c/ Trib.</th>
-                <th className="px-4 py-3 text-right">Total</th>
-                <th className="px-4 py-3 text-left">Reconciliação</th>
-                <th className="px-4 py-3 text-left">Mapeado</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border bg-muted/50 text-muted-foreground text-xs">
+                <TableHead className="py-3 w-8">#</TableHead>
+                <TableHead className="py-3">Descrição</TableHead>
+                <TableHead className="py-3 text-right">Qtd</TableHead>
+                <TableHead className="py-3 text-right">Vl. Unit. c/ Trib.</TableHead>
+                <TableHead className="py-3 text-right">Total</TableHead>
+                <TableHead className="py-3">Reconciliação</TableHead>
+                <TableHead className="py-3">Mapeado</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {nfe.itens.map((item) => (
-                <tr key={item.id} className="border-b border-white/5">
-                  <td className="px-4 py-3 text-muted-foreground text-xs">{item.numero_item}</td>
-                  <td className="px-4 py-3">
+                <TableRow key={item.id} className="border-white/5">
+                  <TableCell className="text-muted-foreground text-xs">{item.numero_item}</TableCell>
+                  <TableCell>
                     <p className="text-foreground text-sm">{item.descricao_original}</p>
                     {item.ncm && <p className="text-muted-foreground text-xs mt-0.5">NCM: {item.ncm}</p>}
-                  </td>
-                  <td className="px-4 py-3 text-right text-foreground/80">
+                  </TableCell>
+                  <TableCell className="text-right text-foreground/80">
                     {item.quantidade} {item.unidade_compra}
-                  </td>
-                  <td className="px-4 py-3 text-right text-foreground/80">
+                  </TableCell>
+                  <TableCell className="text-right text-foreground/80">
                     R$ {parseFloat(item.valor_unitario_com_tributos).toFixed(4)}
-                  </td>
-                  <td className="px-4 py-3 text-right text-foreground/80">
+                  </TableCell>
+                  <TableCell className="text-right text-foreground/80">
                     {parseFloat(item.valor_total_com_tributos).toLocaleString("pt-BR", {
                       style: "currency",
                       currency: "BRL",
                     })}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <ReconciliacaoSelect
                       nfeId={id}
                       item={item}
                       disabled={nfe.estoque_gerado}
                     />
-                  </td>
-                  <td className="px-4 py-3 text-foreground/60 text-xs">
+                  </TableCell>
+                  <TableCell className="text-foreground/60 text-xs">
                     {item.peca_nome && (
                       <span className="flex items-center gap-1">
                         <Package className="h-3 w-3" /> {item.peca_nome}
@@ -200,11 +201,11 @@ export default function NFeEntradaDetailPage({ params }: { params: Promise<{ id:
                       </span>
                     )}
                     {!item.peca_nome && !item.material_nome && "—"}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 

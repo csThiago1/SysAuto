@@ -135,7 +135,7 @@ export default function ResumoFiscalPage() {
       </div>
 
       {/* Footer totals */}
-      <div className="rounded-xl bg-muted/30 border border-white/[0.07] p-4 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+      <div className="rounded-md bg-muted/30 border border-white/[0.07] p-4 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
         <div className="flex flex-col gap-0.5">
           <span className="text-xs text-muted-foreground">Total emitidas</span>
           {isLoading ? (

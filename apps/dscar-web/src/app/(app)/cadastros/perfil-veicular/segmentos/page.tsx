@@ -2,6 +2,7 @@
 
 import { useSegmentos } from "@/hooks/usePricingProfile"
 import { TableSkeleton } from "@/components/ui/table-skeleton"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 export default function SegmentosPage() {
   const { data: segmentos = [], isLoading } = useSegmentos()
@@ -24,37 +25,36 @@ export default function SegmentosPage() {
         </div>
       ) : (
         <div className="rounded-md border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">Código</th>
-                <th className="px-4 py-3 text-left font-medium">Nome</th>
-                <th className="px-4 py-3 text-right font-medium">Fator</th>
-                <th className="px-4 py-3 text-right font-medium">Ordem</th>
-                <th className="px-4 py-3 text-left font-medium">Descrição</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50">
+                <TableHead>Código</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead className="text-right">Fator</TableHead>
+                <TableHead className="text-right">Ordem</TableHead>
+                <TableHead>Descrição</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {segmentos.map((s) => (
-                <tr
+                <TableRow
                   key={s.id}
-                  className="border-b last:border-0 hover:bg-muted/30 transition-colors"
                 >
-                  <td className="px-4 py-3 font-mono text-xs">{s.codigo}</td>
-                  <td className="px-4 py-3 font-medium">{s.nome}</td>
-                  <td className="px-4 py-3 text-right font-mono">
+                  <TableCell className="font-mono text-xs">{s.codigo}</TableCell>
+                  <TableCell className="font-medium">{s.nome}</TableCell>
+                  <TableCell className="text-right font-mono">
                     {s.fator_responsabilidade}×
-                  </td>
-                  <td className="px-4 py-3 text-right text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
                     {s.ordem}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground text-xs">
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">
                     {s.descricao || "—"}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

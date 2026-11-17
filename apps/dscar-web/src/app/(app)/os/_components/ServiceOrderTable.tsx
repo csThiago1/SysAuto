@@ -79,7 +79,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
             aria-label={`OS ${order.number}${order.plate ? `, placa ${order.plate}` : ""}, ${order.customer_name || "sem nome"}, ${statusCfg.label}`}
             onClick={() => router.push(`/os/${order.number}`)}
             onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) router.push(`/os/${order.number}`) }}
-            className="animate-card-in relative rounded-[11px] bg-card px-3 py-2.5 cursor-pointer opacity-0 hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
+            className="animate-card-in relative rounded-md bg-card px-3 py-2.5 cursor-pointer opacity-0 hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
           >
             <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", statusCfg.dot)} />
 
@@ -224,7 +224,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
                         <img src={order.insurer_detail.logo} alt={order.insurer_detail?.display_name ?? ""} className="h-full w-full object-contain p-0.5" />
                       ) : order.customer_type === "insurer" && order.insurer_detail?.abbreviation ? (
                         <span
-                          className="h-full w-full flex items-center justify-center text-foreground text-[9px] font-bold"
+                          className="h-full w-full flex items-center justify-center text-foreground text-2xs font-bold"
                           style={{ backgroundColor: order.insurer_detail?.brand_color ?? "#6366f1" }}
                         >
                           {order.insurer_detail.abbreviation.slice(0, 2)}

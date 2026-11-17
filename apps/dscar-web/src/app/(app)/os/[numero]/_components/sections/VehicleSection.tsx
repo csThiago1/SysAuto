@@ -1,5 +1,6 @@
 "use client"
 
+import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { Controller, type UseFormReturn } from "react-hook-form"
 import { History } from "lucide-react"
@@ -8,7 +9,7 @@ import type { ServiceOrder } from "@paddock/types"
 import { useVehicleHistory } from "../../_hooks/useVehicleHistory"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import {
-  FORM_SECTION_TITLE, FORM_LABEL, FORM_INPUT, FORM_ERROR, FORM_WARN,
+  FORM_SECTION_TITLE, FORM_LABEL, FORM_ERROR, FORM_WARN,
   formatCurrency, formatPlate, onlyAlnum,
 } from "@paddock/utils"
 import { ColorSelect } from "../shared/ColorSelect"
@@ -95,8 +96,8 @@ export function VehicleSection({ form, order, hideHeading }: VehicleSectionProps
           <div className="flex items-center gap-2">
             {/* Mesma altura e fundo dos demais campos; o que a distingue e a
                 fonte de placa (Rajdhani + tracking), nao uma moldura propria. */}
-            <input
-              className={`${FORM_INPUT} font-plate text-base font-bold uppercase tracking-[0.08em]`}
+            <Input
+              className="font-plate text-base font-bold uppercase tracking-[0.08em]"
               type="text"
               placeholder="ABC-1D23"
               maxLength={8}
@@ -177,8 +178,7 @@ export function VehicleSection({ form, order, hideHeading }: VehicleSectionProps
       <div className="grid grid-cols-6 gap-x-2 gap-y-5">
         <div className="col-span-6 sm:col-span-4">
           <label className={FORM_LABEL}>Chassi</label>
-          <input
-            className={FORM_INPUT}
+          <Input
             type="text"
             maxLength={17}
             placeholder="17 caracteres"
