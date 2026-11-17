@@ -4,6 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { v7 as uuidv7 } from "uuid"
 import { z } from "zod"
 
+import { useSession } from "next-auth/react"
+
+import { watermarkFile } from "@/components/camera/watermark"
 import { apiFetch } from "@/lib/api"
 
 const API = "/api/proxy"
@@ -37,10 +40,13 @@ export function useChecklistPhotos(osId: string) {
 /** Sobe uma foto nova pelo endpoint de fotos da OS e devolve a foto criada. */
 export function useUploadChecklistPhoto(osId: string) {
   const qc = useQueryClient()
+  const { data: session } = useSession()
+  // mesmas linhas da aba Arquivos (FilesTab); a data/hora o drawWatermark põe
+  const watermarkLines = [...(session?.user?.name ? [session.user.name] : []), "Pasta: Checklist de entrada"]
   return useMutation({
     mutationFn: async (file: File) => {
       const fd = new FormData()
-      fd.append("file", file)
+      fd.append("file", await watermarkFile(file, watermarkLines))
       fd.append("folder", FOLDER)
       fd.append("checklist_type", CHECKLIST_TYPE)
       fd.append("client_uuid", uuidv7())
