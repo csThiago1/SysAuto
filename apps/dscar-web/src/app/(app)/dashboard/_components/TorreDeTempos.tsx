@@ -3,8 +3,9 @@
 import Link from "next/link"
 import type { Route } from "next"
 import type { ServiceOrder } from "@paddock/types"
-import { formatCurrency, formatPlate } from "@paddock/utils"
+import { formatPlate } from "@paddock/utils"
 import { useServiceOrders } from "@/hooks/useServiceOrders"
+import { usePlacar } from "@/components/dock/Placar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { StatusBadge } from "@/components/ui/status-badge"
 import { cn } from "@/lib/utils"
@@ -54,14 +55,20 @@ function Numero({ valor, rotulo, alerta }: { valor: string; rotulo: string; aler
   )
 }
 
-/** Os carros do pátio em ordem de urgência, como a torre de tempos da F1. */
-export function TorreDeTempos({ mostrarValor }: { mostrarValor: boolean }) {
+/** Quantos carros a torre mostra; o resto fica na lista de OS. */
+const TOPO = 10
+
+/** Os carros mais urgentes do pátio, como a torre de tempos da F1. */
+export function TorreDeTempos() {
+  // O servidor ordena pela previsão (atrasadas primeiro, sem previsão no fim): os 10
+  // primeiros são os mais urgentes. Antes vinham 200 OS completas a cada abertura.
   const { data, isLoading, isError } = useServiceOrders(
-    // ordenado no servidor: com mais de 200 OS, as que ficam de fora são as de maior folga
     { is_active: "true", exclude_closed: "true", ordering: "estimated_delivery_date" },
     1,
-    200
+    TOPO
   )
+  // Mesmas queries do placar da barra lateral: os números saem do cache, sem request a mais
+  const { patio, atrasadas, hoje } = usePlacar()
 
   if (isLoading) {
     return (
@@ -79,19 +86,14 @@ export function TorreDeTempos({ mostrarValor }: { mostrarValor: boolean }) {
 
   const ordens = ordenarPorUrgencia(data?.results ?? [])
   const dias = ordens.map((o) => atraso(o.estimated_delivery_date))
-  const atrasadas = dias.filter((d) => d !== null && d > 0).length
-  const hoje = dias.filter((d) => d === 0).length
-  const aFaturar = ordens.reduce((s, o) => s + Number(o.total ?? 0), 0)
+  const total = data?.count ?? ordens.length
 
   return (
     <section aria-label="Pátio" className="space-y-4">
       <div className="flex flex-wrap gap-x-10 gap-y-3">
-        <Numero valor={String(data?.count ?? ordens.length)} rotulo="no pátio" />
-        <Numero valor={String(atrasadas)} rotulo="atrasadas" alerta={atrasadas > 0} />
-        <Numero valor={String(hoje)} rotulo="saem hoje" />
-        {mostrarValor && (
-          <Numero valor={formatCurrency(aFaturar, { compact: true })} rotulo="a faturar no pátio" />
-        )}
+        <Numero valor={String(patio ?? total)} rotulo="no pátio" />
+        <Numero valor={atrasadas === undefined ? "–" : String(atrasadas)} rotulo="atrasadas" alerta={(atrasadas ?? 0) > 0} />
+        <Numero valor={hoje === undefined ? "–" : String(hoje)} rotulo="saem hoje" />
       </div>
 
       {ordens.length === 0 ? (
@@ -141,6 +143,11 @@ export function TorreDeTempos({ mostrarValor }: { mostrarValor: boolean }) {
             )
           })}
         </ol>
+      )}
+      {total > ordens.length && (
+        <Link href="/os" className="inline-block text-sm text-primary hover:underline">
+          Ver as {total} OS do pátio
+        </Link>
       )}
     </section>
   )

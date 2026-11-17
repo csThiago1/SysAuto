@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useSession } from "next-auth/react"
-import { ROLE_HIERARCHY, type PaddockRole, type ExtraPermission } from "@paddock/types"
+import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types"
 import type { ConsultantDashboardStats, ManagerDashboardStats } from "@paddock/types"
 import { useDashboardStats } from "@/hooks"
 import { Skeleton } from "@/components/ui"
@@ -15,7 +15,6 @@ import { ManagerDashboard } from "./_components/ManagerDashboard"
 export default function DashboardPage(): React.ReactElement {
   const { data: session, status } = useSession()
   const role = (session?.role ?? "STOREKEEPER") as PaddockRole
-  const perms = (session?.extraPermissions ?? []) as ExtraPermission[]
   const level = ROLE_HIERARCHY[role] ?? 0
 
   // Map PaddockRole → API role param
@@ -23,7 +22,6 @@ export default function DashboardPage(): React.ReactElement {
     role === "CONSULTANT" ? "CONSULTANT" : level >= ROLE_HIERARCHY.MANAGER ? "MANAGER" : undefined
 
   const { data: stats, isLoading } = useDashboardStats(roleParam, status === "authenticated" && !!roleParam)
-  const mostrarValor = level >= ROLE_HIERARCHY.MANAGER || perms.includes("can_view_financial")
   const papel = stats && "role" in stats ? stats.role : undefined
 
   return (
@@ -35,7 +33,7 @@ export default function DashboardPage(): React.ReactElement {
         />
 
         {/* 1 — O pátio agora: todo mundo vê, na ordem do que precisa de atenção */}
-        <TorreDeTempos mostrarValor={mostrarValor} />
+        <TorreDeTempos />
 
         {/* 2 — O mês (gerente) ou a minha carteira (consultor) */}
         {roleParam && isLoading && <Skeleton className="h-40 w-full" />}
