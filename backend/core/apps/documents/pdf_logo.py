@@ -45,3 +45,27 @@ def get_logo_base64() -> str:
 def get_logo_black_base64() -> str:
     """Logo preta (para marca d'água / fundo branco)."""
     return _find_logo("dscar-logo-black.png")
+
+
+def _svg_data_uri(svg: str) -> str:
+    return "data:image/svg+xml;base64," + base64.b64encode(svg.encode("utf-8")).decode("ascii")
+
+
+@lru_cache(maxsize=1)
+def get_ticket_logo_svg() -> str:
+    """Logo estilo ticket ("Parada Obrigatória", preta) como data URI SVG."""
+    return _svg_data_uri((_HERE / "dscar-ticket-preta.svg").read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=1)
+def get_flags_watermark_tile() -> str:
+    """Ladrilho da marca d'água: bandeiras bem claras, repetidas no fundo da página."""
+    svg = (_HERE / "dscar-bandeiras-preta.svg").read_text(encoding="utf-8")
+    inner = svg[svg.index(">", svg.index("<svg")) + 1 : svg.rindex("</svg>")]
+    # Viewbox do logo: 201.6 x 105.8 → ladrilho 150 x 95 com respiro, logo a 55%.
+    tile = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="150" height="95" viewBox="0 0 150 95">'
+        f'<g opacity="0.07" transform="translate(20 18) scale(0.55)">{inner}</g></svg>'
+    )
+    return _svg_data_uri(tile)
+

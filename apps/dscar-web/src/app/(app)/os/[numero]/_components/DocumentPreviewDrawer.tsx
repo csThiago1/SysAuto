@@ -75,34 +75,40 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
     setFormData(clone)
   }
 
-  async function openDocument(docId: string) {
+  // A aba nasce no clique: aberta só depois do await, o navegador a bloqueia como pop-up.
+  async function openDocument(docId: string, win: Window | null) {
     const res = await fetch(`/api/proxy/documents/${docId}/download/`)
     if (!res.ok) {
+      win?.close()
       toast.error("Erro ao baixar o documento. Tente novamente.")
       return
     }
     const blob = await res.blob()
     if (!blob.type.includes("pdf") && blob.size < 500) {
+      win?.close()
       toast.error("Erro na geração do PDF. Contate o suporte.")
       return
     }
     const url = URL.createObjectURL(blob)
-    window.open(url, "_blank")
+    if (win) win.location.href = url
+    else window.open(url, "_blank")
     // Libera memória após um tempo
     setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
 
   async function handleGenerate() {
     if (!formData) return
+    const win = window.open("", "_blank")
     try {
       const result = await generateMutation.mutateAsync({
         document_type: documentType,
         data: formData,
       })
-      await openDocument(result.id)
+      await openDocument(result.id, win)
       toast.success(`${config.label} v${result.version} gerado com sucesso!`)
       onClose()
     } catch {
+      win?.close()
       toast.error("Erro ao gerar documento. Tente novamente.")
     }
   }

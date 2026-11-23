@@ -32,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollFade } from "@/components/ui/scroll-fade"
 import { PIPELINE_PHASES, currentPhaseIndex } from "./pipeline"
 import { OverviewSection } from "./OverviewSection"
+import { DocumentsDropdown } from "../_components/DocumentsDropdown"
 import { DadosWorkspace } from "./dados/DadosWorkspace"
 import { PartsTab } from "../_components/tabs/PartsTab"
 import { ServicesTab } from "../_components/tabs/ServicesTab"
@@ -277,6 +278,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
               <Upload className="h-3.5 w-3.5" />
               Importar orçamento
             </Button>
+            <DocumentsDropdown order={order} />
             <Button asChild size="sm" className="min-h-[44px] md:min-h-0">
               <a href={`/os/${order.number}/checklist`}>
                 <Camera className="h-3.5 w-3.5" />

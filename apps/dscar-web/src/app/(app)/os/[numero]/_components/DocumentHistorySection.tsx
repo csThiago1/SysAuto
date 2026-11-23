@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronRight,
   Eye,
+  Printer,
 } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -18,6 +19,7 @@ import { useDocumentHistory } from "@/hooks/useDocuments"
 import { Button } from "@/components/ui/button"
 
 const TYPE_ICONS: Record<PDFDocumentType, typeof FileText> = {
+  os_cliente: Printer,
   os_report: FileText,
   warranty: ShieldCheck,
   settlement: CheckCircle,
@@ -57,10 +59,17 @@ export function DocumentHistorySection({ order }: Props) {
   }
 
   async function handleDownload(docId: string) {
+    // Aba aberta no clique (depois do await o navegador bloqueia como pop-up)
+    const win = window.open("", "_blank")
     const res = await fetch(`/api/proxy/documents/${docId}/download/`)
+    if (!res.ok) {
+      win?.close()
+      return
+    }
     const blob = await res.blob()
     const url = URL.createObjectURL(blob)
-    window.open(url, "_blank")
+    if (win) win.location.href = url
+    else window.open(url, "_blank")
     setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
 

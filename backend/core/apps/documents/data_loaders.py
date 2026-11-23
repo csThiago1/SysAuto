@@ -18,7 +18,12 @@ from apps.documents.constants import (
     DEFAULT_WARRANTY_EXCLUSIONS,
     WARRANTY_MONTHS_BY_CATEGORY,
 )
-from apps.documents.pdf_logo import get_logo_base64, get_logo_black_base64
+from apps.documents.pdf_logo import (
+    get_flags_watermark_tile,
+    get_logo_base64,
+    get_logo_black_base64,
+    get_ticket_logo_svg,
+)
 from apps.vehicle_catalog.normalize import COR_HEX
 
 logger = logging.getLogger(__name__)
@@ -580,6 +585,34 @@ class OSDataLoader:
                 "casualty_number": order.casualty_number or "",
                 "insured_type": order.get_insured_type_display() if order.insured_type else "",
             }
+        return data
+
+    @classmethod
+    def load_os_cliente(cls, order_id: UUID) -> dict[str, Any]:
+        """OS para o cliente: dados do cliente, itens com valores e total a pagar."""
+        order = cls._load_order(order_id)
+        data = cls._base_context(order)
+        data["order"].update({
+            "customer_type_display": "Seguradora" if order.customer_type == "insurer" else "Particular",
+            "entry_date": _format_date_br(timezone.localtime(order.entry_date or order.opened_at)),
+            "consultor": order.consultant.get_full_name() if order.consultant else "",
+        })
+        data.update({
+            "customer": cls._customer_dict(order),
+            "vehicle": cls._vehicle_dict(order),
+            "services": cls._services_list(order),
+            "parts": cls._parts_list(order),
+            "totals": cls._totals_dict(order),
+            "observations": order.notes or "",
+            "ticket_logo": get_ticket_logo_svg(),
+            "watermark_tile": get_flags_watermark_tile(),
+        })
+        phone = "".join(ch for ch in data["customer"]["phone"] if ch.isdigit())
+        if len(phone) == 11:
+            data["customer"]["phone"] = f"({phone[:2]}) {phone[2:7]}-{phone[7:]}"
+        for svc in data["services"]:
+            gross = Decimal(svc["unit_price"]) * Decimal(svc["quantity"])
+            svc["discount"] = str(max(gross - Decimal(svc["total"]), Decimal(0)))
         return data
 
     @classmethod

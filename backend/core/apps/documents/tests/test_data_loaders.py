@@ -43,6 +43,12 @@ class OSDataLoaderEnvelopeTestCase(TenantTestCase):
     def test_load_os_report_keeps_envelope(self) -> None:
         self._assert_envelope(OSDataLoader.load_os_report(self.order.pk))
 
+    def test_load_os_cliente_has_customer_and_totals(self) -> None:
+        data = OSDataLoader.load_os_cliente(self.order.pk)
+        self._assert_envelope(data)
+        assert data["customer"]["name"] == "Cliente PDF Loader"
+        assert {"parts", "services", "grand_total"} <= data["totals"].keys()
+
     def test_load_warranty_keeps_envelope(self) -> None:
         self._assert_envelope(OSDataLoader.load_warranty(self.order.pk))
 

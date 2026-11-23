@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 _DOCUMENT_TEMPLATES = {
     "os_report": "pdf_engine/os_report.html",
+    "os_cliente": "pdf_engine/os_cliente.html",
     "warranty": "pdf_engine/warranty.html",
     "settlement": "pdf_engine/settlement.html",
     "receipt": "pdf_engine/receipt.html",

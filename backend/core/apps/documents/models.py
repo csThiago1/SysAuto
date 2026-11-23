@@ -9,6 +9,7 @@ from apps.authentication.models import PaddockBaseModel
 
 class DocumentType(models.TextChoices):
     OS_REPORT = "os_report", "Ordem de Serviço"
+    OS_CLIENTE = "os_cliente", "OS com valores (cliente)"
     WARRANTY = "warranty", "Termo de Garantia"
     SETTLEMENT = "settlement", "Termo de Quitação"
     RECEIPT = "receipt", "Recibo de Pagamento"

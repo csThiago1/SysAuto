@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import dynamic from "next/dynamic"
-import { FileText, ShieldCheck, CheckCircle, Receipt, ChevronDown } from "lucide-react"
+import { FileText, ShieldCheck, CheckCircle, Receipt, ChevronDown, Printer } from "lucide-react"
 import type { ServiceOrder, PDFDocumentType } from "@paddock/types"
 import { useDocumentHistory } from "@/hooks/useDocuments"
 import {
@@ -27,8 +27,15 @@ const DOC_ITEMS: {
   enabled: (o: ServiceOrder) => boolean
 }[] = [
   {
+    type: "os_cliente",
+    label: "OS com valores (cliente)",
+    icon: Printer,
+    tooltip: () => null,
+    enabled: () => true,
+  },
+  {
     type: "os_report",
-    label: "Ordem de Serviço",
+    label: "Ordem de Serviço (oficina)",
     icon: FileText,
     tooltip: () => null,
     enabled: () => true,
