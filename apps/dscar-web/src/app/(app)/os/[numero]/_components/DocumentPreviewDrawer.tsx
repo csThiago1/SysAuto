@@ -2,12 +2,13 @@
 
 import { NativeSelect } from "@/components/ui/native-select"
 import { useEffect, useState } from "react"
-import { FileText, Loader2, Plus, Printer, Trash2 } from "lucide-react"
+import { FileText, Loader2, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import type { ServiceOrder, PDFDocumentType, DocumentPreviewData } from "@paddock/types"
 import { DOCUMENT_TYPE_CONFIG } from "@paddock/types"
 import { useDocumentPreview, useGenerateDocument } from "@/hooks/useDocuments"
 import { Button } from "@/components/ui/button"
+import { PdfShareActions } from "./PdfShareActions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -328,15 +329,11 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   <Button variant="ghost" onClick={onClose}>
                     Fechar
                   </Button>
-                  <Button asChild>
-                    <a
-                      href={`/api/proxy/documents/${generated.id}/download/`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Printer className="h-4 w-4 mr-1.5" /> Abrir PDF (v{generated.version})
-                    </a>
-                  </Button>
+                  <PdfShareActions
+                    docId={generated.id}
+                    filename={`OS ${order.number} - ${config.label} v${generated.version}.pdf`}
+                    openLabel={`Abrir PDF (v${generated.version})`}
+                  />
                 </>
               ) : (
                 <>

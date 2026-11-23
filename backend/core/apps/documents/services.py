@@ -47,6 +47,17 @@ class DocumentService:
 
         order = ServiceOrder.objects.get(pk=order_id, is_active=True)
 
+        # Mesmo conteúdo da última versão: devolve ela em vez de criar outra a cada clique
+        latest = (
+            DocumentGeneration.objects.filter(
+                service_order=order, document_type=document_type, receivable_id=receivable_id
+            )
+            .order_by("-version")
+            .first()
+        )
+        if latest and latest.data_snapshot == data:
+            return latest
+
         current_max = DocumentGeneration.objects.filter(
             service_order=order,
             document_type=document_type,

@@ -16,6 +16,13 @@ function ToasterDaMarca(): React.ReactElement {
     <Toaster
       theme={theme}
       position={desktop ? "bottom-right" : "top-center"}
+      // No celular o topo fica embaixo da barra de status / Dynamic Island: desce pela área segura
+      mobileOffset={{
+        top: "calc(env(safe-area-inset-top) + 8px)",
+        left: 16,
+        right: 16,
+      }}
+      closeButton
       toastOptions={{
         classNames: {
           toast: "!rounded-md !border !border-border !bg-card !text-foreground !shadow-card",
