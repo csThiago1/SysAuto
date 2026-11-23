@@ -58,19 +58,9 @@ export function DocumentHistorySection({ order }: Props) {
     grouped[key].sort((a, b) => b.version - a.version)
   }
 
-  async function handleDownload(docId: string) {
-    // Aba aberta no clique (depois do await o navegador bloqueia como pop-up)
-    const win = window.open("", "_blank")
-    const res = await fetch(`/api/proxy/documents/${docId}/download/`)
-    if (!res.ok) {
-      win?.close()
-      return
-    }
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    if (win) win.location.href = url
-    else window.open(url, "_blank")
-    setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  // URL real aberta no próprio clique: o iPhone não abre PDF de blob em aba nova
+  function handleDownload(docId: string) {
+    window.open(`/api/proxy/documents/${docId}/download/`, "_blank", "noopener")
   }
 
   return (
