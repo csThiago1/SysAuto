@@ -46,7 +46,7 @@ export function VehicleCatalogPicker({
               if (value) onChange(null) // a montadora é de um tipo só
             }}
             className={cn(
-              "rounded px-3 py-1 text-xs font-medium disabled:opacity-50",
+              "min-h-10 rounded px-4 text-sm font-medium disabled:opacity-50",
               tipo === t.value ? "bg-primary text-primary-foreground" : "text-muted-foreground",
             )}
           >

@@ -55,7 +55,7 @@ export function CatalogCombobox({
             id={id}
             type="button"
             disabled={disabled}
-            className="flex h-9 w-full items-center gap-2 rounded-md border border-border bg-background px-3 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-10 max-md:h-11 w-full items-center gap-2 rounded-md border border-border bg-background px-3 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50"
           >
             {value && icon?.(value)}
             <span className={cn("flex-1 truncate", !value && "text-muted-foreground")}>

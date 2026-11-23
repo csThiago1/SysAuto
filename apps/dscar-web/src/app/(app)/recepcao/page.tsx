@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { toast } from "sonner";
 import { v7 as uuidv7 } from "uuid";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, FileText, Loader2 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { PhotoCaptureGrid } from "@/components/photos/PhotoCaptureGrid";
 import { newOSSchema, toCreatePayload, type NewOSInput } from "../os/_components/new-os.schema";
 import { useServiceOrderCreate } from "../os/[numero]/_hooks/useServiceOrder";
+import { useCreateBudget } from "@/hooks/useBudgets";
+import { PlacaMercosul } from "@/components/vehicle/PlacaMercosul";
 import { StepCliente } from "./_components/StepCliente";
 import { StepPlaca } from "./_components/StepPlaca";
 import { cn } from "@/lib/utils";
@@ -32,6 +34,7 @@ const STEP_FIELDS: Array<Array<keyof NewOSInput>> = [
 export default function RecepcaoPage(): React.ReactElement {
   const router = useRouter();
   const createMutation = useServiceOrderCreate();
+  const createBudget = useCreateBudget();
   const [step, setStep] = useState(0);
   const [photos, setPhotos] = useState<File[]>([]);
   const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null);
@@ -95,42 +98,64 @@ export default function RecepcaoPage(): React.ReactElement {
     router.push(`/os/${osNumber}/checklist` as Route);
   }
 
+  /** Carro conhecido: tudo do passo 1 e 2 já veio da última OS — vai direto confirmar. */
+  async function abrirDireto(): Promise<void> {
+    const ok = await form.trigger([...STEP_FIELDS[0], ...STEP_FIELDS[1]]);
+    if (ok) setStep(STEPS.length - 1);
+    else setStep(1);
+  }
+
+  /** Mesmos dados, sem abrir OS: vira orçamento particular (cliente que não deixa o carro). */
+  async function handleSoOrcamento(data: NewOSInput): Promise<void> {
+    const family = data.catalog_selection?.family;
+    if (!data.customer_id || !family) return;
+    try {
+      const budget = await createBudget.mutateAsync({
+        customer_id: data.customer_id,
+        vehicle_plate: data.plate,
+        catalog_family: family.id,
+        catalog_version: data.catalog_selection?.version?.id ?? null,
+        vehicle_color: data.color || "NAO_INFORMADA",
+        vehicle_year_manufacture: data.year_manufacture ?? null,
+        vehicle_chassis: data.chassis ?? "",
+      });
+      toast.success(`Orçamento ${budget.number} criado.`);
+      router.push(`/orcamentos-particulares/${budget.id}` as Route);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao criar orçamento.");
+    }
+  }
+
   const values = form.watch();
   const busy = form.formState.isSubmitting || uploading !== null;
 
   return (
-    <div className="mx-auto flex max-w-lg flex-col gap-4 px-0">
-      <PageHeader
-        title="Recepção"
-        description="Nova OS em 4 passos"
-        backHref="/dashboard"
-      />
+    <div className="mx-auto flex max-w-lg flex-col gap-5 px-0 pb-6">
+      <PageHeader title="Nova OS" backHref="/dashboard" />
 
-      {/* Stepper */}
-      <ol className="flex items-center gap-1" aria-label="Progresso">
+      {/* Setores da volta: o passo atual acende em cima, os feitos ficam brancos. */}
+      <ol className="grid grid-cols-4 border-y border-border" aria-label="Passos da Nova OS">
         {STEPS.map((label, i) => (
-          <li key={label} className="flex flex-1 flex-col items-center gap-1">
-            <span
-              className={cn(
-                "h-1 w-full rounded-full",
-                i <= step ? "bg-primary" : "bg-muted"
-              )}
-            />
-            <span
-              className={cn(
-                "text-xs",
-                i === step ? "font-semibold text-primary" : "text-muted-foreground"
-              )}
-            >
-              {label}
-            </span>
+          <li
+            key={label}
+            aria-current={i === step ? "step" : undefined}
+            className={cn(
+              "border-r border-border px-2 py-2 font-cond text-[15px] font-bold uppercase tracking-[0.02em] last:border-r-0",
+              i === step
+                ? "text-foreground shadow-[inset_0_3px_0_hsl(var(--primary))]"
+                : i < step
+                  ? "text-foreground/80"
+                  : "text-muted-foreground",
+            )}
+          >
+            {label}
           </li>
         ))}
       </ol>
 
       <FormProvider {...form}>
-        <div className="rounded-md bg-card px-3 py-3">
-          {step === 0 && <StepPlaca />}
+        <div>
+          {step === 0 && <StepPlaca onAbrirDireto={() => void abrirDireto()} />}
           {step === 1 && <StepCliente />}
           {step === 2 && (
             <div className="space-y-2">
@@ -145,25 +170,23 @@ export default function RecepcaoPage(): React.ReactElement {
             </div>
           )}
           {step === 3 && (
-            <dl className="space-y-2 text-sm">
-              <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-2">
-                <dt className="text-muted-foreground">Veículo</dt>
-                <dd className="min-w-0">
-                  <span className="font-mono tabular-nums">{values.plate}</span>
-                  {" · "}
+            <dl className="space-y-3 text-[15px]">
+              <div className="flex flex-wrap items-center gap-3 border-b border-border pb-3">
+                <PlacaMercosul plate={values.plate} size="md" />
+                <span className="font-cond text-[22px] font-bold uppercase leading-tight">
                   {values.catalog_selection?.make.label} {values.catalog_selection?.family?.label}
-                </dd>
+                </span>
               </div>
-              <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-2">
-                <dt className="text-muted-foreground">Cliente</dt>
+              <div className="grid grid-cols-[112px_minmax(0,1fr)] gap-3">
+                <dt className="label-mono self-center">Cliente</dt>
                 <dd className="min-w-0 truncate">{values.customer_name}</dd>
               </div>
-              <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-2">
-                <dt className="text-muted-foreground">Atendimento</dt>
+              <div className="grid grid-cols-[112px_minmax(0,1fr)] gap-3">
+                <dt className="label-mono self-center">Atendimento</dt>
                 <dd>{values.customer_type === "insurer" ? "Seguradora" : "Particular"}</dd>
               </div>
-              <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-2">
-                <dt className="text-muted-foreground">Fotos</dt>
+              <div className="grid grid-cols-[112px_minmax(0,1fr)] gap-3">
+                <dt className="label-mono self-center">Fotos</dt>
                 <dd>{photos.length}</dd>
               </div>
               {uploading && (
@@ -176,11 +199,30 @@ export default function RecepcaoPage(): React.ReactElement {
         </div>
       </FormProvider>
 
+      {step === STEPS.length - 1 && values.customer_type === "private" && values.customer_id && (
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="order-last w-full"
+          disabled={busy || createBudget.isPending}
+          onClick={() => void form.handleSubmit(handleSoOrcamento)()}
+        >
+          {createBudget.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <FileText className="h-4 w-4" />
+          )}
+          Só orçamento (cliente não deixa o carro)
+        </Button>
+      )}
+
       <div className="flex gap-2">
         {step > 0 && (
           <Button
             type="button"
             variant="outline"
+            size="lg"
             className="flex-1"
             disabled={busy}
             onClick={() => setStep((s) => s - 1)}
@@ -190,13 +232,14 @@ export default function RecepcaoPage(): React.ReactElement {
           </Button>
         )}
         {step < STEPS.length - 1 ? (
-          <Button type="button" className="flex-1" onClick={() => void next()}>
+          <Button type="button" size="lg" className="flex-1" onClick={() => void next()}>
             Avançar
             <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
         ) : (
           <Button
             type="button"
+            size="lg"
             className="flex-1"
             disabled={busy}
             onClick={() => void form.handleSubmit(handleCreate)()}

@@ -29,6 +29,7 @@ import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types"
 import { SERVICE_ORDER_STATUS_CONFIG, formatCurrency } from "@paddock/utils"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
+import { PlacaMercosul } from "@/components/vehicle/PlacaMercosul"
 import { ScrollFade } from "@/components/ui/scroll-fade"
 import { PIPELINE_PHASES, currentPhaseIndex } from "./pipeline"
 import { OverviewSection } from "./OverviewSection"
@@ -222,118 +223,112 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
       )}
       {/* ── Header ──────────────────────────────────────────────────── */}
       <header ref={headerRef} className="md:sticky md:top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="px-5 pt-2.5">
-          <ol className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <li>
-              <a href="/os" className="transition-colors hover:text-foreground">
-                Ordens de Serviço
-              </a>
-            </li>
-            <li aria-hidden>/</li>
-            <li className="text-foreground/70">OS #{order.number}</li>
-          </ol>
-        </nav>
-
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-5 pt-1">
+        {/* Torre de tempos: número da OS na faixa vermelha, placa Mercosul,
+            carro em condensada, status como faixa da cor da bandeira. */}
+        <div className="flex flex-wrap items-stretch gap-y-2 md:flex-nowrap">
           <button
             type="button"
             onClick={() => router.push("/os")}
-            aria-label="Voltar para a lista"
-            className="-ml-2 flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground md:-ml-1.5 md:h-9 md:w-9"
+            aria-label="Voltar para a lista de OS"
+            className="flex w-11 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-5 w-5" />
           </button>
 
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">
-            OS #{order.number}
-          </h1>
-          <span
-            className={cn(
-              "whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium",
-              statusCfg?.badge ?? "bg-muted text-muted-foreground",
+          <div className="flex min-w-0 flex-1 items-stretch">
+            <h1
+              className="flex shrink-0 flex-col justify-center bg-primary py-2 pl-3 pr-6 text-primary-foreground [clip-path:polygon(0_0,100%_0,calc(100%-14px)_100%,0_100%)]"
+              aria-label={`OS ${order.number}`}
+            >
+              <span className="text-[11px] font-semibold uppercase leading-none tracking-[0.12em] opacity-90">OS</span>
+              <span className="font-cond text-[40px] font-extrabold leading-[0.9] tabular-nums">{order.number}</span>
+            </h1>
+
+            <div className="flex min-w-0 flex-col justify-center gap-1 px-4 py-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+                {order.plate && <PlacaMercosul plate={order.plate} size="md" />}
+                <span className="truncate font-cond text-[24px] font-bold uppercase leading-none tracking-[0.01em]">
+                  {vehicle || "Veículo sem modelo"}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                <span className="text-foreground/90">{order.customer_name || "Sem cliente"}</span>
+                <span> · </span>
+                <span className="font-mono text-[15px] text-foreground/90">{formatCurrency(total)}</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex w-full flex-wrap items-center gap-2 border-t border-border px-3 py-2 md:w-auto md:flex-nowrap md:border-l md:border-t-0 md:px-4">
+            <span className="flex items-center gap-2 self-stretch pr-2">
+              <span aria-hidden className={cn("w-1.5 self-stretch", statusCfg?.dot ?? "bg-muted")} />
+              <span className="whitespace-nowrap font-cond text-[20px] font-bold uppercase leading-none">
+                {statusCfg?.label ?? status}
+              </span>
+            </span>
+
+            {pendingCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setSection("overview")}
+                className="inline-flex min-h-11 items-center rounded border border-warning-500/40 bg-warning-500/10 px-3 text-sm font-medium text-warning-400 transition-colors hover:bg-warning-500/20 md:min-h-9"
+              >
+                {pendingCount} pendência{pendingCount > 1 ? "s" : ""}
+              </button>
             )}
-          >
-            {statusCfg?.label ?? status}
-          </span>
 
-          {pendingCount > 0 && (
-            <button
-              type="button"
-              onClick={() => setSection("overview")}
-              className="inline-flex min-h-[44px] items-center rounded-full border border-warning-500/30 bg-warning-500/10 px-3 text-xs text-warning-400 transition-colors hover:bg-warning-500/20 md:min-h-0 md:px-2.5 md:py-0.5"
-            >
-              {pendingCount} pendência{pendingCount > 1 ? "s" : ""}
-            </button>
-          )}
-
-          <div className="ml-auto flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setImportOpen(true)}
-              className="min-h-[44px] md:min-h-0"
-            >
-              <Upload className="h-3.5 w-3.5" />
-              Importar orçamento
-            </Button>
-            <DocumentsDropdown order={order} />
-            <Button asChild size="sm" className="min-h-[44px] md:min-h-0">
-              <a href={`/os/${order.number}/checklist`}>
-                <Camera className="h-3.5 w-3.5" />
-                Checklist
-              </a>
-            </Button>
+            <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 md:ml-auto md:flex md:w-auto">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setImportOpen(true)}
+                aria-label="Importar orçamento"
+              >
+                <Upload className="h-4 w-4" />
+                <span className="hidden lg:inline">Importar orçamento</span>
+              </Button>
+              <DocumentsDropdown order={order} />
+              <Button asChild size="sm">
+                <a href={`/os/${order.number}/checklist`}>
+                  <Camera className="h-4 w-4" />
+                  Checklist
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Identidade + stepper */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-1 px-5 pb-3 pt-1.5">
-          <p className="text-sm text-muted-foreground">
-            <span className="text-foreground/80">{order.customer_name || "Sem cliente"}</span>
-            {vehicle && <span> · {vehicle}</span>}
-            {order.plate && <span className="font-mono tracking-wider"> · {order.plate}</span>}
-            <span className="font-mono"> · {formatCurrency(total)}</span>
-          </p>
-
-          {!isCancelled && (
-            <ScrollFade className="ml-auto max-w-full">
-            <ol className="flex items-center gap-1.5" aria-label="Progresso da OS">
+        {/* Setores da volta: as fases da OS. A atual acende com a cor do status. */}
+        {!isCancelled && (
+          <ScrollFade>
+            <ol className="grid min-w-[520px] grid-cols-5 border-t border-border" aria-label="Progresso da OS">
               {PIPELINE_PHASES.map((phase, i) => {
                 const state = i < phaseIdx ? "done" : i === phaseIdx ? "current" : "todo"
                 return (
-                  <li key={phase.key} className="flex items-center gap-1.5">
-                    {i > 0 && <span className="h-px w-4 bg-border" />}
-                    <span
-                      className={cn(
-                        "flex items-center gap-1.5 text-[11px]",
-                        state === "current"
-                          ? "text-foreground font-medium"
-                          : state === "done"
-                            ? "text-success-400"
-                            : "text-muted-foreground/60",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "h-2 w-2 rounded-full",
-                          state === "current"
-                            ? (statusCfg?.dot ?? "bg-primary")
-                            : state === "done"
-                              ? "bg-success-500"
-                              : "bg-muted",
-                        )}
-                      />
-                      {phase.label}
-                    </span>
+                  <li
+                    key={phase.key}
+                    aria-current={state === "current" ? "step" : undefined}
+                    className={cn(
+                      "relative border-r border-border px-3 py-1.5 font-cond text-[15px] font-bold uppercase tracking-[0.02em] last:border-r-0",
+                      state === "current"
+                        ? "text-foreground"
+                        : state === "done"
+                          ? "text-foreground/70"
+                          : "text-muted-foreground/70",
+                    )}
+                  >
+                    {state === "current" && (
+                      <span aria-hidden className={cn("absolute inset-x-0 top-0 h-[3px]", statusCfg?.dot ?? "bg-primary")} />
+                    )}
+                    {state === "done" && <span className="sr-only">Concluída: </span>}
+                    {phase.label}
                   </li>
                 )
               })}
             </ol>
-            </ScrollFade>
-          )}
-        </div>
+          </ScrollFade>
+        )}
       </header>
 
       {/* ── Corpo: nav lateral (md+) ou tabs horizontais (mobile) ───── */}

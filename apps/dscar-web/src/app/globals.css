@@ -156,10 +156,11 @@
 
   /* Número de OS em destaque */
   .text-os-number {
-    font-family: var(--font-rajdhani);
-    font-weight: 600;
-    font-size: 0.875rem;
-    letter-spacing: 0.04em;
+    font-family: var(--font-cond);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
     color: hsl(var(--primary));
   }
 
@@ -183,26 +184,28 @@
     background: hsl(var(--muted-foreground) / 0.3);
   }
 
-  /* Label mono — fintech terminal style */
+  /* Rótulo de campo/coluna — um só estilo no sistema inteiro.
+     O nome ficou por compatibilidade: não é mais monoespaçado. */
   .label-mono {
-    font-size: 11px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    letter-spacing: 0.14em;
+    font-family: var(--font-outfit);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    /* cor de marca é pra ação/estado — labels ficam discretos */
     color: hsl(var(--muted-foreground));
-    line-height: 1;
+    line-height: 1.2;
   }
 
-  /* Section divider — LABEL ────────── */
+  /* Título de seção da torre — condensada, cor de texto, régua até o fim. */
   .section-divider {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: hsl(var(--foreground) / 0.65);
-    font-size: 10px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    letter-spacing: 0.14em;
+    color: hsl(var(--foreground));
+    font-family: var(--font-cond);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     line-height: 1;
   }
@@ -211,6 +214,13 @@
     flex: 1;
     height: 1px;
     background: hsl(var(--border));
+  }
+
+  /* Números: condensada tabular, para as colunas não dançarem. */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: 0.01em;
   }
 
   /* Stagger de entrada — cards da lista de OS (mobile) */
@@ -228,6 +238,11 @@
   .animate-section-in {
     animation: section-in 150ms ease-out forwards;
   }
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.35);
+  color: hsl(var(--foreground));
 }
 
 @keyframes card-in {

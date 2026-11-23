@@ -202,7 +202,10 @@ const config: Config = {
       fontFamily: {
         sans:  ["var(--font-outfit)", "ui-sans-serif", "system-ui", "sans-serif"],
         plate: ["var(--font-rajdhani)", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono:  ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        // Torre de tempos: os números (dinheiro, qtd, placa, nº de OS) usam a
+        // condensada com algarismos tabulares, não mais o Menlo do sistema.
+        mono:  ["var(--font-cond)", "Arial Narrow", "ui-sans-serif", "sans-serif"],
+        cond:  ["var(--font-cond)", "Arial Narrow", "ui-sans-serif", "sans-serif"],
       },
 
       fontSize: {

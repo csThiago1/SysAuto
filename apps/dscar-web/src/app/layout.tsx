@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Outfit, Rajdhani } from "next/font/google";
+import { Barlow_Condensed, Outfit, Rajdhani } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
@@ -18,6 +18,14 @@ const rajdhani = Rajdhani({
   variable: "--font-rajdhani",
   display: "swap",
   weight: ["600", "700"],
+});
+
+// Torre de tempos: números, títulos e placar em condensada (a do site institucional).
+const barlowCondensed = Barlow_Condensed({
+  subsets: ["latin"],
+  variable: "--font-cond",
+  display: "swap",
+  weight: ["500", "600", "700", "800"],
 });
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
@@ -56,7 +64,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`dark ${outfit.variable} ${rajdhani.variable}`}
+      className={`dark ${outfit.variable} ${rajdhani.variable} ${barlowCondensed.variable}`}
       suppressHydrationWarning
     >
       <head>
