@@ -1,0 +1,80 @@
+{% comment %}
+Layout dos documentos DS Car para o cliente (OS com valores, termo de quitação, recibo):
+logo ticket no topo, bandeiras repetidas como marca d'água, campos em grade com borda.
+{% endcomment %}<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}Documento DS Car{% endblock %}</title>
+<style>
+    @page {
+        size: A4;
+        margin: 14mm 14mm 16mm;
+        /* Bandeiras repetidas como marca d'água. WeasyPrint posiciona o fundo da página
+           a partir da área de conteúdo: o -14mm compensa a margem. */
+        background: url("{{ watermark_tile }}") repeat -14mm -14mm / 30mm auto;
+        @bottom-left {
+            content: "{{ company.razao_social|default:'DS Car Centro Automotivo' }}{% if company.cnpj_formatted %} · CNPJ {{ company.cnpj_formatted }}{% endif %}{% if company.endereco_linha %} · {{ company.endereco_linha }}{% endif %}";
+            font-family: Montserrat, Arial, sans-serif; font-size: 7.5px; color: #555;
+        }
+        @bottom-right {
+            content: "{% block footer_ref %}OS #{{ order.number }}{% endblock %} · página " counter(page) " de " counter(pages);
+            font-family: Montserrat, Arial, sans-serif; font-size: 7.5px; color: #555;
+        }
+    }
+    * { box-sizing: border-box; }
+    body { font-family: Montserrat, Arial, sans-serif; font-size: 10px; color: #000; margin: 0; line-height: 1.4; }
+
+    .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+    .title .kicker { font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
+    .title .name { font-size: 26px; font-weight: 900; text-transform: uppercase; line-height: 1.05; margin-top: 4px; }
+    .title .name span { color: #ea0e03; }
+    .title .sub { font-size: 9px; color: #303030; margin-top: 4px; }
+    .top img { height: 32mm; width: auto; }
+
+    h2 { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; margin: 14px 0 5px; }
+    h2::before { content: ""; display: inline-block; width: 4px; height: 10px; background: #ea0e03; margin-right: 6px; vertical-align: -1px; }
+
+    /* Grade de campos: rótulo em negrito em cima, valor embaixo, bordas finas */
+    .grid { display: flex; width: 100%; }
+    .cell { flex: 1; border: 1px solid #afafaf; margin: -1px 0 0 -1px; padding: 5px 8px; }
+    .cell:first-child { margin-left: 0; }
+    .grid:first-of-type .cell { margin-top: 0; }
+    .w2 { flex: 2; }
+    .label { font-size: 7.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+    .value { font-size: 10.5px; min-height: 14px; margin-top: 2px; }
+    .value.b { font-weight: 700; }
+
+    table.items { width: 100%; border-collapse: collapse; }
+    table.items th { font-size: 7.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; text-align: left;
+                     border: 1px solid #afafaf; padding: 5px 8px; background: #fff; }
+    table.items td { border: 1px solid #afafaf; padding: 5px 8px; }
+    .r { text-align: right; } .c { text-align: center; } .b { font-weight: 700; }
+    .muted { color: #555; }
+
+    .totals { display: flex; justify-content: flex-end; margin-top: 12px; }
+    .totals table { border-collapse: collapse; width: 82mm; background: #fff; }
+    .totals td { border: 1px solid #afafaf; padding: 5px 8px; }
+    .totals .pay td { background: #000; color: #fff; font-size: 13px; font-weight: 900; border-color: #000; padding: 8px; }
+    .totals .pay td.r { color: #fff; }
+
+    .obs { border: 1px solid #afafaf; padding: 6px 8px; white-space: pre-line; }
+
+    .signatures { display: flex; margin-top: 26mm; text-align: center; font-size: 9px; }
+    .declaration { font-size: 10.5px; text-align: justify; line-height: 1.6; margin-top: 4px; }
+    .signatures.one div { flex: 0 0 50%; margin: 0 auto; }
+    .signatures div { flex: 1; margin: 0 7mm; border-top: 1px solid #000; padding-top: 4px; }
+</style>
+</head>
+<body>
+    <div class="top">
+        <div class="title">
+            <div class="kicker">{% block kicker %}{% endblock %}</div>
+            <div class="name">{% block heading %}{% endblock %}</div>
+            <div class="sub">{{ location_date }}</div>
+        </div>
+        {% if ticket_logo %}<img src="{{ ticket_logo }}" alt="DS Car">{% endif %}
+    </div>
+{% block content %}{% endblock %}
+</body>
+</html>

@@ -12,7 +12,15 @@ from apps.documents.data_loaders import OSDataLoader
 from apps.persons.models import Person, PersonRole
 from apps.service_orders.models import ServiceOrder, ServiceOrderStatus
 
-_ENVELOPE_KEYS = {"company", "logo_base64", "logo_black_base64", "order", "location_date"}
+_ENVELOPE_KEYS = {
+    "company",
+    "logo_base64",
+    "logo_black_base64",
+    "order",
+    "location_date",
+    "ticket_logo",
+    "watermark_tile",
+}
 
 
 class OSDataLoaderEnvelopeTestCase(TenantTestCase):
@@ -66,6 +74,7 @@ class OSDataLoaderEnvelopeTestCase(TenantTestCase):
 
     def test_load_settlement_keeps_envelope(self) -> None:
         self._assert_envelope(OSDataLoader.load_settlement(self.order.pk))
+        assert "parts" in OSDataLoader.load_settlement(self.order.pk)
 
     def test_load_receipt_keeps_envelope(self) -> None:
         receivable = ReceivableDocumentService.create_receivable(
@@ -80,3 +89,5 @@ class OSDataLoaderEnvelopeTestCase(TenantTestCase):
             user=self.user,
         )
         self._assert_envelope(OSDataLoader.load_receipt(self.order.pk, receivable.pk))
+        # Sem receivable_id (menu Documentos), usa o título mais recente da OS
+        assert OSDataLoader.load_receipt(self.order.pk)["payment"]["amount"] == "100.00"

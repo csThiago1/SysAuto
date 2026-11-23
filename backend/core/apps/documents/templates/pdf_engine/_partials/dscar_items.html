@@ -1,0 +1,37 @@
+{# Tabelas de serviços e peças do layout DS Car — recebem 'services' e 'parts' #}
+    {% if services %}
+    <h2>Serviços</h2>
+    <table class="items">
+        <thead><tr><th>Descrição</th><th class="c" style="width:12mm">Qtd</th><th class="r" style="width:28mm">Valor unit.</th><th class="r" style="width:26mm">Desconto</th><th class="r" style="width:28mm">Total</th></tr></thead>
+        <tbody>
+        {% for s in services %}
+            <tr>
+                <td>{{ s.description }}</td>
+                <td class="c">{{ s.quantity|floatformat:"-2" }}</td>
+                <td class="r">R$ {{ s.unit_price|floatformat:"2g" }}</td>
+                <td class="r">{% if s.discount %}R$ {{ s.discount|floatformat:"2g" }}{% else %}—{% endif %}</td>
+                <td class="r b">R$ {{ s.total|floatformat:"2g" }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if parts %}
+    <h2>Peças</h2>
+    <table class="items">
+        <thead><tr><th>Descrição</th><th style="width:28mm">Código</th><th class="c" style="width:12mm">Qtd</th><th class="r" style="width:28mm">Valor unit.</th><th class="r" style="width:28mm">Total</th></tr></thead>
+        <tbody>
+        {% for p in parts %}
+            <tr>
+                <td>{{ p.description }}</td>
+                <td class="muted">{{ p.part_number|default:"—" }}</td>
+                <td class="c">{{ p.quantity|floatformat:"-2" }}</td>
+                <td class="r">R$ {{ p.unit_price|floatformat:"2g" }}</td>
+                <td class="r b">R$ {{ p.total|floatformat:"2g" }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
