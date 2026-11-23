@@ -5,6 +5,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -18,20 +19,23 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, backHref, actions }: PageHeaderProps) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-      <div className="flex items-start gap-3 min-w-0">
+    <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+      <div className="flex items-center gap-2 min-w-0">
         {backHref && (
           <Button variant="ghost" size="icon" asChild>
-            <Link href={backHref as any}>
+            <Link href={backHref as Route}>
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Voltar</span>
             </Link>
           </Button>
         )}
         <div className="min-w-0">
-          <h2 className="text-xl md:text-2xl font-semibold text-foreground break-words">{title}</h2>
+          {/* Torre de tempos: título em condensada caixa alta, sem sobretítulo em cima. */}
+          <h1 className="font-cond text-[28px] font-bold uppercase leading-none tracking-[0.01em] text-foreground break-words md:text-[34px]">
+            {title}
+          </h1>
           {description && (
-            <p className="mt-0.5 text-xs md:text-sm text-muted-foreground">{description}</p>
+            <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
           )}
         </div>
       </div>

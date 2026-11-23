@@ -39,7 +39,7 @@ function SelectTrigger({ className, children, ...props }: React.ButtonHTMLAttrib
     <button
       type="button"
       className={cn(
-        "flex h-9 w-full items-center justify-between rounded border border-border bg-muted/50 px-3 py-2 text-sm text-foreground",
+        "flex h-10 max-md:h-11 w-full items-center justify-between rounded border border-border bg-muted/50 px-3 py-2 text-sm text-foreground",
         "focus:outline-none focus:ring-1 focus:ring-primary",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className

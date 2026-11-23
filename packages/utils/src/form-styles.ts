@@ -40,16 +40,18 @@ export const FORM_LABEL =
  * (85% de luminosidade) sobre `card` (97%) e quase o mesmo tom, e os campos
  * literalmente sumiam. Aqui a moldura e o que torna o campo visivel.
  */
+// Celular: 44px e 16px de fonte (abaixo de 16px o iOS dá zoom no foco).
+// Placeholder a 70%: a 40% ficava ~2:1 e sumia no sol.
 export const FORM_INPUT =
-  "flex h-9 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground/60 hover:bg-muted/70 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring dark:border-transparent dark:bg-muted/40 dark:placeholder:text-muted-foreground/40 dark:hover:bg-muted/60 dark:focus:bg-muted/60 disabled:opacity-50"
+  "flex h-10 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-base md:text-sm max-md:h-11 transition-colors placeholder:text-muted-foreground/70 hover:bg-muted/70 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring dark:border-transparent dark:bg-muted/40 dark:placeholder:text-muted-foreground/70 dark:hover:bg-muted/60 dark:focus:bg-muted/60 disabled:opacity-50"
 
 /** Input in error state */
 export const FORM_INPUT_ERROR =
-  "flex h-9 w-full rounded-md border border-error-600 dark:border-error-500 bg-error-500/5 px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-error-500/40 disabled:opacity-50"
+  "flex h-10 max-md:h-11 w-full rounded-md border border-error-600 dark:border-error-500 bg-error-500/5 px-3 py-1 text-base md:text-sm transition-colors placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-error-500/40 disabled:opacity-50"
 
 /** Native select — usar com o wrapper NativeSelect (chevron próprio) */
 export const FORM_SELECT =
-  "flex h-9 w-full appearance-none rounded-md border border-input bg-muted/50 px-3 pr-8 py-1 text-sm transition-colors hover:bg-muted/70 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring dark:border-transparent dark:bg-muted/40 dark:hover:bg-muted/60 dark:focus:bg-muted/60 disabled:opacity-50 cursor-pointer"
+  "flex h-10 max-md:h-11 w-full appearance-none rounded-md border border-input bg-muted/50 px-3 pr-8 py-1 text-base md:text-sm transition-colors hover:bg-muted/70 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring dark:border-transparent dark:bg-muted/40 dark:hover:bg-muted/60 dark:focus:bg-muted/60 disabled:opacity-50 cursor-pointer"
 
 /** Hint/help text below a field */
 export const FORM_HINT = "mt-0.5 text-xs text-muted-foreground/70 font-mono"
