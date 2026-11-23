@@ -2,7 +2,7 @@
 
 import { NativeSelect } from "@/components/ui/native-select"
 import { useEffect, useState } from "react"
-import { FileText, Loader2, Plus, Trash2 } from "lucide-react"
+import { FileText, Loader2, Plus, Printer, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import type { ServiceOrder, PDFDocumentType, DocumentPreviewData } from "@paddock/types"
 import { DOCUMENT_TYPE_CONFIG } from "@paddock/types"
@@ -25,6 +25,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
   const generateMutation = useGenerateDocument(order.id)
 
   const [formData, setFormData] = useState<DocumentPreviewData | null>(null)
+  const [generated, setGenerated] = useState<{ id: string; version: number } | null>(null)
 
   useEffect(() => {
     if (previewData) {
@@ -75,47 +76,29 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
     setFormData(clone)
   }
 
-  // A aba nasce no clique: aberta só depois do await, o navegador a bloqueia como pop-up.
-  async function openDocument(docId: string, win: Window | null) {
-    const res = await fetch(`/api/proxy/documents/${docId}/download/`)
-    if (!res.ok) {
-      win?.close()
-      toast.error("Erro ao baixar o documento. Tente novamente.")
-      return
-    }
-    const blob = await res.blob()
-    if (!blob.type.includes("pdf") && blob.size < 500) {
-      win?.close()
-      toast.error("Erro na geração do PDF. Contate o suporte.")
-      return
-    }
-    const url = URL.createObjectURL(blob)
-    if (win) win.location.href = url
-    else window.open(url, "_blank")
-    // Libera memória após um tempo
-    setTimeout(() => URL.revokeObjectURL(url), 60_000)
-  }
-
+  // Gera e mostra um link para o PDF em vez de abrir aba sozinho: no iPhone o Safari não
+  // abre PDF de blob em aba nova e pausa a tela da OS enquanto o servidor gera o arquivo.
   async function handleGenerate() {
     if (!formData) return
-    const win = window.open("", "_blank")
     try {
       const result = await generateMutation.mutateAsync({
         document_type: documentType,
         data: formData,
       })
-      await openDocument(result.id, win)
+      setGenerated({ id: result.id, version: result.version })
       toast.success(`${config.label} v${result.version} gerado com sucesso!`)
-      onClose()
     } catch {
-      win?.close()
       toast.error("Erro ao gerar documento. Tente novamente.")
     }
   }
 
   return (
     <Sheet open onOpenChange={() => onClose()}>
-      <SheetContent className="w-[520px] sm:max-w-[520px] overflow-y-auto">
+      <SheetContent
+        className="w-full overflow-y-auto sm:w-[520px] sm:max-w-[520px]"
+        // Sem foco automático no 1º campo: no celular o teclado subia e a tela dava zoom
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
@@ -139,7 +122,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   <Input
                     value={formData.customer.name}
                     onChange={(e) => updateField("customer.name", e.target.value)}
-                    className="mt-1 h-8 text-xs"
+                    className="mt-1 h-9 text-base sm:h-8 sm:text-xs"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -149,7 +132,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                       inputMode="numeric"
                       value={formatCpfCnpj(formData.customer.cpf)}
                       onChange={(e) => updateField("customer.cpf", onlyDigits(e.target.value))}
-                      className="mt-1 h-8 text-xs"
+                      className="mt-1 h-9 text-base sm:h-8 sm:text-xs"
                     />
                   </div>
                   <div>
@@ -158,7 +141,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                       inputMode="numeric"
                       value={formatPhone(formData.customer.phone)}
                       onChange={(e) => updateField("customer.phone", onlyDigits(e.target.value))}
-                      className="mt-1 h-8 text-xs"
+                      className="mt-1 h-9 text-base sm:h-8 sm:text-xs"
                     />
                   </div>
                 </div>
@@ -167,7 +150,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   <Input
                     value={formData.customer.address}
                     onChange={(e) => updateField("customer.address", e.target.value)}
-                    className="mt-1 h-8 text-xs"
+                    className="mt-1 h-9 text-base sm:h-8 sm:text-xs"
                   />
                 </div>
               </div>
@@ -183,7 +166,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   <Input
                     value={formatPlate(formData.vehicle.plate)}
                     onChange={(e) => updateField("vehicle.plate", onlyAlnum(e.target.value))}
-                    className="mt-1 h-8 text-xs font-mono"
+                    className="mt-1 h-9 text-base sm:h-8 sm:text-xs font-mono"
                   />
                 </div>
                 <div>
@@ -191,7 +174,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   <Input
                     value={`${formData.vehicle.make} ${formData.vehicle.model}`}
                     onChange={(e) => updateField("vehicle.model", e.target.value)}
-                    className="mt-1 h-8 text-xs"
+                    className="mt-1 h-9 text-base sm:h-8 sm:text-xs"
                   />
                 </div>
                 <div>
@@ -199,7 +182,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   <Input
                     value={formData.vehicle.year}
                     onChange={(e) => updateField("vehicle.year", e.target.value)}
-                    className="mt-1 h-8 text-xs"
+                    className="mt-1 h-9 text-base sm:h-8 sm:text-xs"
                   />
                 </div>
                 <div>
@@ -207,7 +190,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   <Input
                     value={formData.vehicle.color}
                     onChange={(e) => updateField("vehicle.color", e.target.value)}
-                    className="mt-1 h-8 text-xs"
+                    className="mt-1 h-9 text-base sm:h-8 sm:text-xs"
                   />
                 </div>
               </div>
@@ -224,12 +207,12 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                       <Input
                         value={svc.description}
                         onChange={(e) => updateServiceField(i, "description", e.target.value)}
-                        className="h-7 text-xs flex-1"
+                        className="h-9 text-base sm:h-7 sm:text-xs flex-1"
                       />
                       <Input
                         value={svc.total}
                         onChange={(e) => updateServiceField(i, "total", e.target.value)}
-                        className="h-7 text-xs w-24 text-right font-mono"
+                        className="h-9 text-base sm:h-7 sm:text-xs w-24 text-right font-mono"
                         placeholder="R$"
                       />
                     </div>
@@ -240,7 +223,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                           wrapperClassName="w-auto"
                           value={svc.warranty_months}
                           onChange={(e) => updateServiceField(i, "warranty_months", parseInt(e.target.value))}
-                          className="h-7 w-auto text-xs"
+                          className="h-9 w-auto text-base sm:h-7 sm:text-xs"
                         >
                           <option value={0}>Sem garantia</option>
                           <option value={3}>3 meses</option>
@@ -268,7 +251,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                       <Input
                         value={item}
                         onChange={(e) => updateListItem("warranty_coverage", i, e.target.value)}
-                        className="h-7 text-xs flex-1"
+                        className="h-9 text-base sm:h-7 sm:text-xs flex-1"
                       />
                       <button
                         type="button"
@@ -302,7 +285,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                       <Input
                         value={item}
                         onChange={(e) => updateListItem("warranty_exclusions", i, e.target.value)}
-                        className="h-7 text-xs flex-1"
+                        className="h-9 text-base sm:h-7 sm:text-xs flex-1"
                       />
                       <button
                         type="button"
@@ -333,26 +316,42 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                 value={formData.observations}
                 onChange={(e) => updateField("observations", e.target.value)}
                 rows={3}
-                className="w-full rounded-md bg-muted/50 border border-border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-md bg-muted/50 border border-border px-3 py-2 text-base sm:text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Observações adicionais (opcional)"
               />
             </section>
 
             {/* Footer */}
             <div className="flex gap-2 justify-end border-t border-border pt-4">
-              <Button variant="ghost" onClick={onClose}>
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleGenerate}
-                disabled={generateMutation.isPending}
-              >
-                {generateMutation.isPending ? (
-                  <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Gerando...</>
-                ) : (
-                  <><FileText className="h-4 w-4 mr-1.5" /> Gerar PDF</>
-                )}
-              </Button>
+              {generated ? (
+                <>
+                  <Button variant="ghost" onClick={onClose}>
+                    Fechar
+                  </Button>
+                  <Button asChild>
+                    <a
+                      href={`/api/proxy/documents/${generated.id}/download/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Printer className="h-4 w-4 mr-1.5" /> Abrir PDF (v{generated.version})
+                    </a>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" onClick={onClose}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleGenerate} disabled={generateMutation.isPending}>
+                    {generateMutation.isPending ? (
+                      <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Gerando...</>
+                    ) : (
+                      <><FileText className="h-4 w-4 mr-1.5" /> Gerar PDF</>
+                    )}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}
