@@ -100,7 +100,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
+          <SheetTitle className="flex items-center gap-2 pr-8">
             <FileText className="h-5 w-5 text-primary" />
             {config.label} — OS #{order.number}
           </SheetTitle>
