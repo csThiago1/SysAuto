@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { PdfShareActions, isTouchDevice } from "./PdfShareActions"
 import {
   FileText,
   ShieldCheck,
@@ -33,6 +34,8 @@ interface Props {
 export function DocumentHistorySection({ order }: Props) {
   const { data: history, isLoading } = useDocumentHistory(order.id)
   const [expandedType, setExpandedType] = useState<PDFDocumentType | null>(null)
+  // No celular o PDF não abre em aba (prende no app instalado): mostra o compartilhar na linha
+  const [sharingId, setSharingId] = useState<string | null>(null)
 
   if (isLoading) {
     return (
@@ -58,8 +61,11 @@ export function DocumentHistorySection({ order }: Props) {
     grouped[key].sort((a, b) => b.version - a.version)
   }
 
-  // URL real aberta no próprio clique: o iPhone não abre PDF de blob em aba nova
   function handleDownload(docId: string) {
+    if (isTouchDevice()) {
+      setSharingId(docId)
+      return
+    }
     window.open(`/api/proxy/documents/${docId}/download/`, "_blank", "noopener")
   }
 
@@ -143,6 +149,21 @@ export function DocumentHistorySection({ order }: Props) {
                     </div>
                   </div>
 
+                  {versions.map((v) =>
+                    v.id === sharingId ? (
+                      <div
+                        key={v.id}
+                        className="flex items-center justify-between gap-2 border-t border-border px-4 py-3"
+                      >
+                        <span className="text-xs text-muted-foreground">v{v.version}</span>
+                        <PdfShareActions
+                          docId={v.id}
+                          filename={`OS ${order.number} - ${v.document_type_display} v${v.version}.pdf`}
+                          size="sm"
+                        />
+                      </div>
+                    ) : null,
+                  )}
                   {isExpanded && hasOlderVersions && (
                     <div className="border-t border-white/5 bg-white/[0.02]">
                       {versions.slice(1).map((doc) => (

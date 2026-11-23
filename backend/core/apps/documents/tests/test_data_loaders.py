@@ -69,6 +69,17 @@ class OSDataLoaderEnvelopeTestCase(TenantTestCase):
         discounts = {s["description"]: s["discount"] for s in OSDataLoader.load_os_cliente(self.order.pk)["services"]}
         assert discounts == {"Banho": "4000.00", "Higienização": ""}
 
+    def test_generate_reuses_version_when_data_unchanged(self) -> None:
+        from apps.documents.services import DocumentService
+
+        data = OSDataLoader.load_os_cliente(self.order.pk)
+        first = DocumentService.generate(self.order.pk, "os_cliente", data, self.user)
+        again = DocumentService.generate(self.order.pk, "os_cliente", dict(data), self.user)
+        assert again.pk == first.pk
+
+        changed = {**data, "observations": "Cliente pediu orçamento da lanterna"}
+        assert DocumentService.generate(self.order.pk, "os_cliente", changed, self.user).version == 2
+
     def test_load_warranty_keeps_envelope(self) -> None:
         self._assert_envelope(OSDataLoader.load_warranty(self.order.pk))
 
