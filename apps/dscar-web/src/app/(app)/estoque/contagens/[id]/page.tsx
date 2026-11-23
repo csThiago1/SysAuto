@@ -3,7 +3,7 @@
 import { use, useState } from "react"
 import Link from "next/link"
 import type { Route } from "next"
-import { ClipboardList, ChevronRight } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { toast } from "sonner"
 import type { StatusContagem, TipoContagem } from "@paddock/types"
 import type { ItemContagem } from "@/hooks/useInventoryCounting"
@@ -245,10 +245,9 @@ export default function ContagemDetailPage({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <ClipboardList className="h-5 w-5 text-primary" />
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold text-foreground">
+              <h1 className="page-title">
                 Contagem #{id.slice(0, 8)}
               </h1>
               <span

@@ -48,7 +48,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
       <div className="rounded-md bg-muted/50 shadow-card p-card-padding">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="label-mono">
               Salário base atual
             </p>
             <p className="mt-1 text-2xl font-bold text-foreground font-plate">

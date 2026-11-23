@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { ReceiptText, ChevronLeft, Search, X, Loader2 } from "lucide-react"
+import { ChevronLeft, Search, X, Loader2 } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { toast } from "sonner"
@@ -129,8 +129,7 @@ export default function NovoBudgetPage() {
             <ChevronLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <ReceiptText className="h-5 w-5 text-primary" />
-        <h1 className="text-lg font-semibold text-foreground">Novo Orçamento Particular</h1>
+        <h1 className="page-title">Novo Orçamento Particular</h1>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -184,7 +183,7 @@ export default function NovoBudgetPage() {
 
         {/* Veículo */}
         <div className="space-y-3 rounded-md border border-border bg-white/[0.02] p-4">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</p>
+          <p className="label-mono">Veículo</p>
 
           {/* Placa */}
           <div className="space-y-1.5">

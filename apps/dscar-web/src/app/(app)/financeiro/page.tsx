@@ -45,7 +45,7 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
         {/* Header + period selector */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Financeiro</h1>
+            <h1 className="page-title">Financeiro</h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
               Dashboard financeiro — {range.start} a {range.end}
             </p>

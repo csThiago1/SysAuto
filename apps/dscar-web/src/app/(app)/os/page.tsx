@@ -201,9 +201,9 @@ export default function ServiceOrdersPage() {
           PageHeader empurrava a primeira OS pra fora da tela. */}
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div className="flex min-w-0 items-baseline gap-2">
-          <h2 className="truncate text-base font-semibold text-foreground md:text-2xl">
+          <h1 className="page-title truncate">
             Ordens de Serviço
-          </h2>
+          </h1>
           {data && (
             <span className="label-mono shrink-0 tabular-nums">
               {data.count} {data.count === 1 ? "OS" : "OS"}

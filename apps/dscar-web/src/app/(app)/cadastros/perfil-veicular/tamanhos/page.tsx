@@ -10,7 +10,7 @@ export default function TamanhosPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">Categorias de Tamanho</h1>
+        <h1 className="page-title">Categorias de Tamanho</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Multiplicadores de insumos e horas aplicados por categoria de tamanho
           do veículo.

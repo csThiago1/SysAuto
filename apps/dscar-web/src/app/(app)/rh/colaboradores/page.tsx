@@ -40,7 +40,7 @@ export default function ColaboradoresPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="page-title">
               Colaboradores
             </h1>
             <p className="mt-0.5 text-sm text-muted-foreground">

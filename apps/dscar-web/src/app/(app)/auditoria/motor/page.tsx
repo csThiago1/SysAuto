@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Shield, CheckCircle2, XCircle } from "lucide-react"
+import { CheckCircle2, XCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import {
   Select,
@@ -42,9 +42,8 @@ export default function AuditoriaMotorPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <Shield className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Auditoria do Motor</h1>
+          <h1 className="page-title">Auditoria do Motor</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Log imutável de todas as chamadas ao motor de precificação.
           </p>

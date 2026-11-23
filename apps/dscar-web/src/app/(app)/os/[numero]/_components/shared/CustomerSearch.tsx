@@ -166,7 +166,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
     return (
       <div className="rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2 space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-foreground/60">
+          <span className="label-mono flex items-center gap-1">
             <UserPlus className="h-3 w-3" />
             Novo cliente
           </span>

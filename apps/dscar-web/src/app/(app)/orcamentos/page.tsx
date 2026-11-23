@@ -2,7 +2,7 @@
 
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
-import { FileText, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { useOrcamentos } from "@/hooks/useQuotes"
@@ -31,9 +31,8 @@ export default function OrcamentosPage() {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <FileText className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Orçamentos</h1>
+            <h1 className="page-title">Orçamentos</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               {orcamentos.length} orçamento{orcamentos.length !== 1 ? "s" : ""}
             </p>

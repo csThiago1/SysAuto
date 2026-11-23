@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { PackagePlus } from "lucide-react"
 import { toast } from "sonner"
 import { PosicaoSelector } from "@/components/inventory/PosicaoSelector"
 import {
@@ -225,10 +224,9 @@ export default function EntradaManualPage() {
       <div>
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50">
-            <PackagePlus className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Entrada Manual</h1>
+            <h1 className="page-title">Entrada Manual</h1>
             <p className="text-sm text-muted-foreground">
               Cadastrar peça ou lote sem NF-e
             </p>

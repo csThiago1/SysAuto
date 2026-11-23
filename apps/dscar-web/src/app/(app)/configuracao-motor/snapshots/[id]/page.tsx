@@ -63,7 +63,7 @@ export default function SnapshotDetailPage() {
         </Button>
         <div className="flex items-center gap-2">
           <Layers className="h-4 w-4 text-primary" />
-          <h1 className="text-base font-semibold text-foreground">Snapshot de Custo</h1>
+          <h1 className="page-title">Snapshot de Custo</h1>
           <Lock className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
         <Badge variant="outline" className="text-xs border-border text-foreground/60 ml-auto">
@@ -73,7 +73,7 @@ export default function SnapshotDetailPage() {
 
       {/* Veículo / contexto */}
       <section className="space-y-1">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Contexto</p>
+        <p className="label-mono">Contexto</p>
         <div className="rounded-lg border border-border px-4 py-1">
           <InfoRow label="ID" value={snap.id} />
           {ctx.veiculo && (
@@ -97,7 +97,7 @@ export default function SnapshotDetailPage() {
 
       {/* Preços */}
       <section className="space-y-1">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Preço</p>
+        <p className="label-mono">Preço</p>
         <div className="rounded-lg border border-border px-4 py-1">
           {"preco_calculado" in snap && (
             <InfoRow label="Preço calculado" value={formatCurrency((snap as { preco_calculado?: string }).preco_calculado)} />
@@ -115,7 +115,7 @@ export default function SnapshotDetailPage() {
       {/* Margens */}
       {"margem_base" in snap && (
         <section className="space-y-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Margens</p>
+          <p className="label-mono">Margens</p>
           <div className="rounded-lg border border-border px-4 py-1">
             <InfoRow label="Margem base" value={formatMargem((snap as { margem_base?: string }).margem_base)} />
             <InfoRow
@@ -130,7 +130,7 @@ export default function SnapshotDetailPage() {
       {/* Custos detalhados (ADMIN+) */}
       {hasFullData && (
         <section className="space-y-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <p className="label-mono">
             Custos (ADMIN)
           </p>
           <div className="rounded-lg border border-border px-4 py-1">
@@ -146,7 +146,7 @@ export default function SnapshotDetailPage() {
       {/* Decomposição */}
       {"decomposicao" in snap && (
         <section className="space-y-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <p className="label-mono">
             Decomposição (JSON)
           </p>
           <pre className="rounded-lg border border-border bg-muted/50 p-4 text-xs text-foreground/60 overflow-auto max-h-64">

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ChevronLeft, FileText, CheckCircle, XCircle, Send, Copy, Plus, Search, Wrench, Package } from "lucide-react"
+import { ChevronLeft, CheckCircle, XCircle, Send, Copy, Plus, Search, Wrench, Package } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { toast } from "sonner"
@@ -123,7 +123,7 @@ function AddIntervencaoForm({
 
   return (
     <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nova Peça / Intervenção</p>
+      <p className="label-mono">Nova Peça / Intervenção</p>
 
       <div className="grid grid-cols-2 gap-3">
         {/* Área */}
@@ -289,7 +289,7 @@ function AddItemAdicionalForm({ orcamentoId }: { orcamentoId: string }) {
 
   return (
     <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Novo Serviço</p>
+      <p className="label-mono">Novo Serviço</p>
 
       <div className="space-y-1.5">
         <Label className="text-foreground/70 text-xs">Serviço</Label>
@@ -426,10 +426,9 @@ export default function OrcamentoDetailPage() {
           <Link href={"/orcamentos" as Route} className="text-muted-foreground hover:text-foreground/70 transition-colors shrink-0">
             <ChevronLeft className="h-4 w-4" />
           </Link>
-          <FileText className="h-5 w-5 text-primary shrink-0" />
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg font-semibold text-foreground">{orc.numero}</h1>
+              <h1 className="page-title">{orc.numero}</h1>
               <span className="text-muted-foreground text-sm">v{orc.versao}</span>
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[orc.status]}`}>
                 {STATUS_LABELS[orc.status]}
@@ -577,7 +576,7 @@ export default function OrcamentoDetailPage() {
       {/* Formulários de adição — só em rascunho */}
       {isRascunho && (
         <div className="space-y-3 pt-2">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adicionar itens ao orçamento</p>
+          <p className="label-mono">Adicionar itens ao orçamento</p>
           <AddIntervencaoForm orcamentoId={id} areas={orc.areas} />
           <AddItemAdicionalForm orcamentoId={id} />
         </div>

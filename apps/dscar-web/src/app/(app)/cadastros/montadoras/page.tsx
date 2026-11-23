@@ -51,7 +51,7 @@ export default function MontadorasPage() {
   return (
     <div className="flex flex-col gap-4 md:gap-6 px-0 py-3 md:p-6 max-w-3xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Montadoras</h1>
+        <h1 className="page-title">Montadoras</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Marcas de veículo sincronizadas da FIPE. Nome e código não são editáveis
           aqui — clique no logo para colar a URL da imagem.

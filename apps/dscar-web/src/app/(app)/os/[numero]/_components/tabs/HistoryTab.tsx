@@ -202,7 +202,7 @@ function DateGroupLabel({ date }: { date: string }) {
   return (
     <div className="flex items-center gap-2 my-4">
       <div className="h-px flex-1 bg-muted" />
-      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">
+      <span className="label-mono px-2">
         {label}
       </span>
       <div className="h-px flex-1 bg-muted" />

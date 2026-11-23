@@ -10,7 +10,7 @@ export default function SegmentosPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">Segmentos Veiculares</h1>
+        <h1 className="page-title">Segmentos Veiculares</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Fator de responsabilidade multiplica o custo base de serviços mais
           complexos ou de maior risco.

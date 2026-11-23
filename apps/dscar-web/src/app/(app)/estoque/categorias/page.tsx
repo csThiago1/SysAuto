@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, type KeyboardEvent } from "react"
-import { Tags, Plus, Pencil, Trash2, Check, X } from "lucide-react"
+import { Plus, Pencil, Trash2, Check, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import type {
@@ -763,9 +763,8 @@ export default function CategoriasPage() {
     <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Tags className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">
+          <h1 className="page-title">
             Categorias e Tipos
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">

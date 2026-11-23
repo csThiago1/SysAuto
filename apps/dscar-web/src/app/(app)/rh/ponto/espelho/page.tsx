@@ -45,7 +45,7 @@ export default function EspelhoPontoPage(): React.ReactElement {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="page-title">
             Espelho de Ponto
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">

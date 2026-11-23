@@ -184,6 +184,21 @@
     background: hsl(var(--muted-foreground) / 0.3);
   }
 
+  /* Título de página da torre — um só no sistema (PageHeader usa o mesmo). */
+  .page-title {
+    font-family: var(--font-cond);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground));
+    overflow-wrap: anywhere;
+  }
+  @media (min-width: 768px) {
+    .page-title { font-size: 34px; }
+  }
+
   /* Rótulo de campo/coluna — um só estilo no sistema inteiro.
      O nome ficou por compatibilidade: não é mais monoespaçado. */
   .label-mono {

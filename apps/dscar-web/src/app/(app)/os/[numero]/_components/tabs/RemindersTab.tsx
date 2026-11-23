@@ -99,7 +99,7 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
       <div className="bg-muted/50 border border-border rounded-lg shadow-sm overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <Bell className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
+          <h2 className="label-mono">
             Lembretes
             {reminders.length > 0 && (
               <span className="ml-2 rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground/70">

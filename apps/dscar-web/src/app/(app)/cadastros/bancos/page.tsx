@@ -50,7 +50,7 @@ export default function BancosPage() {
     <div className="flex flex-col gap-4 md:gap-6 px-0 py-3 md:p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Bancos</h1>
+          <h1 className="page-title">Bancos</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Catálogo de bancos (FEBRABAN) — usado nos dados bancários de fornecedores.
           </p>

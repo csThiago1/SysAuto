@@ -73,7 +73,7 @@ export default function ServicosPage() {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Serviços</h1>
+          <h1 className="page-title">Serviços</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {total === 0 ? "Nenhum serviço cadastrado" : `${total} serviço${total !== 1 ? "s" : ""}`}
           </p>

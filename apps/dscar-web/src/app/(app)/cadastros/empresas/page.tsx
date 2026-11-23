@@ -54,7 +54,7 @@ export default function EmpresasPage() {
     <div className="px-0 py-3 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Empresas</h1>
+          <h1 className="page-title">Empresas</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Empresas cadastradas no motor de orçamentos.
           </p>

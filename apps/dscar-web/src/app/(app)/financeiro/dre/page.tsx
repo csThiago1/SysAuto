@@ -155,7 +155,7 @@ export default function DREPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">DRE</h1>
+            <h1 className="page-title">DRE</h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
               Demonstração do Resultado do Exercício
             </p>

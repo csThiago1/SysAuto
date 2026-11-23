@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { FileText, ChevronLeft, Search, X } from "lucide-react"
+import { ChevronLeft, Search, X } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { toast } from "sonner"
@@ -72,9 +72,8 @@ export default function NovoOrcamentoPage() {
         <Link href={"/orcamentos" as Route} className="text-muted-foreground hover:text-foreground/70 transition-colors">
           <ChevronLeft className="h-4 w-4" />
         </Link>
-        <FileText className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Novo Orçamento</h1>
+          <h1 className="page-title">Novo Orçamento</h1>
           <p className="text-xs text-muted-foreground">Preencha as informações para criar o orçamento.</p>
         </div>
       </div>
@@ -82,7 +81,7 @@ export default function NovoOrcamentoPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Cliente */}
         <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cliente *</p>
+          <p className="label-mono">Cliente *</p>
           {clienteSelecionado ? (
             <div className="flex items-center justify-between bg-muted/50 border border-border rounded-md px-3 py-2">
               <div>

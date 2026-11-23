@@ -31,7 +31,7 @@ export function PageHeader({ title, description, backHref, actions }: PageHeader
         )}
         <div className="min-w-0">
           {/* Torre de tempos: título em condensada caixa alta, sem sobretítulo em cima. */}
-          <h1 className="font-cond text-[28px] font-bold uppercase leading-none tracking-[0.01em] text-foreground break-words md:text-[34px]">
+          <h1 className="page-title">
             {title}
           </h1>
           {description && (

@@ -208,9 +208,8 @@ function EmitirNfseManualPageInner() {
     <div className="px-0 py-3 md:p-6 max-w-2xl space-y-6">
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <FileText className="h-6 w-6 text-primary" />
         <div>
-          <h1 className="text-xl font-bold text-foreground">Emissão Manual de NFS-e</h1>
+          <h1 className="page-title">Emissão Manual de NFS-e</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Nota fiscal de serviço ad-hoc sem OS vinculada — requer ADMIN
           </p>
@@ -220,7 +219,7 @@ function EmitirNfseManualPageInner() {
       <form onSubmit={form.handleSubmit(onSubmit, () => toast.error("Preencha todos os campos obrigatórios."))} className="space-y-6">
         {/* Destinatário */}
         <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h2 className="label-mono">
             Destinatário
           </h2>
 
@@ -247,7 +246,7 @@ function EmitirNfseManualPageInner() {
 
         {/* Dados da nota */}
         <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h2 className="label-mono">
             Dados da Nota
           </h2>
 
@@ -334,7 +333,7 @@ function EmitirNfseManualPageInner() {
         {/* Itens */}
         <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <h2 className="label-mono">
               Itens
             </h2>
             <button

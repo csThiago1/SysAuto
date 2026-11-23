@@ -125,7 +125,7 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
 
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-foreground">
+              <h1 className="page-title">
                 {person.full_name}
               </h1>
               <span className="inline-flex items-center gap-1 rounded-md bg-muted/50 px-2 py-0.5 text-xs font-medium text-foreground/60">
@@ -206,13 +206,13 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
                 </div>
                 {person.notes && (
                   <div className="mt-4 pt-4 border-t">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Observações</p>
+                    <p className="label-mono mb-1">Observações</p>
                     <p className="text-sm text-foreground/70 whitespace-pre-wrap">{person.notes}</p>
                   </div>
                 )}
                 {person.client_profile && (
                   <div className="mt-4 pt-4 border-t border-border">
-                    <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wide mb-2">LGPD</p>
+                    <p className="label-mono mb-2">LGPD</p>
                     <div className="grid grid-cols-2 gap-2">
                       <InfoItem
                         label="Consentimento"
@@ -301,7 +301,7 @@ function InfoItem({
   if (!value || value === "—") return null;
   return (
     <div>
-      <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className="label-mono">{label}</p>
       <p className={cn("text-sm text-foreground mt-0.5", valueClassName)}>{value}</p>
     </div>
   );

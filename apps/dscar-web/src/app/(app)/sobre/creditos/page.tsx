@@ -1,5 +1,4 @@
 import { CAR_MODELS, LICENSE_LABELS, LICENSE_URLS } from "@paddock/car-3d/core";
-import { Info } from "lucide-react";
 import type { ReactElement } from "react";
 
 export const metadata = { title: "Créditos" };
@@ -10,9 +9,8 @@ export default function CreditsPage(): ReactElement {
   return (
     <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <Info className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Créditos</h1>
+          <h1 className="page-title">Créditos</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Modelos 3D usados no checklist de entrada. Em todos, a malha foi simplificada e os vidros, escurecidos.
           </p>

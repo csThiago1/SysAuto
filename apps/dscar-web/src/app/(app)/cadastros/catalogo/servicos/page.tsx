@@ -184,7 +184,7 @@ export default function ServicosCanonicoPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Servicos Canonicos</h1>
+          <h1 className="page-title">Servicos Canonicos</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Catalogo de servicos na forma canonica — base do Motor de Orcamentos.
           </p>

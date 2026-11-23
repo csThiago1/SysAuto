@@ -82,7 +82,7 @@ export default function PontoPage(): React.ReactElement {
       <div className="space-y-6 max-w-lg mx-auto">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Ponto</h1>
+            <h1 className="page-title">Ponto</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               Registro de ponto do colaborador
             </p>

@@ -84,7 +84,7 @@ export default function FolhaPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="page-title">
               Folha de Pagamento
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">

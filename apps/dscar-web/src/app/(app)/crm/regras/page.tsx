@@ -75,7 +75,7 @@ function RegrasContent(): React.ReactElement {
       <div className="flex flex-wrap items-center gap-y-2">
         <div className="flex min-w-0 items-center gap-2">
           <Settings2 className="h-5 w-5 shrink-0 text-muted-foreground" />
-          <h1 className="truncate text-xl font-bold">Regras de retorno</h1>
+          <h1 className="page-title truncate">Regras de retorno</h1>
         </div>
         <div className="ml-auto">
           <Button size="sm" onClick={() => setEditing("new")}>

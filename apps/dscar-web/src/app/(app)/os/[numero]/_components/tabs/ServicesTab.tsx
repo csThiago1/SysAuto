@@ -146,7 +146,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
     <div className="space-y-4 py-6">
       {!isBlocked && (
         <div className="rounded-md border border-border bg-muted/30 p-4 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="label-mono">
             Adicionar Serviço
           </p>
 
@@ -222,7 +222,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                   onChange={(e) => handleDiscountToggle(e.target.checked)}
                   className="h-4 w-4 rounded border-border text-primary cursor-pointer"
                 />
-                <label htmlFor="services-show-discount" className="text-xs font-medium text-muted-foreground uppercase tracking-wide cursor-pointer">
+                <label htmlFor="services-show-discount" className="label-mono cursor-pointer">
                   Aplicar desconto
                 </label>
               </div>

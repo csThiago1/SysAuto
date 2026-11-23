@@ -47,7 +47,7 @@ export function AppHeader(): React.ReactElement {
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
       {/* Page title */}
-      <h1 className="text-lg font-semibold text-foreground/90">{title}</h1>
+      <h1 className="page-title">{title}</h1>
 
       {/* Right side */}
       <div className="flex items-center gap-3">

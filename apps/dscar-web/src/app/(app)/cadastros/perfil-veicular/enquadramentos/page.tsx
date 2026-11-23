@@ -16,7 +16,7 @@ export default function EnquadramentosPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">Enquadramentos Veiculares</h1>
+        <h1 className="page-title">Enquadramentos Veiculares</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Mapeamento de marca/modelo para segmento, tamanho e tipo de pintura
           padrão.

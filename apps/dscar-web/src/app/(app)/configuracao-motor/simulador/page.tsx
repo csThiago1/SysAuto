@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
-import { FlaskConical, Plus, Trash2, PlayCircle, CheckCircle, XCircle, Search, X } from "lucide-react"
+import { Plus, Trash2, PlayCircle, CheckCircle, XCircle, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -194,9 +194,8 @@ export default function SimuladorPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-8 max-w-2xl">
       <div className="flex items-center gap-3">
-        <FlaskConical className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Simulador</h1>
+          <h1 className="page-title">Simulador</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Calcule o preço de serviços com base no veículo do cliente.
           </p>
@@ -205,7 +204,7 @@ export default function SimuladorPage() {
 
       {/* Dados do veículo */}
       <section className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</p>
+        <p className="label-mono">Veículo</p>
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1.5">
             <Label className="text-foreground/70 text-xs">Marca *</Label>
@@ -254,7 +253,7 @@ export default function SimuladorPage() {
       {/* Serviços */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <p className="label-mono">
             Serviços a calcular
           </p>
           <Button size="sm" variant="outline" onClick={addServico}>
@@ -281,7 +280,7 @@ export default function SimuladorPage() {
       {/* Resultados */}
       {resultados.length > 0 && (
         <section className="space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Resultados</p>
+          <p className="label-mono">Resultados</p>
           {resultados.map((r, idx) => (
             <div
               key={idx}

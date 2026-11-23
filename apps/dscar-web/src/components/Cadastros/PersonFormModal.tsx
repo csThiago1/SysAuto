@@ -667,7 +667,7 @@ export function PersonFormModal({
             {/* Campos primários fixos — celular e e-mail obrigatórios */}
             <div className="grid grid-cols-2 gap-3 p-3 rounded-md border border-border bg-muted/30">
               <div>
-                <Label className="text-xs text-muted-foreground uppercase tracking-widest font-mono">
+                <Label className="label-mono">
                   Celular principal{needsContacts ? " *" : ""}
                 </Label>
                 <PhoneInput
@@ -682,7 +682,7 @@ export function PersonFormModal({
                 )}
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground uppercase tracking-widest font-mono">
+                <Label className="label-mono">
                   E-mail principal{needsContacts ? " *" : ""}
                 </Label>
                 <Input

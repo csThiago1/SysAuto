@@ -210,7 +210,7 @@ export default function UsuariosPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Usuarios</h1>
+          <h1 className="page-title">Usuarios</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Gerencie acessos, convites e permissoes dos usuarios do sistema.
           </p>

@@ -127,7 +127,7 @@ export function FiscalEmissionModal({
               {/* Seleção de tipo — só exibe quando a OS tem peças */}
               {hasParts && (
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+                  <p className="label-mono mb-2">
                     Tipo de Nota
                   </p>
                   <div className="flex gap-2">

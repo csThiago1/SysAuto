@@ -242,7 +242,7 @@ export default function PlanoContasPage(): React.ReactElement {
           <div className="flex items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-foreground">Plano de Contas</h1>
+                <h1 className="page-title">Plano de Contas</h1>
                 {!isLoading && (
                   <Badge variant="secondary">{totalCount} contas</Badge>
                 )}

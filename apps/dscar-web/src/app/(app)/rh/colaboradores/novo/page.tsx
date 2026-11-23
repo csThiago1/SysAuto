@@ -184,7 +184,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="page-title">
             Admitir colaborador
           </h1>
           <p className="mt-0.5 text-sm text-muted-foreground">

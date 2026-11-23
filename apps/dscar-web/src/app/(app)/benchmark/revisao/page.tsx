@@ -69,7 +69,7 @@ export default function BenchmarkRevisaoPage() {
       <div className="flex items-center gap-3">
         <AlertCircle className="h-5 w-5 text-warning-400" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Revisão de Aliases</h1>
+          <h1 className="page-title">Revisão de Aliases</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Amostras com confiança &lt; 85% aguardando classificação manual.
           </p>

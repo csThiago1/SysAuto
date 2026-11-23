@@ -173,7 +173,7 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
           </DialogHeader>
 
           <div className="mb-5">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <label className="label-mono mb-2 block">
               Fonte de Importação
             </label>
             <div className="flex gap-2">

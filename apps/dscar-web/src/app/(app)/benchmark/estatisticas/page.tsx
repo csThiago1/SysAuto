@@ -2,7 +2,7 @@
 
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
-import { BarChart3, Search, X } from "lucide-react"
+import { Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -33,9 +33,8 @@ export default function BenchmarkEstatisticasPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <BarChart3 className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Estatísticas de Benchmark</h1>
+          <h1 className="page-title">Estatísticas de Benchmark</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Preços p50/p90 de mercado por tipo de serviço, segmento e tamanho de veículo.
           </p>

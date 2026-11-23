@@ -30,7 +30,7 @@ function InfoRow({
 }): React.ReactElement {
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+      <dt className="label-mono">
         {label}
       </dt>
       <dd className="text-sm text-foreground">{value || "—"}</dd>
@@ -111,7 +111,7 @@ export function TabDadosPessoais({
           {editing ? (
             <>
               <div className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <label className="label-mono">
                   Estado civil
                 </label>
                 <Input
@@ -122,7 +122,7 @@ export function TabDadosPessoais({
                 />
               </div>
               <div className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <label className="label-mono">
                   Escolaridade
                 </label>
                 <Input
@@ -133,7 +133,7 @@ export function TabDadosPessoais({
                 />
               </div>
               <div className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <label className="label-mono">
                   Nacionalidade
                 </label>
                 <Input
@@ -144,7 +144,7 @@ export function TabDadosPessoais({
                 />
               </div>
               <div className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <label className="label-mono">
                   Periodicidade de pagamento
                 </label>
                 <NativeSelect
@@ -162,7 +162,7 @@ export function TabDadosPessoais({
                 </NativeSelect>
               </div>
               <div className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <label className="label-mono">
                   Nº de dependentes (IRRF)
                 </label>
                 <Input
@@ -216,7 +216,7 @@ export function TabDadosPessoais({
               ] as [keyof UpdateEmployeePayload, string][]
             ).map(([field, label]) => (
               <div key={field} className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <label className="label-mono">
                   {label}
                 </label>
                 <Input
@@ -248,7 +248,7 @@ export function TabDadosPessoais({
         </h3>
         {editing ? (
           <div className="flex flex-col gap-0.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <label className="label-mono">
               Nome
             </label>
             <Input

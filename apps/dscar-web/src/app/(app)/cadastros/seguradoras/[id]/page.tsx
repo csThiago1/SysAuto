@@ -62,7 +62,7 @@ export default function InsurerDetailPage({ params }: Props) {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">{insurer.name}</h1>
+          <h1 className="page-title">{insurer.name}</h1>
           {insurer.trade_name && (
             <p className="text-sm text-muted-foreground">{insurer.trade_name}</p>
           )}

@@ -4,7 +4,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
-import { Printer, Plus, Trash2, Wifi } from "lucide-react"
+import { Plus, Trash2, Wifi } from "lucide-react"
 import { toast } from "sonner"
 import {
   useImpressoras,
@@ -116,9 +116,8 @@ export default function ImpressorasPage() {
     <div className="px-0 py-3 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Printer className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Impressoras de Etiqueta</h1>
+            <h1 className="page-title">Impressoras de Etiqueta</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               {impressoras.length} impressora{impressoras.length !== 1 ? "s" : ""} cadastrada{impressoras.length !== 1 ? "s" : ""}
             </p>

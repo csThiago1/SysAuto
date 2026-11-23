@@ -72,7 +72,7 @@ export default function AgendaPage() {
 
   return (
     <div className="flex flex-col h-full gap-2 px-0 py-3 md:p-6 max-w-7xl mx-auto">
-      <h1 className="text-lg font-semibold text-foreground md:text-2xl md:font-bold">Agenda</h1>
+      <h1 className="page-title">Agenda</h1>
 
       <div className="bg-muted/50 rounded-md border border-border shadow-sm flex flex-col flex-1 overflow-hidden p-2 md:p-3">
         <CalendarHeader

@@ -237,7 +237,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
 
           <div className="flex min-w-0 flex-1 items-stretch">
             <h1
-              className="flex shrink-0 flex-col justify-center bg-primary py-2 pl-3 pr-6 text-primary-foreground [clip-path:polygon(0_0,100%_0,calc(100%-14px)_100%,0_100%)]"
+              className="page-title flex shrink-0 flex-col justify-center bg-primary py-2 pl-3 pr-6 text-primary-foreground [clip-path:polygon(0_0,100%_0,calc(100%-14px)_100%,0_100%)]"
               aria-label={`OS ${order.number}`}
             >
               <span className="text-[11px] font-semibold uppercase leading-none tracking-[0.12em] opacity-90">OS</span>

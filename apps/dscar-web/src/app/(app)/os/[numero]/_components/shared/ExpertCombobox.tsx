@@ -92,7 +92,7 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled, knownExpe
 
       {showCreate && (
         <div className="rounded-md border border-dashed bg-muted/30 p-3 space-y-2">
-          <p className="text-xs font-medium text-foreground/60 uppercase tracking-wide">Novo perito</p>
+          <p className="label-mono">Novo perito</p>
           <Input
             type="text"
             placeholder="Nome *"

@@ -73,7 +73,7 @@ export default function FaturamentoPage(): React.ReactElement {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Relatorio de Faturamento</h1>
+            <h1 className="page-title">Relatorio de Faturamento</h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
               {range.start} a {range.end}
             </p>

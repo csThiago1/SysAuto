@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { TrendingUp, AlertTriangle, RefreshCw } from "lucide-react"
+import { AlertTriangle, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -51,9 +51,8 @@ export default function VarianciasPage() {
     <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <TrendingUp className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Variâncias do Motor</h1>
+            <h1 className="page-title">Variâncias do Motor</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               Desvios entre estimado (ficha técnica) e realizado (apontamento/NF-e).
             </p>

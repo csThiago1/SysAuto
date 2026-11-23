@@ -92,7 +92,7 @@ export function TabAcesso({ employee }: TabAcessoProps): React.ReactElement {
 
         {editing ? (
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <label className="label-mono">
               Role
             </label>
             <NativeSelect

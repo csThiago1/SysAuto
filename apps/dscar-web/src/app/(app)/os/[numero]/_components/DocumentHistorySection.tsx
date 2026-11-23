@@ -73,7 +73,7 @@ export function DocumentHistorySection({ order }: Props) {
     <div className="bg-muted/50 border border-border rounded-md shadow-sm overflow-hidden">
       <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
         <FileText className="h-4 w-4 text-muted-foreground" />
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
+        <h2 className="label-mono">
           Documentos Gerados
         </h2>
         {docs.length > 0 && (

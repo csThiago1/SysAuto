@@ -1,7 +1,7 @@
 "use client"
 
 import { use, useState } from "react"
-import { Warehouse, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { toast } from "sonner"
 import type { ArmazemTipo } from "@paddock/types"
@@ -154,10 +154,9 @@ export default function ArmazemDetailPage({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <Warehouse className="h-5 w-5 text-primary" />
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold text-foreground">
+              <h1 className="page-title">
                 {armazem.nome}
               </h1>
               <span

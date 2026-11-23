@@ -10,8 +10,7 @@ import {
   ArrowLeftRight,
   ClipboardList,
   FileText,
-  LayoutDashboard,
-} from "lucide-react"
+  } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { useQuery } from "@tanstack/react-query"
@@ -118,9 +117,8 @@ export default function EstoquePage() {
     <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-start gap-3">
-        <LayoutDashboard className="h-5 w-5 text-primary mt-0.5" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Estoque Físico</h1>
+          <h1 className="page-title">Estoque Físico</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Controle de armazéns, peças, insumos e movimentações.
           </p>

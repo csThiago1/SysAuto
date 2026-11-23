@@ -218,7 +218,7 @@ export default function CotacaoOSPage({ params }: { params: Promise<{ osId: stri
           <span>/</span>
           <span>Cotacoes</span>
         </div>
-        <h1 className="text-xl font-semibold text-foreground">{osTitle}</h1>
+        <h1 className="page-title">{osTitle}</h1>
         {firstPedido?.os_plate && (
           <p className="text-sm text-muted-foreground mt-0.5">Placa: {firstPedido.os_plate}</p>
         )}
