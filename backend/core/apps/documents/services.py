@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 _PREVIEW_LOADERS = {
     DocumentType.OS_REPORT: lambda oid, **kw: OSDataLoader.load_os_report(oid),
+    DocumentType.OS_CLIENTE: lambda oid, **kw: OSDataLoader.load_os_cliente(oid),
     DocumentType.WARRANTY: lambda oid, **kw: OSDataLoader.load_warranty(oid),
     DocumentType.SETTLEMENT: lambda oid, **kw: OSDataLoader.load_settlement(oid),
     DocumentType.RECEIPT: lambda oid, **kw: OSDataLoader.load_receipt(oid, kw["receivable_id"]),

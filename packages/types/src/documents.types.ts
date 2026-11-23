@@ -6,7 +6,7 @@
  * with preview and download capabilities.
  */
 
-export type PDFDocumentType = "os_report" | "warranty" | "settlement" | "receipt"
+export type PDFDocumentType = "os_cliente" | "os_report" | "warranty" | "settlement" | "receipt"
 
 export interface DocumentGeneration {
   id: string
@@ -111,7 +111,8 @@ export const DOCUMENT_TYPE_CONFIG: Record<
   PDFDocumentType,
   { label: string; icon: string }
 > = {
-  os_report: { label: "Ordem de Serviço", icon: "FileText" },
+  os_cliente: { label: "OS com valores (cliente)", icon: "FileText" },
+  os_report: { label: "Ordem de Serviço (oficina)", icon: "FileText" },
   warranty: { label: "Termo de Garantia", icon: "ShieldCheck" },
   settlement: { label: "Termo de Quitação", icon: "CheckCircle" },
   receipt: { label: "Recibo de Pagamento", icon: "Receipt" },
