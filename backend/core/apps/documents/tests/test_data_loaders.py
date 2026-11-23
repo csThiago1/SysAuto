@@ -49,6 +49,18 @@ class OSDataLoaderEnvelopeTestCase(TenantTestCase):
         assert data["customer"]["name"] == "Cliente PDF Loader"
         assert {"parts", "services", "grand_total"} <= data["totals"].keys()
 
+    def test_load_os_cliente_discount_blank_when_zero(self) -> None:
+        from apps.service_orders.models import ServiceOrderLabor
+
+        ServiceOrderLabor.objects.create(
+            service_order=self.order, description="Banho", quantity=1, unit_price=Decimal("8000"), discount=Decimal("4000")
+        )
+        ServiceOrderLabor.objects.create(
+            service_order=self.order, description="Higienização", quantity=1, unit_price=Decimal("800")
+        )
+        discounts = {s["description"]: s["discount"] for s in OSDataLoader.load_os_cliente(self.order.pk)["services"]}
+        assert discounts == {"Banho": "4000.00", "Higienização": ""}
+
     def test_load_warranty_keeps_envelope(self) -> None:
         self._assert_envelope(OSDataLoader.load_warranty(self.order.pk))
 

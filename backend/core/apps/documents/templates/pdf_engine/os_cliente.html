@@ -106,7 +106,7 @@
                 <td>{{ s.description }}</td>
                 <td class="c">{{ s.quantity|floatformat:"-2" }}</td>
                 <td class="r">R$ {{ s.unit_price|floatformat:"2g" }}</td>
-                <td class="r">{% if s.discount and s.discount != "0" and s.discount != "0.00" %}R$ {{ s.discount|floatformat:"2g" }}{% else %}—{% endif %}</td>
+                <td class="r">{% if s.discount %}R$ {{ s.discount|floatformat:"2g" }}{% else %}—{% endif %}</td>
                 <td class="r b">R$ {{ s.total|floatformat:"2g" }}</td>
             </tr>
         {% endfor %}

@@ -612,7 +612,9 @@ class OSDataLoader:
             data["customer"]["phone"] = f"({phone[:2]}) {phone[2:7]}-{phone[7:]}"
         for svc in data["services"]:
             gross = Decimal(svc["unit_price"]) * Decimal(svc["quantity"])
-            svc["discount"] = str(max(gross - Decimal(svc["total"]), Decimal(0)))
+            discount = max(gross - Decimal(svc["total"]), Decimal(0))
+            # Vazio quando não há desconto: o template mostra "—" (antes saía "R$ 0,00")
+            svc["discount"] = str(discount.quantize(Decimal("0.01"))) if discount else ""
         return data
 
     @classmethod
