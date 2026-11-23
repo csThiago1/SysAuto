@@ -1,83 +1,57 @@
-{% extends "pdf_engine/base.html" %}
+{% extends "pdf_engine/_dscar_layout.html" %}
 
 {% block title %}Termo de Quitação — OS #{{ order.number }}{% endblock %}
+{% block kicker %}Ordem de Serviço Nº {{ order.number }}{% endblock %}
+{% block heading %}Termo de<br><span>Quitação</span>{% endblock %}
 
 {% block content %}
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">01</span>Cliente e Veículo</h2>
-        <div class="info-grid">
-            <div class="info-row">
-                <span class="info-label">Cliente</span>
-                <span class="info-value bold">{{ customer.name|default:"—" }}</span>
-            </div>
-            {% if customer.cpf %}
-            <div class="info-row">
-                <span class="info-label">CPF</span>
-                <span class="info-value">{{ customer.cpf }}</span>
-            </div>
-            {% endif %}
-            {% if customer.cnpj %}
-            <div class="info-row">
-                <span class="info-label">CNPJ</span>
-                <span class="info-value">{{ customer.cnpj }}</span>
-            </div>
-            {% endif %}
-            <div class="info-row">
-                <span class="info-label">Veículo</span>
-                <span class="info-value bold">{{ vehicle.make }} {{ vehicle.model }} — {{ vehicle.color|default:"" }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Placa / Ano</span>
-                <span class="info-value bold">{{ vehicle.plate|default:"—" }} · {{ vehicle.year|default:"—" }}</span>
-            </div>
-        </div>
+    <h2>Cliente</h2>
+    <div class="grid">
+        <div class="cell w2"><div class="label">Nome</div><div class="value b">{{ customer.name|default:"—" }}</div></div>
+        <div class="cell"><div class="label">{% if customer.cnpj %}CNPJ{% else %}CPF{% endif %}</div><div class="value">{{ customer.cnpj|default:customer.cpf|default:"—" }}</div></div>
+        <div class="cell"><div class="label">Telefone</div><div class="value">{{ customer.phone|default:"—" }}</div></div>
     </div>
 
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">02</span>Serviços Realizados</h2>
-        {% include "pdf_engine/_partials/services_table.html" %}
+    <h2>Veículo</h2>
+    <div class="grid">
+        <div class="cell w2"><div class="label">Modelo</div><div class="value b">{{ vehicle.make }} {{ vehicle.model }}</div></div>
+        <div class="cell"><div class="label">Placa</div><div class="value b">{{ vehicle.plate|default:"—" }}</div></div>
+        <div class="cell"><div class="label">Ano</div><div class="value">{{ vehicle.year|default:"—" }}</div></div>
+        <div class="cell"><div class="label">Cor</div><div class="value">{{ vehicle.color|default:"—" }}</div></div>
     </div>
 
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">03</span>Pagamento e Quitação</h2>
-        <div class="info-grid">
-            <div class="info-row">
-                <span class="info-label">Forma de pagamento</span>
-                <span class="info-value bold">{{ payment.method_display|default:payment.method }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Valor pago</span>
-                <span class="info-value bold">R$ {{ payment.amount|floatformat:2 }}{% if payment.amount_words %} ({{ payment.amount_words }}){% endif %}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Data do pagamento</span>
-                <span class="info-value">{{ payment.date|default:"—" }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Status</span>
-                <span class="info-value bold">QUITADO — sem pendências financeiras</span>
-            </div>
-        </div>
+    {% include "pdf_engine/_partials/dscar_items.html" %}
+
+    <h2>Pagamento</h2>
+    <div class="grid">
+        <div class="cell"><div class="label">Forma de pagamento</div><div class="value b">{{ payment.method_display|default:payment.method|default:"—" }}</div></div>
+        <div class="cell"><div class="label">Data do pagamento</div><div class="value">{{ payment.date|default:"—" }}</div></div>
+        <div class="cell"><div class="label">Situação</div><div class="value b">QUITADO</div></div>
+    </div>
+    <div class="totals">
+        <table>
+            {% if totals %}<tr><td>Total da OS</td><td class="r">R$ {{ totals.grand_total|floatformat:"2g" }}</td></tr>{% endif %}
+            <tr class="pay"><td>VALOR PAGO</td><td class="r">R$ {{ payment.amount|floatformat:"2g" }}</td></tr>
+        </table>
     </div>
 
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">04</span>Declaração de Quitação</h2>
-        <p style="font-size: 10px; text-align: justify; line-height: 1.6;">
-            Por meio do presente instrumento, o cliente <strong>{{ customer.name|default:"" }}</strong>,
-            {% if customer.cpf %}portador do CPF {{ customer.cpf }},{% endif %}
-            declara ter recebido o veículo
-            <strong>{{ vehicle.make|default:"" }} {{ vehicle.model|default:"" }}</strong>,
-            placa <strong>{{ vehicle.plate|default:"" }}</strong>,
-            em perfeitas condições, após a execução de todos os serviços contratados,
-            e que o valor total de <strong>R$ {{ payment.amount|floatformat:2 }}</strong>
-            {% if payment.amount_words %}({{ payment.amount_words }}){% endif %}
-            foi integralmente pago, dando plena e irrevogável quitação à
-            <strong>{{ company.razao_social|default:"DS Car Centro Automotivo" }}</strong>.
-        </p>
-    </div>
+    <h2>Declaração de quitação</h2>
+    <p class="declaration">
+        Eu, <strong>{{ customer.name|default:"" }}</strong>{% if customer.cpf %}, CPF {{ customer.cpf }}{% elif customer.cnpj %}, CNPJ {{ customer.cnpj }}{% endif %},
+        declaro ter recebido o veículo <strong>{{ vehicle.make|default:"" }} {{ vehicle.model|default:"" }}</strong>,
+        placa <strong>{{ vehicle.plate|default:"" }}</strong>, em perfeitas condições, após a execução de todos os
+        serviços contratados, e que o valor de <strong>R$ {{ payment.amount|floatformat:"2g" }}</strong>{% if payment.amount_words %}
+        ({{ payment.amount_words }}){% endif %} foi integralmente pago, dando plena, geral e irrevogável quitação à
+        <strong>{{ company.razao_social|default:"DS Car Centro Automotivo" }}</strong>.
+    </p>
 
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">05</span>Assinaturas</h2>
-        {% include "pdf_engine/_partials/signature_block.html" %}
+    {% if observations %}
+    <h2>Observações</h2>
+    <div class="obs">{{ observations }}</div>
+    {% endif %}
+
+    <div class="signatures">
+        <div>{{ customer.name|default:"Cliente" }}<br><span class="muted">Cliente</span></div>
+        <div>{{ company.razao_social|default:"DS Car Centro Automotivo" }}<br><span class="muted">{% if company.cnpj_formatted %}CNPJ {{ company.cnpj_formatted }}{% else %}Oficina{% endif %}</span></div>
     </div>
 {% endblock %}

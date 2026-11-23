@@ -173,7 +173,13 @@ class OSDataLoader:
         # Contatos (telefone, email)
         for contact in person.contacts.all():
             if contact.contact_type in ("CELULAR", "TELEFONE") and not result["phone"]:
-                result["phone"] = contact.value or ""
+                digits = "".join(ch for ch in contact.value or "" if ch.isdigit())
+                if len(digits) == 11:
+                    result["phone"] = f"({digits[:2]}) {digits[2:7]}-{digits[7:]}"
+                elif len(digits) == 10:
+                    result["phone"] = f"({digits[:2]}) {digits[2:6]}-{digits[6:]}"
+                else:
+                    result["phone"] = contact.value or ""
             elif contact.contact_type == "EMAIL" and not result["email"]:
                 result["email"] = contact.value or ""
 
@@ -332,6 +338,8 @@ class OSDataLoader:
                 "quantity": str(labor.quantity),
                 "unit_price": str(labor.unit_price),
                 "total": str(labor.total),
+                # Vazio sem desconto: os documentos mostram "—"
+                "discount": str(labor.discount) if labor.discount else "",
                 "category": category,
             })
         return items
@@ -533,6 +541,9 @@ class OSDataLoader:
             "logo_black_base64": get_logo_black_base64(),
             "order": {"number": order.number},
             "location_date": _location_date_str(),
+            # Layout DS Car (OS com valores, quitação, recibo): logo ticket e bandeiras de fundo
+            "ticket_logo": get_ticket_logo_svg(),
+            "watermark_tile": get_flags_watermark_tile(),
         }
 
     @staticmethod
@@ -604,17 +615,7 @@ class OSDataLoader:
             "parts": cls._parts_list(order),
             "totals": cls._totals_dict(order),
             "observations": order.notes or "",
-            "ticket_logo": get_ticket_logo_svg(),
-            "watermark_tile": get_flags_watermark_tile(),
         })
-        phone = "".join(ch for ch in data["customer"]["phone"] if ch.isdigit())
-        if len(phone) == 11:
-            data["customer"]["phone"] = f"({phone[:2]}) {phone[2:7]}-{phone[7:]}"
-        for svc in data["services"]:
-            gross = Decimal(svc["unit_price"]) * Decimal(svc["quantity"])
-            discount = max(gross - Decimal(svc["total"]), Decimal(0))
-            # Vazio quando não há desconto: o template mostra "—" (antes saía "R$ 0,00")
-            svc["discount"] = str(discount.quantize(Decimal("0.01"))) if discount else ""
         return data
 
     @classmethod
@@ -668,6 +669,7 @@ class OSDataLoader:
             "customer": cls._customer_dict(order),
             "vehicle": cls._vehicle_dict(order),
             "services": cls._services_list(order),
+            "parts": cls._parts_list(order),
             "totals": cls._totals_dict(order),
             "payment": {
                 "method": payment_method,
@@ -682,11 +684,21 @@ class OSDataLoader:
         return data
 
     @classmethod
-    def load_receipt(cls, order_id: UUID, receivable_id: UUID) -> dict[str, Any]:
+    def load_receipt(cls, order_id: UUID, receivable_id: UUID | None = None) -> dict[str, Any]:
         order = cls._load_order(order_id)
         data = cls._base_context(order)
         from apps.accounts_receivable.models import ReceivableDocument
-        receivable = ReceivableDocument.objects.get(pk=receivable_id, is_active=True)
+
+        receivables = ReceivableDocument.objects.filter(
+            service_order_id=str(order.pk), is_active=True
+        )
+        # O menu Documentos não escolhe título: sem receivable_id, vale o mais recente da OS
+        if receivable_id:
+            receivable = receivables.get(pk=receivable_id)
+        else:
+            receivable = receivables.order_by("-created_at").first()
+            if receivable is None:
+                raise ValueError("Esta OS não tem título a receber para o recibo.")
         data.update({
             "customer": cls._customer_dict(order),
             "receipt": {

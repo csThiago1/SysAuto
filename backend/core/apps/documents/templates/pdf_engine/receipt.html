@@ -1,82 +1,39 @@
-{% extends "pdf_engine/base.html" %}
+{% extends "pdf_engine/_dscar_layout.html" %}
 
 {% block title %}Recibo — OS #{{ order.number }}{% endblock %}
+{% block kicker %}Ordem de Serviço Nº {{ order.number }}{% endblock %}
+{% block heading %}Recibo de<br><span>Pagamento</span>{% endblock %}
 
 {% block content %}
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">01</span>Pagador</h2>
-        <div class="info-grid">
-            <div class="info-row">
-                <span class="info-label">Nome</span>
-                <span class="info-value bold">{{ customer.name|default:"—" }}</span>
-            </div>
-            {% if customer.cpf %}
-            <div class="info-row">
-                <span class="info-label">CPF</span>
-                <span class="info-value">{{ customer.cpf }}</span>
-            </div>
-            {% endif %}
-            {% if customer.cnpj %}
-            <div class="info-row">
-                <span class="info-label">CNPJ</span>
-                <span class="info-value">{{ customer.cnpj }}</span>
-            </div>
-            {% endif %}
-        </div>
+    <h2>Pagador</h2>
+    <div class="grid">
+        <div class="cell w2"><div class="label">Nome</div><div class="value b">{{ customer.name|default:"—" }}</div></div>
+        <div class="cell"><div class="label">{% if customer.cnpj %}CNPJ{% else %}CPF{% endif %}</div><div class="value">{{ customer.cnpj|default:customer.cpf|default:"—" }}</div></div>
     </div>
 
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">02</span>Valor Recebido</h2>
-        <div class="info-grid">
-            <div class="info-row">
-                <span class="info-label">Ordem de Serviço</span>
-                <span class="info-value bold">#{{ order.number }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Descrição</span>
-                <span class="info-value">{{ receipt.description|default:"Serviços automotivos" }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Forma de pagamento</span>
-                <span class="info-value bold">{{ payment.method_display|default:payment.method }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Data do pagamento</span>
-                <span class="info-value">{{ payment.date|default:"—" }}</span>
-            </div>
-        </div>
-        <div class="totals">
-            <table>
-                <tr class="total-row">
-                    <td>VALOR RECEBIDO</td>
-                    <td class="right">R$ {{ payment.amount|floatformat:2 }}</td>
-                </tr>
-            </table>
-        </div>
+    <h2>Pagamento</h2>
+    <div class="grid">
+        <div class="cell w2"><div class="label">Referente a</div><div class="value">{{ receipt.description|default:"Serviços automotivos" }}</div></div>
+        <div class="cell"><div class="label">Ordem de serviço</div><div class="value b">#{{ order.number }}</div></div>
+    </div>
+    <div class="grid">
+        <div class="cell w2"><div class="label">Forma de pagamento</div><div class="value b">{{ payment.method_display|default:payment.method|default:"—" }}</div></div>
+        <div class="cell"><div class="label">Data do pagamento</div><div class="value">{{ payment.date|default:"—" }}</div></div>
+    </div>
+    <div class="totals">
+        <table>
+            <tr class="pay"><td>VALOR RECEBIDO</td><td class="r">R$ {{ payment.amount|floatformat:"2g" }}</td></tr>
+        </table>
     </div>
 
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">03</span>Declaração</h2>
-        <p style="font-size: 10px; text-align: justify; line-height: 1.6;">
-            Declaro que recebi de <strong>{{ customer.name|default:"" }}</strong>
-            a quantia de <strong>R$ {{ payment.amount|floatformat:2 }}</strong>
-            {% if payment.amount_words %}({{ payment.amount_words }}){% endif %}
-            referente aos serviços prestados na OS #{{ order.number }}.
-        </p>
-    </div>
+    <h2>Declaração</h2>
+    <p class="declaration">
+        Declaro que recebi de <strong>{{ customer.name|default:"" }}</strong> a quantia de
+        <strong>R$ {{ payment.amount|floatformat:"2g" }}</strong>{% if payment.amount_words %} ({{ payment.amount_words }}){% endif %},
+        referente aos serviços prestados na Ordem de Serviço nº {{ order.number }}, dando por ela plena quitação.
+    </p>
 
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">04</span>Assinatura</h2>
-        <div style="width: 50%; margin: 0 auto; text-align: center;">
-            <div class="sig-line" style="margin-top: 60px;">
-                <p class="sig-name">{{ company.razao_social|default:"DS Car Centro Automotivo" }}</p>
-                <p class="sig-detail">
-                    {% if company.cnpj_formatted %}CNPJ: {{ company.cnpj_formatted }}{% endif %}
-                </p>
-            </div>
-        </div>
-        {% if location_date %}
-        <p class="muted small" style="text-align: center; margin-top: 20px;">{{ location_date }}</p>
-        {% endif %}
+    <div class="signatures one">
+        <div>{{ company.razao_social|default:"DS Car Centro Automotivo" }}<br><span class="muted">{% if company.cnpj_formatted %}CNPJ {{ company.cnpj_formatted }}{% else %}Recebedor{% endif %}</span></div>
     </div>
 {% endblock %}
