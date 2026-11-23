@@ -63,9 +63,10 @@ def get_flags_watermark_tile() -> str:
     svg = (_HERE / "dscar-bandeiras-preta.svg").read_text(encoding="utf-8")
     inner = svg[svg.index(">", svg.index("<svg")) + 1 : svg.rindex("</svg>")]
     # Viewbox do logo: 201.6 x 105.8 → ladrilho 150 x 95 com respiro, logo a 55%.
+    # Opacidade 16%: abaixo de ~10% de cinza a impressora laser não imprime (só aparecia na tela).
     tile = (
         '<svg xmlns="http://www.w3.org/2000/svg" width="150" height="95" viewBox="0 0 150 95">'
-        f'<g opacity="0.07" transform="translate(20 18) scale(0.55)">{inner}</g></svg>'
+        f'<g opacity="0.16" transform="translate(20 18) scale(0.55)">{inner}</g></svg>'
     )
     return _svg_data_uri(tile)
 
