@@ -54,6 +54,7 @@ class ReceivableDocumentListSerializer(serializers.ModelSerializer):
             "id",
             "customer_name",
             "description",
+            "document_number",
             "due_date",
             "amount",
             "amount_received",

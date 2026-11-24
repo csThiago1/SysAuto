@@ -6,9 +6,14 @@ Regras de negocio ficam em services.py — nunca aqui.
 """
 
 import logging
+from decimal import Decimal
 from typing import Any
 
+from django.db.models import F, Q, Sum
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -20,7 +25,7 @@ from apps.accounting.services.account_suggestion_service import remember as reme
 from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 
 from .filters import PayableDocumentFilter
-from .models import PayableDocument
+from .models import DocumentStatus, PayableDocument
 from .serializers import (
     CreatePayableDocumentSerializer,
     PayableDocumentListSerializer,
@@ -187,6 +192,42 @@ class PayableDocumentViewSet(ModelViewSet):
             {"detail": "Exclusao nao permitida. Use a acao /cancel/ para cancelar o titulo."},
             status=status.HTTP_405_METHOD_NOT_ALLOWED,
         )
+
+    @extend_schema(responses={200: OpenApiTypes.OBJECT})
+    @action(detail=False, methods=["get"], url_path="summary")
+    def summary(self, request: Request) -> Response:
+        """
+        Totais dos cartoes da lista, somados no banco sobre todos os titulos ativos.
+
+        GET /accounts-payable/documents/summary/
+
+        Args:
+            request: Request autenticado.
+
+        Returns:
+            Response com total_open, total_overdue, settled_this_month e due_today.
+        """
+        today = timezone.localdate()
+        remaining = F("amount") - F("amount_paid")
+        is_open = Q(status__in=[DocumentStatus.OPEN, DocumentStatus.PARTIAL])
+        totals = self.get_queryset().aggregate(
+            total_open=Sum(remaining, filter=is_open),
+            total_overdue=Sum(
+                remaining,
+                filter=Q(due_date__lt=today)
+                & ~Q(status__in=[DocumentStatus.PAID, DocumentStatus.CANCELLED]),
+            ),
+            settled_this_month=Sum(
+                "amount_paid",
+                filter=Q(
+                    status=DocumentStatus.PAID,
+                    due_date__year=today.year,
+                    due_date__month=today.month,
+                ),
+            ),
+            due_today=Sum(remaining, filter=is_open & Q(due_date=today)),
+        )
+        return Response({key: str(value or Decimal("0.00")) for key, value in totals.items()})
 
     @action(
         detail=False,

@@ -11,8 +11,7 @@ import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { PlusCircle, TrendingDown, AlertCircle, CheckCircle2, Clock } from "lucide-react";
-import { toast } from "sonner";
-import { usePayableDocuments, useRecordPayment, useCancelPayable } from "@/hooks/useFinanceiro";
+import { usePayableDocuments, usePayableSummary, useRecordPayment, useCancelPayable } from "@/hooks/useFinanceiro";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
@@ -49,16 +48,6 @@ function isOverdue(dueDate: string, status: PayableStatus): boolean {
   return new Date(dueDate + "T00:00:00") < new Date(new Date().toDateString());
 }
 
-function isDueToday(dueDate: string): boolean {
-  return dueDate === new Date().toISOString().split("T")[0];
-}
-
-function isThisMonth(date: string): boolean {
-  const d = new Date(date + "T00:00:00");
-  const now = new Date();
-  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-}
-
 // ── Filter types ──────────────────────────────────────────────────────────────
 
 type FilterStatus = PayableStatus | "";
@@ -87,10 +76,10 @@ export default function ContasPagarPage(): React.ReactElement {
   if (debouncedSearch) filters.search = debouncedSearch;
   if (status) filters.status = status;
   if (origin) filters.origin = origin;
-  if (dueDateGte) filters.due_date__gte = dueDateGte;
-  if (dueDateLte) filters.due_date__lte = dueDateLte;
+  if (dueDateGte) filters.due_date_gte = dueDateGte;
+  if (dueDateLte) filters.due_date_lte = dueDateLte;
 
-  const { data, isLoading } = usePayableDocuments(filters);
+  const { data, isLoading, isError } = usePayableDocuments(filters);
   const recordPayment = useRecordPayment();
   const cancelPayable = useCancelPayable();
 
@@ -103,28 +92,7 @@ export default function ContasPagarPage(): React.ReactElement {
   const documents = data?.results ?? [];
 
   // ── Summary computations ──────────────────────────────────────────────────
-  const { data: allData, isLoading: isAllLoading } = usePayableDocuments({});
-  const allDocs = allData?.results ?? [];
-
-  const totalOpen = allDocs
-    .filter((d) => d.status === "open" || d.status === "partial")
-    .reduce((acc, d) => acc + Number(d.amount_remaining), 0);
-
-  const totalOverdue = allDocs
-    .filter((d) => isOverdue(d.due_date, d.status))
-    .reduce((acc, d) => acc + Number(d.amount_remaining), 0);
-
-  const paidThisMonth = allDocs
-    .filter((d) => d.status === "paid" && isThisMonth(d.due_date))
-    .reduce((acc, d) => acc + Number(d.amount_paid), 0);
-
-  const dueToday = allDocs
-    .filter(
-      (d) =>
-        isDueToday(d.due_date) &&
-        (d.status === "open" || d.status === "partial")
-    )
-    .reduce((acc, d) => acc + Number(d.amount_remaining), 0);
+  const { data: summary, isLoading: isAllLoading } = usePayableSummary();
 
   const canCancel = (s: PayableStatus): boolean =>
     s === "open" || s === "partial" || s === "overdue";
@@ -155,28 +123,28 @@ export default function ContasPagarPage(): React.ReactElement {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryCard
             label="Total em Aberto"
-            value={formatBRL(String(totalOpen))}
+            value={summary ? formatBRL(summary.total_open) : "—"}
             iconBg="bg-muted/50"
             icon={<TrendingDown className="h-5 w-5 text-foreground/70" />}
             isLoading={isAllLoading}
           />
           <SummaryCard
             label="Total Vencido"
-            value={formatBRL(String(totalOverdue))}
+            value={summary ? formatBRL(summary.total_overdue) : "—"}
             iconBg="bg-error-500/10"
             icon={<AlertCircle className="h-5 w-5 text-error-400" />}
             isLoading={isAllLoading}
           />
           <SummaryCard
             label="Pago no Mês"
-            value={formatBRL(String(paidThisMonth))}
+            value={summary ? formatBRL(summary.settled_this_month) : "—"}
             iconBg="bg-success-500/10"
             icon={<CheckCircle2 className="h-5 w-5 text-success-400" />}
             isLoading={isAllLoading}
           />
           <SummaryCard
             label="A Vencer Hoje"
-            value={formatBRL(String(dueToday))}
+            value={summary ? formatBRL(summary.due_today) : "—"}
             iconBg="bg-warning-500/10"
             icon={<Clock className="h-5 w-5 text-warning-400" />}
             isLoading={isAllLoading}
@@ -237,7 +205,12 @@ export default function ContasPagarPage(): React.ReactElement {
             ))}
           </div>
         )}
-        {!isLoading && documents.length === 0 && (
+        {isError && (
+          <div className="md:hidden py-12 text-center text-sm text-error-400">
+            Erro ao carregar os títulos. Tente recarregar a página.
+          </div>
+        )}
+        {!isLoading && !isError && documents.length === 0 && (
           <div className="md:hidden py-12 text-center text-sm text-muted-foreground">
             Nenhum título encontrado.
           </div>
@@ -247,9 +220,12 @@ export default function ContasPagarPage(): React.ReactElement {
             {documents.map((doc) => (
               <div key={doc.id} className="rounded-lg border border-border bg-muted/50 p-4 space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-medium text-foreground truncate">
+                  <Link
+                    href={`/financeiro/contas-pagar/${doc.id}` as Route}
+                    className="text-sm font-medium text-foreground truncate hover:underline"
+                  >
                     {doc.supplier_name}
-                  </span>
+                  </Link>
                   <FinanceiroStatusBadge
                     status={doc.status}
                     labels={PAYABLE_STATUS_LABELS}
@@ -311,6 +287,10 @@ export default function ContasPagarPage(): React.ReactElement {
 
           {isLoading ? (
             <FinanceiroTableSkeleton />
+          ) : isError ? (
+            <div className="py-16 text-center text-sm text-error-400">
+              Erro ao carregar os títulos. Tente recarregar a página.
+            </div>
           ) : documents.length === 0 ? (
             <div className="py-16 text-center text-sm text-muted-foreground">
               Nenhum título encontrado.
@@ -322,9 +302,12 @@ export default function ContasPagarPage(): React.ReactElement {
                   key={doc.id}
                   className="grid grid-cols-1 md:grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3.5 items-center text-sm hover:bg-muted/30 transition-colors"
                 >
-                  <span className="font-medium text-foreground truncate">
+                  <Link
+                    href={`/financeiro/contas-pagar/${doc.id}` as Route}
+                    className="font-medium text-foreground truncate hover:underline"
+                  >
                     {doc.supplier_name}
-                  </span>
+                  </Link>
                   <span className="text-foreground/60 truncate">
                     {doc.description}
                     {doc.document_number && (
@@ -412,7 +395,6 @@ export default function ContasPagarPage(): React.ReactElement {
         onSubmit={(data) => {
           recordPayment.mutate(data, {
             onSuccess: () => {
-              toast.success("Pagamento registrado com sucesso!");
               setPayingDoc(null);
             },
           });

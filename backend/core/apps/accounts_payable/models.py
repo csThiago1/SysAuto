@@ -131,7 +131,7 @@ class PayableDocument(PaddockBaseModel):
         verbose_name_plural = _("Titulos a Pagar")
 
     def __str__(self) -> str:
-        return f"{self.description} — {self.supplier.name} — R${self.amount}"
+        return f"{self.description} — {self.supplier.full_name} — R${self.amount}"
 
     @property
     def amount_remaining(self) -> Decimal:

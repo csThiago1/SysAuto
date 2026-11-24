@@ -14,7 +14,6 @@ class ReceivableDocumentFilter(django_filters.FilterSet):
     customer_id = django_filters.UUIDFilter(field_name="customer_id")
     due_date_gte = django_filters.DateFilter(field_name="due_date", lookup_expr="gte")
     due_date_lte = django_filters.DateFilter(field_name="due_date", lookup_expr="lte")
-    search = django_filters.CharFilter(field_name="description", lookup_expr="icontains")
 
     class Meta:
         model = ReceivableDocument
@@ -24,5 +23,4 @@ class ReceivableDocumentFilter(django_filters.FilterSet):
             "customer_id",
             "due_date_gte",
             "due_date_lte",
-            "search",
         ]
