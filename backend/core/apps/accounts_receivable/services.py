@@ -151,7 +151,7 @@ class ReceivableDocumentService:
         category = billing_item.get("category", "full")
         is_services = category == "services"
         is_parts = category == "parts"
-        origin = "NFSE" if is_services else ("NFE" if is_parts else "MANUAL")
+        origin = "NFSE" if is_services else ("NFE" if is_parts else "MAN")
 
         term_days = int(billing_item.get("default_payment_term_days", 0))
         today = timezone.now().date()

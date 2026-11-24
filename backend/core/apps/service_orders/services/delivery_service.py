@@ -147,11 +147,22 @@ class ServiceOrderDeliveryService:
 
         _sp = _tx.savepoint()
         try:
-            from apps.accounts_receivable.models import ReceivableOrigin
+            from apps.accounts_receivable.models import (
+                ReceivableDocument,
+                ReceivableOrigin,
+                ReceivableStatus,
+            )
             from apps.accounts_receivable.services import ReceivableDocumentService
 
             os_total = order.parts_total + order.services_total
-            if os_total > 0:
+            # O faturamento (billing.py) ja gera os titulos da OS; a entrega so cria
+            # o seu quando ainda nao ha nenhum titulo vivo, para nao cobrar em dobro.
+            ja_tem_titulo = (
+                ReceivableDocument.objects.filter(service_order_id=order.id, is_active=True)
+                .exclude(status=ReceivableStatus.CANCELLED)
+                .exists()
+            )
+            if os_total > 0 and not ja_tem_titulo:
                 ReceivableDocumentService.create_receivable(
                     customer_id=str(order.customer_id) if order.customer_id else str(order.id),
                     customer_name=order.customer_name,

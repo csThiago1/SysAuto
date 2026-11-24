@@ -328,6 +328,7 @@ class BillingService:
         Erros de emissão fiscal são capturados e acumulados em result.errors
         (graceful degradation), mas o receivable já criado é mantido.
         """
+        from apps.accounts_receivable.models import ReceivableDocument, ReceivableStatus
         from apps.accounts_receivable.services import ReceivableDocumentService
         from apps.fiscal.services.fiscal_service import FiscalService
 
@@ -358,21 +359,43 @@ class BillingService:
             # NFS-e = serviços, NF-e = peças, franquia = só título (sem NF)
             is_services = category == "services"
             is_parts = category == "parts"
-            origin = "NFSE" if is_services else ("NFE" if is_parts else "MANUAL")
+            origin = "NFSE" if is_services else ("NFE" if is_parts else "MAN")
             description = f"OS {order.number} — {item.get('label', category)}"
 
             # Cria título a receber
-            receivable = ReceivableDocumentService.create_receivable(
-                customer_id=recv_customer_id,
-                customer_name=recv_customer_name,
-                description=description,
-                amount=amount,
-                due_date=due_date,
-                competence_date=today,
-                origin=origin,
-                service_order_id=str(order.pk),
-                user=user,
+            # Nova tentativa de faturar (a NF falhou antes e a OS nao ficou marcada
+            # como faturada): reaproveita o titulo ja criado em vez de duplicar.
+            receivable = (
+                ReceivableDocument.objects.filter(
+                    service_order_id=order.pk,
+                    is_active=True,
+                    description=description,
+                )
+                .exclude(status=ReceivableStatus.CANCELLED)
+                .first()
             )
+            if receivable is not None and receivable.amount_received == ZERO:
+                # Sem recebimento: valor e prazo passam a ser os desta tentativa.
+                receivable.amount = amount
+                receivable.due_date = due_date
+                receivable.competence_date = today
+                if due_date >= today:
+                    receivable.status = ReceivableStatus.OPEN
+                receivable.save(
+                    update_fields=["amount", "due_date", "competence_date", "status", "updated_at"]
+                )
+            if receivable is None:
+                receivable = ReceivableDocumentService.create_receivable(
+                    customer_id=recv_customer_id,
+                    customer_name=recv_customer_name,
+                    description=description,
+                    amount=amount,
+                    due_date=due_date,
+                    competence_date=today,
+                    origin=origin,
+                    service_order_id=str(order.pk),
+                    user=user,
+                )
             result.receivables.append(receivable)
 
             # Resolve Person destinatário para o FiscalService
