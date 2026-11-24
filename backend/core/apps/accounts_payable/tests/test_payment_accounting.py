@@ -8,6 +8,8 @@ from django_tenants.test.cases import TenantTestCase
 
 from apps.accounting.models import JournalEntry
 from apps.accounting.models.chart_of_accounts import AccountType, ChartOfAccount, NatureType
+from apps.accounting.services.balance_service import AccountBalanceService
+from apps.accounts_payable.models import PayableDocument
 from apps.accounts_payable.services import PayableDocumentService
 from apps.authentication.models import GlobalUser
 from apps.persons.models import Person, PersonRole, RolePessoa
@@ -79,3 +81,52 @@ class TestPayableAccounting(TenantTestCase):
             self._linhas(baixa),
             {"2.1.01.001": (VALOR, ZERO), "1.1.01.002": (ZERO, VALOR)},
         )
+
+    def _titulo(
+        self, com_conta_de_despesa: bool, competencia: date | None = None
+    ) -> PayableDocument:
+        today = date.today()
+        conta = ChartOfAccount.objects.get(code="6.1.03.001")
+        return PayableDocumentService.create_payable(
+            supplier_id=str(self.supplier.id),
+            description="Resma A4",
+            amount=VALOR,
+            due_date=today + timedelta(days=30),
+            competence_date=competencia or today,
+            expense_account_id=str(conta.id) if com_conta_de_despesa else None,
+            user=self.user,
+        )
+
+    def test_titulo_sem_despesa_reconhecida_nao_contabiliza_a_baixa(self) -> None:
+        """So a baixa, sem o credito anterior, deixaria Fornecedores negativo."""
+        doc = self._titulo(com_conta_de_despesa=False)
+
+        payment = PayableDocumentService.record_payment(
+            document_id=str(doc.id), payment_date=date.today(), amount=VALOR, user=self.user
+        )
+
+        self.assertIsNone(payment.journal_entry_id)
+        self.assertFalse(JournalEntry.objects.exists())
+
+    def test_cancelar_titulo_zera_despesa_e_fornecedores(self) -> None:
+        doc = self._titulo(com_conta_de_despesa=True)
+
+        PayableDocumentService.cancel_payable(
+            document_id=str(doc.id), reason="lancado em duplicidade", user=self.user
+        )
+
+        for code in ("6.1.03.001", "2.1.01.001"):
+            saldo = AccountBalanceService.get_balance(ChartOfAccount.objects.get(code=code))
+            self.assertEqual(saldo, ZERO, code)
+
+    def test_cancelar_titulo_de_competencia_futura_nao_mexe_no_mes_atual(self) -> None:
+        """O estorno acompanha a competencia do titulo; nao vira despesa negativa hoje."""
+        doc = self._titulo(com_conta_de_despesa=True, competencia=date.today() + timedelta(days=40))
+
+        PayableDocumentService.cancel_payable(
+            document_id=str(doc.id), reason="lancado errado", user=self.user
+        )
+
+        despesa = ChartOfAccount.objects.get(code="6.1.03.001")
+        self.assertEqual(AccountBalanceService.get_balance(despesa, end_date=date.today()), ZERO)
+        self.assertEqual(AccountBalanceService.get_balance(despesa), ZERO)

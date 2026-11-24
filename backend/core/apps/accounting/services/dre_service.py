@@ -52,10 +52,9 @@ class DREService:
         Returns:
             Dict com totais por grupo e resultado líquido.
         """
-        # Busca todas as linhas aprovadas e não estornadas no período
+        # Lançamento estornado continua contando: ele e o estorno se anulam, cada um no seu mês
         base_qs = JournalEntryLine.objects.filter(
             entry__is_approved=True,
-            entry__is_reversed=False,
             entry__competence_date__gte=start_date,
             entry__competence_date__lte=end_date,
         ).select_related("account", "entry")

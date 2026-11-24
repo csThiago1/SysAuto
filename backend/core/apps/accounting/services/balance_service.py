@@ -49,7 +49,6 @@ class AccountBalanceService:
         lines_qs = JournalEntryLine.objects.filter(
             account__code__startswith=account.code,
             entry__is_approved=True,
-            entry__is_reversed=False,
         ).select_related("entry")
 
         if start_date:
@@ -93,7 +92,6 @@ class AccountBalanceService:
         """
         lines_qs = JournalEntryLine.objects.filter(
             entry__is_approved=True,
-            entry__is_reversed=False,
             entry__competence_date__gte=start_date,
             entry__competence_date__lte=end_date,
         ).select_related("account", "entry")

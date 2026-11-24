@@ -15,6 +15,8 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from django.db.models import QuerySet
+
     from apps.accounting.models.journal_entry import JournalEntry
     from apps.authentication.models import GlobalUser
 
@@ -78,6 +80,19 @@ class PayableAccountingService:
     falhas contabeis nao interrompam o fluxo operacional de AP.
     """
 
+    @staticmethod
+    def recognition_entries(document: "PayableDocument") -> "QuerySet[JournalEntry]":
+        """Lancamentos de reconhecimento de despesa do titulo ainda nao estornados."""
+        from django.contrib.contenttypes.models import ContentType
+
+        from apps.accounting.models.journal_entry import JournalEntry
+
+        return JournalEntry.objects.filter(
+            content_type=ContentType.objects.get_for_model(document),
+            object_id=str(document.pk),
+            is_reversed=False,
+        )
+
     @classmethod
     def post_payment(
         cls,
@@ -123,6 +138,17 @@ class PayableAccountingService:
             # Selecionar conta devedora conforme a origem do documento
             is_payroll = document.origin == "FOLHA"
             debit_key = "payroll_payable" if is_payroll else "suppliers_payable"
+
+            # Sem a despesa reconhecida nao ha credito em Fornecedores para baixar: lancar so
+            # a baixa deixaria o passivo negativo. A folha reconhece no fechamento do contracheque.
+            if not is_payroll and not cls.recognition_entries(document).exists():
+                logger.info(
+                    "PayableAccountingService.post_payment: titulo %s sem despesa reconhecida "
+                    "— baixa %s nao contabilizada.",
+                    document.id,
+                    payment.id,
+                )
+                return None
 
             acc_debit = _resolve_account(debit_key)
             acc_bank = _resolve_account("bank")
@@ -255,6 +281,7 @@ class PayableAccountingService:
                 competence_date=document.competence_date,
                 origin=JournalEntryOrigin.BANK_PAYMENT,
                 lines=lines,
+                origin_object=document,  # cancelamento e baixa acham o reconhecimento por aqui
                 user=user,
                 auto_approve=True,
             )

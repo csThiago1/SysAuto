@@ -293,6 +293,29 @@ class PayableDocumentService:
                     payment.id,
                 )
 
+        # Estorna a despesa reconhecida na criacao do titulo, senao ela fica na DRE
+        from apps.accounting.services.journal_entry_service import JournalEntryService
+
+        from .accounting_service import PayableAccountingService
+
+        for entry in PayableAccountingService.recognition_entries(document):
+            try:
+                JournalEntryService.reverse_entry(
+                    entry=entry,
+                    user=user,
+                    description=(
+                        f"Estorno automatico — titulo "
+                        f"{document.document_number or document.id} cancelado"
+                    ),
+                )
+            except Exception:
+                logger.warning(
+                    "cancel_payable: falha ao estornar reconhecimento journal_entry=%s do titulo=%s",
+                    entry.id,
+                    document.id,
+                    exc_info=True,
+                )
+
         document.status = DocumentStatus.CANCELLED
         document.cancelled_at = timezone.now()
         document.cancelled_by = user

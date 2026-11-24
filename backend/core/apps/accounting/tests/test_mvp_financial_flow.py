@@ -158,6 +158,7 @@ class MvpFinancialFlowTestCase(AccountingTestCase):
             competence_date=date.today(),
             document_number="NFE-ENT-001",
             origin=PayableOrigin.NFE_IN,
+            expense_account_id=str(self.account_expense.id),
             user=self.admin,
         )
         first_payment = PayableDocumentService.record_payment(
@@ -186,5 +187,5 @@ class MvpFinancialFlowTestCase(AccountingTestCase):
         )
         self.assertEqual(
             JournalEntry.objects.filter(origin=JournalEntryOrigin.BANK_PAYMENT).count(),
-            2,
+            3,  # reconhecimento da despesa + duas baixas
         )
