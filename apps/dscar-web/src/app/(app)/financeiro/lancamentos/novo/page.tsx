@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { DateField } from "@/components/ui/date-field"
+import { todayISO } from "@paddock/utils";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -126,7 +127,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
   const create = useCreateJournalEntry();
   const { data: accountsData, isLoading: loadingAccounts } = useAnalyticalAccounts();
 
-  const todayStr = new Date().toISOString().split("T")[0] ?? "";
+  const todayStr = todayISO();
 
   const [form, setForm] = React.useState<FormDraft>({
     description: "",

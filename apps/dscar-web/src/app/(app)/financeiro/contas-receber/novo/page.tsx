@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import type { ReceivableOrigin } from "@paddock/types";
 import { RECEIVABLE_ORIGIN_LABELS } from "@paddock/types";
 import { DateField } from "@/components/ui/date-field"
+import { todayISO } from "@paddock/utils";
 
 // ── Zod schema ────────────────────────────────────────────────────────────────
 
@@ -112,7 +113,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
   const createReceivable = useCreateReceivable();
   const createInstallments = useCreateReceivableInstallments();
 
-  const todayStr = new Date().toISOString().split("T")[0] ?? "";
+  const todayStr = todayISO();
 
   const [form, setForm] = React.useState<FormDraft>({
     description: "",

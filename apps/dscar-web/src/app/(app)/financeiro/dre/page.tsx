@@ -15,6 +15,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { useDRE } from "@/hooks/useAccounting";
+import { getMonthRange } from "./_lib/period";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { DREGroup } from "@paddock/types";
@@ -24,16 +25,6 @@ import type { DREGroup } from "@paddock/types";
 function fmt(value: string): string {
   const n = parseFloat(value);
   return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function getMonthRange(monthsBack: number): { start: string; end: string } {
-  const now = new Date();
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0); // último dia do mês atual
-  const start = new Date(now.getFullYear(), now.getMonth() - monthsBack + 1, 1);
-  return {
-    start: start.toISOString().split("T")[0]!,
-    end: end.toISOString().split("T")[0]!,
-  };
 }
 
 const PERIOD_OPTIONS = [
