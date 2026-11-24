@@ -24,6 +24,7 @@ import {
   MessageSquareText,
   Package,
   Wrench,
+  ReceiptText,
 } from "lucide-react"
 import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types"
 import { SERVICE_ORDER_STATUS_CONFIG, formatCurrency } from "@paddock/utils"
@@ -36,6 +37,8 @@ import { OverviewSection } from "./OverviewSection"
 import { DocumentsDropdown } from "../_components/DocumentsDropdown"
 import { DadosWorkspace } from "./dados/DadosWorkspace"
 import { PartsTab } from "../_components/tabs/PartsTab"
+import { OrcamentoTab } from "../_components/tabs/OrcamentoTab"
+import { useServiceOrder } from "../_hooks/useServiceOrder"
 import { ServicesTab } from "../_components/tabs/ServicesTab"
 
 const ImportBudgetModal = lazy(() =>
@@ -74,7 +77,7 @@ type SectionId =
   | "historico"
   | "files"
 
-type ExecView = "parts" | "services" | "estoque"
+type ExecView = "orcamento" | "parts" | "services" | "estoque"
 
 type ActivityView = "history" | "notes" | "reminders"
 
@@ -92,7 +95,7 @@ type NavItem = { id: SectionId; label: string; icon: React.ReactNode }
 const NAV_PRIMARY: NavItem[] = [
   { id: "overview", label: "Visão Geral", icon: <LayoutDashboard className="h-4 w-4" /> },
   { id: "dados", label: "Dados", icon: <FileText className="h-4 w-4" /> },
-  { id: "execucao", label: "Execução", icon: <Wrench className="h-4 w-4" /> },
+  { id: "execucao", label: "Orçamento", icon: <ReceiptText className="h-4 w-4" /> },
   { id: "closing", label: "Fechamento", icon: <CircleDollarSign className="h-4 w-4" /> },
 ]
 
@@ -104,8 +107,9 @@ const NAV_SECONDARY: NavItem[] = [
 
 const NAV = [...NAV_PRIMARY, ...NAV_SECONDARY]
 
-/** Abas internas de Execução. */
+/** Abas internas de Orçamento: a lista única primeiro; o detalhe (margem, reserva) ao lado. */
 const EXEC_VIEWS: { id: ExecView; label: string; icon: React.ReactNode }[] = [
+  { id: "orcamento", label: "Tudo", icon: <ReceiptText className="h-4 w-4" /> },
   { id: "parts", label: "Peças", icon: <Package className="h-4 w-4" /> },
   { id: "services", label: "Serviços", icon: <Wrench className="h-4 w-4" /> },
   { id: "estoque", label: "Estoque", icon: <Boxes className="h-4 w-4" /> },
@@ -155,7 +159,7 @@ function NavList({
 export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
   const router = useRouter()
   const [section, setSection] = useState<SectionId>("overview")
-  const [execView, setExecView] = useState<ExecView>("parts")
+  const [execView, setExecView] = useState<ExecView>("orcamento")
   const [activityView, setActivityView] = useState<ActivityView>("history")
   const [historicoView, setHistoricoView] = useState<HistoricoView>("veiculo")
   const [importOpen, setImportOpen] = useState(false)
@@ -199,7 +203,10 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
   const phaseIdx = currentPhaseIndex(status)
   const isCancelled = status === "cancelled"
 
-  const total = Number(order.parts_total ?? 0) + Number(order.services_total ?? 0)
+  // A OS vem do servidor; o total lê a consulta viva para mudar quando o orçamento muda.
+  const { data: liveOrder } = useServiceOrder(order.id)
+  const totals = liveOrder ?? order
+  const total = Number(totals.parts_total ?? 0) + Number(totals.services_total ?? 0)
   const vehicle = [order.make, order.model].filter(Boolean).join(" ")
 
   const pendingCount =
@@ -405,6 +412,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
                 </div>
 
                 <div key={execView} className="animate-section-in">
+                  {execView === "orcamento" && <OrcamentoTab osId={order.id} osStatus={status} />}
                   {execView === "parts" && <PartsTab orderId={order.id} />}
                   {execView === "services" && <ServicesTab osId={order.id} osStatus={status} />}
                   {execView === "estoque" && (

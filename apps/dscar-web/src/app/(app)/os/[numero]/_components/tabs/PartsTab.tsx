@@ -6,13 +6,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { ScrollFade } from "@/components/ui/scroll-fade"
 
-import {
-  useOSParts,
-  useDeletePart,
-  useAddPartEstoque,
-  useAddPartCompra,
-  useAddPartSeguradora,
-} from "@/app/(app)/os/[numero]/_hooks/useOSItems"
+import { useOSParts, useDeletePart } from "@/app/(app)/os/[numero]/_hooks/useOSItems"
 import { usePermission } from "@/hooks/usePermission"
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 import {
@@ -33,13 +27,9 @@ import { TipoQualidadeBadge } from "@/components/purchasing/TipoQualidadeBadge"
 import { OrigemBadge } from "@/components/purchasing/OrigemBadge"
 import { StatusPecaBadge } from "@/components/purchasing/StatusPecaBadge"
 import { MargemBadge } from "@/components/inventory/MargemBadge"
-import type { PartCatalogReference, TipoQualidade } from "@paddock/types"
-import { useServiceOrder } from "../../_hooks/useServiceOrder"
-import { EstoqueBuscaModal } from "@/components/purchasing/EstoqueBuscaModal"
-import { CompraFormModal } from "@/components/purchasing/CompraFormModal"
-import { SeguradoraFormModal } from "@/components/purchasing/SeguradoraFormModal"
 import { formatCurrency } from "@paddock/utils"
 import { PartsSummary, calcPartsTotals } from "./PartsTab/PartsSummary"
+import { PartAddModals, type CompraPrefill, type PartAddMode } from "./PartsTab/PartAddModals"
 
 // ─── Props ──────────────────────────────────────────────────────────────────────
 
@@ -50,37 +40,15 @@ interface PartsTabProps {
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export function PartsTab({ orderId }: PartsTabProps) {
-  const [estoqueOpen, setEstoqueOpen] = useState(false)
-  const [compraOpen, setCompraOpen] = useState(false)
-  const [seguradoraOpen, setSeguradoraOpen] = useState(false)
+  const [addMode, setAddMode] = useState<PartAddMode>(null)
+  const [compraPrefill, setCompraPrefill] = useState<CompraPrefill | undefined>()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [sourceFilter, setSourceFilter] = useState<string>("all")
 
   const isManager = usePermission("MANAGER")
 
-  const { data: osData } = useServiceOrder(orderId)
-
-  const [compraModalPrefill, setCompraModalPrefill] = useState<{
-    description?: string
-    partNumber?: string
-    catalogRef?: PartCatalogReference
-  } | undefined>()
-
-  function handleCatalogSelect(ref: PartCatalogReference) {
-    setEstoqueOpen(false)
-    setCompraModalPrefill({
-      description: ref.description,
-      partNumber: ref.manufacturer_code,
-      catalogRef: ref,
-    })
-    setCompraOpen(true)
-  }
-
   const { data: parts, isLoading } = useOSParts(orderId)
   const deletePart = useDeletePart(orderId)
-  const addPartEstoque = useAddPartEstoque(orderId)
-  const addPartCompra = useAddPartCompra(orderId)
-  const addPartSeguradora = useAddPartSeguradora(orderId)
 
   // ─── Derived data ───────────────────────────────────────────────────────────
 
@@ -111,53 +79,6 @@ export function PartsTab({ orderId }: PartsTabProps) {
   const { custoTotal, valorCobrado, margemPct, pendingCount } = calcPartsTotals(partsList)
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
-
-  async function handleEstoqueSelect(data: {
-    unidade_fisica_id: string
-    tipo_qualidade: TipoQualidade
-    unit_price: string
-    description: string
-  }) {
-    try {
-      await addPartEstoque.mutateAsync(data)
-      toast.success("Peca adicionada do estoque.")
-      setEstoqueOpen(false)
-    } catch {
-      toast.error("Erro ao adicionar peca do estoque.")
-    }
-  }
-
-  async function handleCompraSubmit(data: {
-    description: string
-    part_number: string
-    tipo_qualidade: TipoQualidade
-    unit_price: string
-    quantity: string
-    observacoes: string
-  }) {
-    try {
-      await addPartCompra.mutateAsync(data)
-      toast.success("Peca adicionada para compra.")
-      setCompraOpen(false)
-    } catch {
-      toast.error("Erro ao adicionar peca para compra.")
-    }
-  }
-
-  async function handleSeguradoraSubmit(data: {
-    description: string
-    tipo_qualidade: TipoQualidade
-    unit_price: string
-    quantity: string
-  }) {
-    try {
-      await addPartSeguradora.mutateAsync(data)
-      toast.success("Peca da seguradora adicionada.")
-      setSeguradoraOpen(false)
-    } catch {
-      toast.error("Erro ao adicionar peca da seguradora.")
-    }
-  }
 
   async function handleDelete(partId: string) {
     try {
@@ -198,9 +119,9 @@ export function PartsTab({ orderId }: PartsTabProps) {
           </span>
         </div>
         <AddPartMenu
-          onEstoque={() => setEstoqueOpen(true)}
-          onCompra={() => setCompraOpen(true)}
-          onSeguradora={() => setSeguradoraOpen(true)}
+          onEstoque={() => setAddMode("estoque")}
+          onCompra={() => setAddMode("compra")}
+          onSeguradora={() => setAddMode("seguradora")}
         />
       </div>
 
@@ -247,9 +168,9 @@ export function PartsTab({ orderId }: PartsTabProps) {
           <p className="text-sm text-muted-foreground">Nenhuma peça nesta OS ainda.</p>
           <AddPartMenu
             primary
-            onEstoque={() => setEstoqueOpen(true)}
-            onCompra={() => setCompraOpen(true)}
-            onSeguradora={() => setSeguradoraOpen(true)}
+            onEstoque={() => setAddMode("estoque")}
+            onCompra={() => setAddMode("compra")}
+            onSeguradora={() => setAddMode("seguradora")}
           />
         </div>
       ) : (
@@ -484,32 +405,14 @@ export function PartsTab({ orderId }: PartsTabProps) {
         />
       )}
 
-      {/* Modals */}
-      <EstoqueBuscaModal
-        open={estoqueOpen}
-        onClose={() => setEstoqueOpen(false)}
-        osId={orderId}
-        onSelect={handleEstoqueSelect}
-        vehicleMakeName={osData?.make}
-        vehicleModelName={osData?.model}
-        vehicleLabel={osData ? `${osData.make} ${osData.model} ${osData.year ?? ""}`.trim() : undefined}
-        onCatalogSelect={handleCatalogSelect}
-      />
-      <CompraFormModal
-        open={compraOpen}
-        onClose={() => {
-          setCompraOpen(false)
-          setCompraModalPrefill(undefined)
+      <PartAddModals
+        orderId={orderId}
+        mode={addMode}
+        compraPrefill={compraPrefill}
+        onModeChange={(mode, prefill) => {
+          setAddMode(mode)
+          setCompraPrefill(prefill)
         }}
-        onSubmit={handleCompraSubmit}
-        vehicleMakeName={osData?.make}
-        vehicleModelName={osData?.model}
-        prefill={compraModalPrefill}
-      />
-      <SeguradoraFormModal
-        open={seguradoraOpen}
-        onClose={() => setSeguradoraOpen(false)}
-        onSubmit={handleSeguradoraSubmit}
       />
 
       {/* Confirm delete */}
