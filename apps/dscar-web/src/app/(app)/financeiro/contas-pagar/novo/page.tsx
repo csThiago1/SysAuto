@@ -273,7 +273,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Novo Título a Pagar</h1>
+          <h1 className="page-title">Novo Título a Pagar</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Cadastre um novo título de contas a pagar.
           </p>

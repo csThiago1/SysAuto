@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Package, Plus, Pencil, Trash2, Search } from "lucide-react"
+import { Plus, Pencil, Trash2, Search } from "lucide-react"
 import { toast } from "sonner"
 import type { ProdutoComercialPeca } from "@paddock/types"
 import {
@@ -62,9 +62,8 @@ export default function ProdutosPecasPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Package className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">
+            <h1 className="page-title">
               Produtos — Peças
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">

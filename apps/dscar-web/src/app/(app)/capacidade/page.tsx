@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Users, Plus, Trash2, Search, X } from "lucide-react"
+import { Plus, Trash2, Search, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -48,7 +48,7 @@ function HeatmapWidget({ dias }: { dias: HeatmapDia[] }) {
   const diasSemana = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
   return (
     <div className="rounded-lg border border-border bg-muted/50 p-4">
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+      <h3 className="label-mono mb-3">
         Utilização da Semana
       </h3>
       <div className="grid grid-cols-7 gap-1">
@@ -213,9 +213,8 @@ export default function CapacidadePage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <Users className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Capacidade Técnica</h1>
+          <h1 className="page-title">Capacidade Técnica</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Disponibilidade e utilização da equipe técnica por categoria.
           </p>

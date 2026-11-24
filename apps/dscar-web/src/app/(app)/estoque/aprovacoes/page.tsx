@@ -75,9 +75,8 @@ export default function AprovacoesPage() {
     <div className="px-0 py-3 md:p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <CheckCircle2 className="h-5 w-5 text-primary" />
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-semibold text-foreground">
+          <h1 className="page-title">
             Aprovacoes Pendentes
           </h1>
           {count > 0 && (

@@ -186,7 +186,7 @@ export default function OrdensCompraPage() {
             <FileCheck size={20} className="text-foreground/60" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-foreground">Ordens de Compra</h1>
+            <h1 className="page-title">Ordens de Compra</h1>
             <p className="text-sm text-muted-foreground">
               {isLoading
                 ? "Carregando..."

@@ -2,7 +2,7 @@
 
 import { NativeSelect } from "@/components/ui/native-select";
 import React, { useState } from "react";
-import { BarChart3, FileText, Package, TrendingUp } from "lucide-react";
+import { FileText, Package, TrendingUp } from "lucide-react";
 import { SummaryCard } from "@/components/financeiro";
 import { useResumoFiscal } from "@/hooks/useFiscal";
 import { formatCurrency } from "@paddock/utils";
@@ -43,9 +43,8 @@ export default function ResumoFiscalPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
-          <BarChart3 className="h-6 w-6 text-primary mt-0.5" />
           <div>
-            <h1 className="text-xl font-bold text-foreground">Resumo Fiscal Mensal</h1>
+            <h1 className="page-title">Resumo Fiscal Mensal</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               Consolidado de documentos fiscais emitidos no período
             </p>

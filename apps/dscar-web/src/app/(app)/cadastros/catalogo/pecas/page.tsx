@@ -169,7 +169,7 @@ export default function PecasCanonicoPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Pecas Canonicas</h1>
+          <h1 className="page-title">Pecas Canonicas</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Catalogo de pecas automotivas — base do Motor de Orcamentos. NCM obrigatorio para emissao de NF-e.
           </p>

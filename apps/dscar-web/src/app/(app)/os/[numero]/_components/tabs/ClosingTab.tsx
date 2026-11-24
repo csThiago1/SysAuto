@@ -218,7 +218,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       <div className="bg-card border border-border rounded-md overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <DollarSign className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
+          <h2 className="label-mono">
             Resumo Financeiro
           </h2>
         </div>
@@ -293,7 +293,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       <div className="bg-card border border-border rounded-md overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <Car className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
+          <h2 className="label-mono">
             Quilometragem
           </h2>
         </div>
@@ -339,7 +339,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
         <div className="bg-card border border-border rounded-md overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
             <PenLine className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
+            <h2 className="label-mono">
               Aprovação do Orçamento
             </h2>
           </div>
@@ -357,7 +357,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       <div className="bg-card border border-border rounded-md overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <FileText className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">Fiscal</h2>
+          <h2 className="label-mono">Fiscal</h2>
         </div>
         <div className="p-5 space-y-3">
           <div className="flex items-center gap-2">

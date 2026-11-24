@@ -12,7 +12,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
-import { FileText, RefreshCw, XCircle, CheckCircle2, Clock, AlertCircle, Mail, X, ArrowRightLeft } from "lucide-react"
+import { RefreshCw, XCircle, CheckCircle2, Clock, AlertCircle, Mail, X, ArrowRightLeft } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { ScrollFade } from "@/components/ui/scroll-fade"
@@ -874,9 +874,8 @@ export default function FiscalDocumentosPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-start gap-3">
-          <FileText className="h-6 w-6 text-primary mt-0.5" />
           <div>
-            <h1 className="text-xl font-bold text-foreground">Documentos Fiscais</h1>
+            <h1 className="page-title">Documentos Fiscais</h1>
             <p className="text-xs text-muted-foreground mt-0.5">NFS-e, NF-e e NFC-e emitidas pela empresa</p>
           </div>
         </div>

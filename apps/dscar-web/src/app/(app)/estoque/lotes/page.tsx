@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Layers, Printer, ArrowRightLeft, ArrowDownToLine } from "lucide-react"
+import { Printer, ArrowRightLeft, ArrowDownToLine } from "lucide-react"
 import { useLotes, useBaixarInsumo } from "@/hooks/useInventory"
 import { useTransferir } from "@/hooks/useInventoryMovement"
 import { PosicaoSelector } from "@/components/inventory/PosicaoSelector"
@@ -262,9 +262,8 @@ export default function LotesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Layers className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Lotes de Insumo</h1>
+            <h1 className="page-title">Lotes de Insumo</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               {lotes.length} lote{lotes.length !== 1 ? "s" : ""}
             </p>

@@ -123,7 +123,7 @@ export default function FolhaMonthPage({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground capitalize">
+            <h1 className="page-title">
               {monthDisplay}
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">

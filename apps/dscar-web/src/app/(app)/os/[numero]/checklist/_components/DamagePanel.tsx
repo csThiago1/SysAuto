@@ -58,7 +58,7 @@ function Chips<T extends string>({
 }): ReactElement {
   return (
     <fieldset className="space-y-1.5">
-      <legend className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</legend>
+      <legend className="label-mono">{label}</legend>
       <div className="flex flex-wrap gap-1.5">
         {options.map((o) => {
           const active = o.value === value
@@ -176,7 +176,7 @@ export function DamagePanel({ osId, panelKey, point, damage, locked, onClose }: 
 
       {!damage && (
         <label className="space-y-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Peça</span>
+          <span className="label-mono">Peça</span>
           <NativeSelect
             value={panel ?? ""}
             disabled={locked}
@@ -206,7 +206,7 @@ export function DamagePanel({ osId, panelKey, point, damage, locked, onClose }: 
       <Chips label="Relação" options={RELATIONS} value={relation} onChange={setRelation} disabled={locked} />
 
       <section className="space-y-1.5">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <p className="label-mono">
           Fotos ({photoIds.length})
         </p>
         {photos.isLoading ? (
@@ -267,7 +267,7 @@ export function DamagePanel({ osId, panelKey, point, damage, locked, onClose }: 
       </section>
 
       <label className="space-y-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Notas</span>
+        <span className="label-mono">Notas</span>
         <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} disabled={locked} rows={2} />
       </label>
 

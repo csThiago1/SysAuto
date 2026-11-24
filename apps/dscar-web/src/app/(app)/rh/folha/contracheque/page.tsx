@@ -49,7 +49,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
 
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="page-title">
             Meus Contracheques
           </h1>
           {myEmployee && (

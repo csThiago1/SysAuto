@@ -47,7 +47,7 @@ export default function MetasPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Metas</h1>
+            <h1 className="page-title">Metas</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               {data?.count ?? "—"} meta{(data?.count ?? 0) !== 1 ? "s" : ""}
             </p>

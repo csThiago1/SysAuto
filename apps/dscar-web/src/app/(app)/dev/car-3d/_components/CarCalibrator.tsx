@@ -328,7 +328,7 @@ function Calibrator(): ReactElement {
     <div className="flex flex-col gap-4 p-3 md:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Calibração do carro 3D</h1>
+          <h1 className="page-title">Calibração do carro 3D</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Ajuste as caixas das peças e exporte o regions.json. Tela interna de desenvolvimento.
           </p>

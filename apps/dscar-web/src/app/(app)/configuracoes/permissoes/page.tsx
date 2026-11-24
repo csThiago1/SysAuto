@@ -159,7 +159,7 @@ export default function PermissoesPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-muted-foreground">
         <Shield className="h-12 w-12" />
-        <h1 className="text-lg font-medium text-foreground/60">
+        <h1 className="page-title">
           Sem permissao
         </h1>
         <p className="text-sm">
@@ -227,7 +227,7 @@ export default function PermissoesPage() {
                 <TableRow key={`header-${module}`} className="bg-muted/30">
                   <TableCell
                     colSpan={2 + EDITABLE_ROLES.length}
-                    className="p-2 px-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground"
+                    className="label-mono p-2 px-3"
                   >
                     {PERMISSION_MODULES[module] ?? module}
                   </TableCell>

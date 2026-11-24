@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ReceiptText, Plus, Search } from "lucide-react"
+import { Plus, Search } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import type { Route } from "next"
@@ -107,9 +107,8 @@ export default function OrcamentosParticularesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <ReceiptText className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Orçamentos Particulares</h1>
+            <h1 className="page-title">Orçamentos Particulares</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               {total} orçamento{total !== 1 ? "s" : ""}
             </p>

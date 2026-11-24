@@ -1,6 +1,6 @@
 "use client"
 
-import { SlidersHorizontal, Clock, Percent, Layers, FlaskConical } from "lucide-react"
+import { Clock, Percent, Layers, FlaskConical } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 
@@ -35,9 +35,8 @@ export default function ConfiguracaoMotorPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <SlidersHorizontal className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Configuração do Motor</h1>
+          <h1 className="page-title">Configuração do Motor</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Parâmetros de precificação do Motor de Orçamentos.
           </p>

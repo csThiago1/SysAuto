@@ -379,7 +379,7 @@ function CategoryCard({ label, parser, source, diff, isGrandTotal, onAutoAdjust 
       "rounded-lg border p-3",
       ok ? "border-success-500/30 bg-success-500/5" : "border-error-500/30 bg-error-500/5",
     )}>
-      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="label-mono">{label}</div>
       <div className="mt-1 text-xs flex justify-between">
         <span className="text-muted-foreground">Importado</span>
         <span className="font-semibold">R$ {formatBRL(parser)}</span>

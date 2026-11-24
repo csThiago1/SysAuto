@@ -278,7 +278,7 @@ function DateItem({
 }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="label-mono">{label}</p>
       <p className={`mt-0.5 text-sm font-medium ${highlight ? "text-foreground" : "text-foreground/70"}`}>
         {value}
       </p>

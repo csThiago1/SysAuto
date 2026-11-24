@@ -196,7 +196,7 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
     <form onSubmit={form.handleSubmit(onSubmit, () => toast.error("Preencha todos os campos obrigatórios."))} className="space-y-5">
       {/* Destinatário */}
       <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="label-mono">
           Destinatário
         </h2>
 
@@ -224,7 +224,7 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
       {/* Itens */}
       <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h2 className="label-mono">
             Itens / Mercadorias
           </h2>
           <button
@@ -267,7 +267,7 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
 
       {/* Dados complementares */}
       <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="label-mono">
           Dados Complementares
         </h2>
 

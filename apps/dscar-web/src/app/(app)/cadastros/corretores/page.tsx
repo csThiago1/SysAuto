@@ -24,7 +24,7 @@ export default function CorretoresPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-foreground">Corretores</h1>
+        <h1 className="page-title">Corretores</h1>
         <Button onClick={() => setNewOfficeOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" /> Novo Escritório
         </Button>
@@ -33,7 +33,7 @@ export default function CorretoresPage() {
       <div className="grid grid-cols-5 gap-6 min-h-[400px]">
         {/* Painel esquerdo — Escritórios */}
         <div className="col-span-2 space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+          <p className="label-mono mb-3">
             Escritórios <Building2 className="inline h-3 w-3 ml-1" />
           </p>
           {loadingOffices ? (
@@ -71,7 +71,7 @@ export default function CorretoresPage() {
           ) : (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <p className="label-mono">
                   Corretores — {selectedOffice.full_name}
                 </p>
                 <Button

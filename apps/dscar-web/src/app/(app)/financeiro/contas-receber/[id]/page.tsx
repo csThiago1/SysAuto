@@ -152,7 +152,7 @@ export default function ContaReceberDetailPage(): React.ReactElement {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div className="space-y-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold text-foreground truncate">
+                <h1 className="page-title truncate">
                   {doc.description}
                 </h1>
                 <FinanceiroStatusBadge

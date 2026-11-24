@@ -88,7 +88,7 @@ function SimuladorContent() {
     <div className="flex flex-col gap-4 md:gap-6 px-0 py-3 md:p-6 max-w-6xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Simulador de Fichas Técnicas</h1>
+        <h1 className="page-title">Simulador de Fichas Técnicas</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Visualize a ficha base e o resultado com multiplicadores de tamanho.
         </p>
@@ -231,7 +231,7 @@ function FichaTable({
     <div className="flex flex-col gap-3">
       {/* Mão de Obra */}
       <div>
-        <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wide">
+        <p className="label-mono mb-1">
           Mão de Obra
         </p>
         {ficha.maos_obra.length === 0 ? (
@@ -268,7 +268,7 @@ function FichaTable({
 
       {/* Insumos */}
       <div>
-        <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wide">
+        <p className="label-mono mb-1">
           Insumos
         </p>
         {ficha.insumos.length === 0 ? (

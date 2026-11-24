@@ -98,7 +98,7 @@ export default function NFeEntradaDetailPage({ params }: { params: Promise<{ id:
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-lg font-semibold text-foreground">
+            <h1 className="page-title">
               NF-e {nfe.numero || nfe.id.slice(0, 8)}
               {nfe.serie ? ` / ${nfe.serie}` : ""}
             </h1>

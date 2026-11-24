@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 import { useMemo, useState } from "react"
-import { ArrowLeftRight, ChevronDown, ChevronRight } from "lucide-react"
+import { ChevronDown, ChevronRight } from "lucide-react"
 import type { TipoMovimentacao, MovimentacaoEstoque } from "@paddock/types"
 import { useMovimentacoes } from "@/hooks/useInventoryMovement"
 import { ScrollFade } from "@/components/ui/scroll-fade"
@@ -111,9 +111,8 @@ export default function MovimentacoesPage() {
     <div className="px-0 py-3 md:p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <ArrowLeftRight className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Movimentações</h1>
+          <h1 className="page-title">Movimentações</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             {movimentacoes.length} registro{movimentacoes.length !== 1 ? "s" : ""}
           </p>

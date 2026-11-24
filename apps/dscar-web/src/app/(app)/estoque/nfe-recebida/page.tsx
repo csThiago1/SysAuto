@@ -2,7 +2,7 @@
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 import { useState } from "react"
-import { FileText, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { useNFeEntradas } from "@/hooks/useInventory"
@@ -41,9 +41,8 @@ export default function NFeRecebidaPage() {
     <div className="px-0 py-3 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <FileText className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">NF-e de Entrada</h1>
+            <h1 className="page-title">NF-e de Entrada</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               {notas.length} nota{notas.length !== 1 ? "s" : ""}
             </p>

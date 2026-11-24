@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Layers, Search, ChevronRight } from "lucide-react"
+import { Search, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { Input } from "@/components/ui/input"
@@ -102,9 +102,8 @@ export default function SnapshotsPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <Layers className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Snapshots de Custo</h1>
+          <h1 className="page-title">Snapshots de Custo</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Histórico imutável de cálculos de preço para auditoria.
           </p>

@@ -51,7 +51,7 @@ export default function LancamentosPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="page-title">
               Lançamentos Contábeis
             </h1>
             <p className="mt-0.5 text-sm text-muted-foreground">

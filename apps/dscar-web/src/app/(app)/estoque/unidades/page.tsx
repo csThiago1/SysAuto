@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import {
-  Package,
   Printer,
   ArrowRightLeft,
   ShieldCheck,
@@ -227,9 +226,8 @@ export default function UnidadesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Package className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Unidades Fisicas</h1>
+            <h1 className="page-title">Unidades Fisicas</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               {unidades.length} unidade{unidades.length !== 1 ? "s" : ""}
             </p>

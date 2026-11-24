@@ -282,7 +282,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Novo Lançamento</h1>
+          <h1 className="page-title">Novo Lançamento</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Lançamento contábil manual com partidas dobradas.
           </p>

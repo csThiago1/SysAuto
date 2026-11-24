@@ -46,7 +46,7 @@ export default function ValesPage(): React.ReactElement {
       <div className="space-y-5">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="page-title">
             Vales e Benefícios
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">

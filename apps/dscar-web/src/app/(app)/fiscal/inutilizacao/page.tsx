@@ -11,7 +11,7 @@
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
-import { Ban, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { useInutilizacao, useInutilizacoes } from "@/hooks/useFiscal"
@@ -74,9 +74,8 @@ export default function InutilizacaoPage() {
     <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Ban className="h-6 w-6 text-primary" />
         <div>
-          <h1 className="text-xl font-bold text-foreground">
+          <h1 className="page-title">
             Inutilizacao de Numeracao NF-e
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">

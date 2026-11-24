@@ -115,7 +115,7 @@ export function TabFromOS({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
   return (
     <div className="space-y-5">
       <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="label-mono">
           Buscar Ordem de Serviço
         </h2>
 

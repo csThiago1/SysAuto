@@ -25,7 +25,7 @@ export default function InadimplenciaPage(): React.ReactElement {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="page-title">
             Relatorio de Inadimplencia
           </h1>
           <p className="mt-0.5 text-sm text-muted-foreground">

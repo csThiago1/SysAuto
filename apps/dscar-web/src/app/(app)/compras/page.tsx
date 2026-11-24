@@ -201,7 +201,7 @@ export default function ComprasPage() {
           <ShoppingCart size={20} className="text-foreground/60" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-foreground">Compras</h1>
+          <h1 className="page-title">Compras</h1>
           <p className="text-sm text-muted-foreground">Pedidos de compra e ordens de compra</p>
         </div>
       </div>

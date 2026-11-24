@@ -32,9 +32,8 @@ function EmitirNfePageInner() {
     <div className="px-0 py-3 md:p-6 max-w-2xl space-y-6">
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <Package className="h-6 w-6 text-primary" />
         <div>
-          <h1 className="text-xl font-bold text-foreground">Emissão de NF-e de Produto</h1>
+          <h1 className="page-title">Emissão de NF-e de Produto</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Nota fiscal de mercadoria — válida para qualquer estado — requer ADMIN
           </p>

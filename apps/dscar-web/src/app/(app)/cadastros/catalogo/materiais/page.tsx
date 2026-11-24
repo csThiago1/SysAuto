@@ -185,7 +185,7 @@ export default function MateriaisCanonicoPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Materiais Canonicos</h1>
+          <h1 className="page-title">Materiais Canonicos</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Catalogo de materiais e insumos na forma canonica — base do Motor de Orcamentos.
           </p>

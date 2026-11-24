@@ -2,7 +2,7 @@
 
 import { NativeSelect } from "@/components/ui/native-select";
 import React from "react"
-import { ShoppingCart, Plus, Trash2, CheckCircle2 } from "lucide-react"
+import { Plus, Trash2, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -131,9 +131,8 @@ export default function EmitirNfcePage() {
   return (
     <div className="px-0 py-3 md:p-6 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <ShoppingCart className="h-6 w-6 text-primary" />
         <div>
-          <h1 className="text-xl font-bold text-foreground">Emitir NFC-e</h1>
+          <h1 className="page-title">Emitir NFC-e</h1>
           <p className="text-xs text-muted-foreground mt-0.5">Cupom fiscal eletrônico ao consumidor</p>
         </div>
       </div>

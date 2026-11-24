@@ -100,7 +100,7 @@ function RetornosContent(): React.ReactElement {
       <div className="flex flex-wrap items-center gap-y-2">
         <div className="flex min-w-0 items-center gap-2">
           <Bell className="h-5 w-5 shrink-0 text-muted-foreground" />
-          <h1 className="truncate text-xl font-bold">Retornos</h1>
+          <h1 className="page-title truncate">Retornos</h1>
         </div>
         <div className="ml-auto flex flex-wrap gap-2">
           <Button

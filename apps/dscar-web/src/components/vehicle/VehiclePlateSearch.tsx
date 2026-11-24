@@ -106,7 +106,7 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Car className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</span>
+            <span className="label-mono">Veículo</span>
             {history?.found && (
               <Badge variant="outline" className="text-xs border-success-500/30 text-success-400 bg-success-400/10 flex items-center gap-1">
                 <History className="h-3 w-3" />
@@ -177,7 +177,7 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
     return (
       <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Editar Veículo</span>
+          <span className="label-mono">Editar Veículo</span>
           <button
             type="button"
             onClick={() => setEditing(false)}
@@ -194,7 +194,7 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
   // ── Estado: busca por placa ─────────────────────────────────────────────────
   return (
     <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</p>
+      <p className="label-mono">Veículo</p>
 
       {/* Input de placa */}
       <div className="space-y-1.5">

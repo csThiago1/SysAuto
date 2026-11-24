@@ -31,7 +31,7 @@ export default function TiposPinturaPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">Tipos de Pintura</h1>
+        <h1 className="page-title">Tipos de Pintura</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Classificação de complexidade de pintura — influencia o custo final
           do orçamento.

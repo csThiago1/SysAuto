@@ -4,7 +4,6 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import { toast } from "sonner"
 import {
-  SlidersHorizontal,
   Clock,
   Settings2,
   Layers,
@@ -518,7 +517,7 @@ function AbaSimulacao({ empresaId }: { empresaId: string }) {
 
       {resultado !== null && (
         <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-2">
-          <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">Resultado</p>
+          <p className="label-mono">Resultado</p>
           <pre className="text-xs text-foreground/80 whitespace-pre-wrap break-all font-mono">
             {JSON.stringify(resultado, null, 2)}
           </pre>
@@ -536,9 +535,8 @@ export default function ConfiguracaoMotorCustosPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <SlidersHorizontal className="h-5 w-5 text-primary" />
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Configuração do Motor — Custos</h1>
+          <h1 className="page-title">Configuração do Motor — Custos</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Parâmetros de custo/hora, rateio de despesas e diagnóstico.
           </p>

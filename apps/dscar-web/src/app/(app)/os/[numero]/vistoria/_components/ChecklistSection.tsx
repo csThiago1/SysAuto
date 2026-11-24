@@ -87,7 +87,7 @@ export function ChecklistSection({
         return (
           <li key={`${item.category}:${item.itemKey}`}>
             {showHeader && (
-              <p className="mb-1 mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="label-mono mb-1 mt-2">
                 {CATEGORY_LABELS[item.category] ?? item.category}
               </p>
             )}

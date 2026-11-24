@@ -69,9 +69,8 @@ export default function BenchmarkIngestoesPage() {
     <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Upload className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Ingestões de Benchmark</h1>
+            <h1 className="page-title">Ingestões de Benchmark</h1>
             <p className="text-xs text-muted-foreground mt-0.5">PDFs e arquivos de seguradora processados pelo motor.</p>
           </div>
         </div>
@@ -94,7 +93,7 @@ export default function BenchmarkIngestoesPage() {
 
       {showForm && (
         <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nova Ingestão</p>
+          <p className="label-mono">Nova Ingestão</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-foreground/70 text-xs">Fonte *</Label>

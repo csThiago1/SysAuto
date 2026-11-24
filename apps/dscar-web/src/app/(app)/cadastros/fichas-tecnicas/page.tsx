@@ -44,7 +44,7 @@ export default function FichasTecnicasPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Fichas Técnicas</h1>
+          <h1 className="page-title">Fichas Técnicas</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Fichas técnicas versionadas — mão de obra e insumos por serviço.
           </p>

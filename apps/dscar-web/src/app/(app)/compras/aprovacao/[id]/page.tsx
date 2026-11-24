@@ -240,7 +240,7 @@ export default function AprovacaoPage({ params }: { params: Promise<{ id: string
           <span>/</span>
           <span>Aprovacao</span>
         </div>
-        <h1 className="text-xl font-semibold text-foreground">Aprovacao de Cotacao — {osTitle}</h1>
+        <h1 className="page-title">Aprovacao de Cotacao — {osTitle}</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
           {aprovacao.os_plate && <span>{aprovacao.os_plate} · </span>}
           Solicitado por {enviadoPor} em {dataEnvio}

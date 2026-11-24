@@ -37,7 +37,7 @@ export function EmployeeHeader({
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl font-bold text-foreground">
+              <h2 className="page-title">
                 {employee.user.name}
               </h2>
               <EmployeeStatusBadge status={employee.status} />

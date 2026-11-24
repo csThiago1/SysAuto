@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Warehouse, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { toast } from "sonner"
@@ -59,9 +59,8 @@ export default function ArmazensPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Warehouse className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Armazéns</h1>
+            <h1 className="page-title">Armazéns</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               {armazens.length} armazé{armazens.length !== 1 ? "ns" : "m"}
             </p>

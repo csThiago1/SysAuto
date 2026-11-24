@@ -154,7 +154,7 @@ export default function NovaContaPage(): React.ReactElement {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Nova Conta Contabil</h1>
+          <h1 className="page-title">Nova Conta Contabil</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Adicionar uma nova conta ao plano de contas DS Car.
           </p>
