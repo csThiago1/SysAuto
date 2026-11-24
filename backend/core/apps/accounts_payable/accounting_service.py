@@ -6,7 +6,7 @@ Gera lancamentos contabeis automaticos para eventos de contas a pagar.
 Regra: NUNCA lancar excecao que quebre o fluxo AP — logar e retornar None.
 
 Contas do plano DS Car utilizadas:
-  2.1.04.001  Fornecedores a Pagar          (passivo — baixa ao pagar)
+  2.1.01.001  Fornecedores Nacionais        (passivo — baixa ao pagar)
   1.1.01.002  Banco Bradesco C/C             (ativo — saida de caixa)
   2.1.03.001  Salarios e Ordenados a Pagar   (passivo — usado quando origin=FOLHA)
 """
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 # Mapeamento semantico → codigo do plano de contas DS Car
 # ---------------------------------------------------------------------------
 AP_ACCOUNT_MAP: dict[str, str] = {
-    "suppliers_payable": "2.1.04.001",  # Fornecedores a Pagar
+    "suppliers_payable": "2.1.01.001",  # Fornecedores Nacionais
     "bank": "1.1.01.002",               # Banco Bradesco C/C
     "payroll_payable": "2.1.03.001",    # Salarios a Pagar (origin=FOLHA)
 }
@@ -95,7 +95,7 @@ class PayableAccountingService:
           C 1.1.01.002  Banco Bradesco C/C            (saida de caixa)
 
         Para demais origens (fornecedores):
-          D 2.1.04.001  Fornecedores a Pagar          (baixa do passivo)
+          D 2.1.01.001  Fornecedores Nacionais        (baixa do passivo)
           C 1.1.01.002  Banco Bradesco C/C             (saida de caixa)
 
         Args:
@@ -141,7 +141,7 @@ class PayableAccountingService:
                     "debit_amount": str(amount),
                     "credit_amount": "0.00",
                     "description": (
-                        f"Pagamento: {document.description} — {document.supplier.name}"
+                        f"Pagamento: {document.description} — {document.supplier.full_name}"
                     ),
                 },
                 {
@@ -149,7 +149,7 @@ class PayableAccountingService:
                     "debit_amount": "0.00",
                     "credit_amount": str(amount),
                     "description": (
-                        f"Saida bancaria: {document.description} — {document.supplier.name}"
+                        f"Saida bancaria: {document.description} — {document.supplier.full_name}"
                     ),
                 },
             ]
@@ -157,7 +157,7 @@ class PayableAccountingService:
             entry = JournalEntryService.create_entry(
                 description=(
                     f"Pagamento AP: {document.description} — "
-                    f"{document.supplier.name} — R${amount}"
+                    f"{document.supplier.full_name} — R${amount}"
                 ),
                 competence_date=payment.payment_date,
                 origin=JournalEntryOrigin.BANK_PAYMENT,
@@ -196,7 +196,7 @@ class PayableAccountingService:
 
         Estrutura (partidas dobradas):
           D  expense_account (6.x)    Despesa (aluguel, material, etc.)
-          C  2.1.04.001               Fornecedores a Pagar (passivo)
+          C  2.1.01.001               Fornecedores Nacionais (passivo)
 
         Só é chamado quando document.expense_account está preenchido.
         Para títulos sem expense_account, o reconhecimento é manual.
@@ -237,20 +237,20 @@ class PayableAccountingService:
                     "debit_amount": str(amount),
                     "credit_amount": "0.00",
                     "cost_center_id": str(document.cost_center_id) if document.cost_center_id else None,
-                    "description": f"Despesa: {document.description} — {document.supplier.name}",
+                    "description": f"Despesa: {document.description} — {document.supplier.full_name}",
                 },
                 {
                     "account_id": str(acc_payable.id),
                     "debit_amount": "0.00",
                     "credit_amount": str(amount),
-                    "description": f"Obrigação: {document.description} — {document.supplier.name}",
+                    "description": f"Obrigação: {document.description} — {document.supplier.full_name}",
                 },
             ]
 
             entry = JournalEntryService.create_entry(
                 description=(
                     f"Reconhecimento despesa: {document.description} — "
-                    f"{document.supplier.name} — R${amount}"
+                    f"{document.supplier.full_name} — R${amount}"
                 ),
                 competence_date=document.competence_date,
                 origin=JournalEntryOrigin.BANK_PAYMENT,
