@@ -74,7 +74,7 @@ export function MobileTabBar(): React.ReactElement {
 
   // Modo operação: tabs fixas pra todos; navegação completa só no "Mais" (MANAGER+)
   const fixed = MOBILE_TABS;
-  const { area, areas, setArea } = useActiveArea();
+  const { area, areas } = useActiveArea();
   const rest = useMemo(
     () => (level >= ROLE_HIERARCHY.MANAGER ? sectionsForArea(role, perms, area).flatMap((s) => s.items) : []),
     [level, role, perms, area]
@@ -145,7 +145,7 @@ export function MobileTabBar(): React.ReactElement {
             <AccountSheetBlock />
 
             {level >= ROLE_HIERARCHY.MANAGER && (
-              <AreaSwitcher area={area} areas={areas} onChange={setArea} className="mb-3 border-t border-border pt-4" />
+              <AreaSwitcher area={area} areas={areas} onNavigate={() => setMoreOpen(false)} className="mb-3 border-t border-border pt-4" />
             )}
             {rest.length > 0 && <p className="label-mono mb-3">Módulos</p>}
             <div className="grid grid-cols-4 gap-4">

@@ -40,7 +40,10 @@ export function useActiveArea(): { area: AreaId; areas: AreaId[]; setArea: (a: A
   const pathArea = fromPath && areas.includes(fromPath) ? fromPath : null;
 
   useEffect(() => {
-    if (pathArea) writeStored(pathArea);
+    if (pathArea) {
+      writeStored(pathArea);
+      setStored(pathArea); // a próxima rota compartilhada já renderiza esta área
+    }
   }, [pathArea]);
 
   const fallback = defaultAreaForRole(session?.role);

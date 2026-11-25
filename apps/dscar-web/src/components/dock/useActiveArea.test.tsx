@@ -36,6 +36,22 @@ describe("useActiveArea", () => {
     await waitFor(() => expect(result.current.area).toBe("comercial"));
   });
 
+  it("Kanban -> OS mantém a área já no primeiro render", () => {
+    state.pathname = "/os/kanban";
+    const { result, rerender } = renderHook(() => useActiveArea());
+    state.pathname = "/os/123";
+    rerender();
+    expect(result.current.area).toBe("oficina");
+  });
+
+  it("CONSULTANT com financeiro gravado em /os/123 cai em oficina", async () => {
+    state.role = "CONSULTANT";
+    sessionStorage.setItem("dscar-area", "financeiro");
+    const { result } = renderHook(() => useActiveArea());
+    await act(async () => {});
+    expect(result.current.area).toBe("oficina");
+  });
+
   it("sem nada gravado usa o padrão do papel", () => {
     expect(renderHook(() => useActiveArea()).result.current.area).toBe("gestao");
     state.role = "CONSULTANT";

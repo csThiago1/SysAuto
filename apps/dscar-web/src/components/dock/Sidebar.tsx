@@ -121,7 +121,7 @@ export function Sidebar(): React.ReactElement {
   const perms = (session?.extraPermissions ?? []) as ExtraPermission[];
   const roleLabel = ROLE_LABELS[session?.role ?? ""] ?? session?.role ?? "";
 
-  const { area, areas, setArea } = useActiveArea();
+  const { area, areas } = useActiveArea();
   const items = sectionsForArea(role, perms, area).flatMap((s) => s.items);
   // A barra fica escondida (CSS) no celular: sempre desenhada (sem pular no
   // desktop), mas o placar só busca dados em tela md+. O sino divide a query de
@@ -152,7 +152,7 @@ export function Sidebar(): React.ReactElement {
       </div>
 
       <nav aria-label="Módulos" className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
-        <AreaSwitcher area={area} areas={areas} onChange={setArea} className="mb-2 px-1" />
+        <AreaSwitcher area={area} areas={areas} className="mb-2 px-1" />
         {items.map((i) => (
           <Item key={i.id} item={i} pathname={pathname} counts={counts} />
         ))}

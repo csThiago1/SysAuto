@@ -52,7 +52,7 @@ describe("Sidebar", () => {
   it("OWNER em /os/kanban: área Oficina, com Kanban e sem Retornos", () => {
     t.role = "OWNER";
     wrap(<Sidebar />);
-    expect(screen.getByRole("tab", { name: "Oficina" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("link", { name: "Oficina" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Kanban" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Retornos" })).not.toBeInTheDocument();
   });
@@ -61,21 +61,20 @@ describe("Sidebar", () => {
     t.role = "OWNER";
     t.path = "/crm/retornos";
     wrap(<Sidebar />);
-    expect(screen.getByRole("tab", { name: "Comercial" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("link", { name: "Comercial" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Retornos" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Kanban" })).not.toBeInTheDocument();
   });
 
   it("almoxarife não vê a área Financeiro", () => {
     wrap(<Sidebar />);
-    expect(screen.queryByRole("tab", { name: "Financeiro" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Financeiro" })).not.toBeInTheDocument();
   });
 
-  it("clicar em Financeiro leva para /financeiro", () => {
+  it("Financeiro é um link para /financeiro", () => {
     t.role = "OWNER";
     wrap(<Sidebar />);
-    fireEvent.click(screen.getByRole("tab", { name: "Financeiro" }));
-    expect(t.push).toHaveBeenCalledWith("/financeiro");
+    expect(screen.getByRole("link", { name: "Financeiro" })).toHaveAttribute("href", "/financeiro");
   });
 
   it("acende só o Kanban, mostra o placar e esconde módulos do papel", () => {
