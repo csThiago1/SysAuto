@@ -30,7 +30,7 @@ export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
 
   // Usuario ja autenticado tentando acessar pagina de auth -> redireciona para OS
   if (isLoggedIn && isAuthPage) {
-    return Response.redirect(new URL("/dashboard", request.url));
+    return Response.redirect(new URL("/", request.url));
   }
 
   const role = req.auth?.role as string | undefined;
