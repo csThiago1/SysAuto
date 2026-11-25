@@ -291,6 +291,9 @@ CHANNEL_LAYERS = {
     },
 }
 
+# Tempo real: desligado por padrão; dev.py liga.
+REALTIME_ENABLED = config("REALTIME_ENABLED", default=False, cast=bool)
+
 # ─── Cache ────────────────────────────────────────────────────────────────────
 CACHES = {
     "default": {
