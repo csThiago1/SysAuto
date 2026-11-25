@@ -1,6 +1,6 @@
 # Áreas do ERP e tempo real — desenho
 
-Data: 25/11/2026 · Autor: Thiago Campos + Claude · Status: aprovado pelo Thiago em 25/11/2026 · Áreas primeiro; tempo real depois da VM A1
+Data: 25/11/2026 · Autor: Thiago Campos + Claude · Status: aprovado pelo Thiago em 25/11/2026 · Áreas implementadas; tempo real parado (VM A1 abandonada)
 
 ## Contexto: o programa comercial
 
@@ -99,7 +99,7 @@ Em paralelo: migração de clientes e veículos do Databox (o ERP tem 27 OS em p
 - O Caddy encaminha `/ws/*` para o processo de websocket e o resto para o gunicorn. O `infra/oracle/Caddyfile` do repositório **não** é o que está em produção (aponta para `api:8000`, do docker-compose, enquanto o gunicorn roda direto em `127.0.0.1:8000`). Ler o Caddyfile e o host público reais na VM antes de escrever a mudança, e trazer a versão real para o repositório.
 - O host do `wss://` é o mesmo host público da API que o proxy usa (`BACKEND_URL`; hoje `147-15-19-48.sslip.io`). O `ALLOWED_HOSTS` precisa aceitar a origem `sistema.oficinadscar.com.br` no `AllowedHostsOriginValidator`.
 - **Redis** *(decisão do Claude)*: trocar `maxmemory-policy` de `allkeys-lru` para `volatile-lru`. Com `allkeys-lru`, o Redis pode apagar filas do Celery e grupos do Channels quando enche. Com `volatile-lru`, só apaga chaves com prazo de validade (cache). O `maxmemory` de 48 MB fica.
-- **Memória**: a VM já trabalha em swap (897 MB). Um uvicorn com o Django inteiro somaria mais cerca de 130 MB, que iriam para o swap e deixariam a API mais lenta. **O websocket não cabe nesta VM.** Ele depende de mudar para uma VM maior (ver Pendências).
+- **Memória**: a VM já trabalha em swap (897 MB). Um uvicorn com o Django inteiro somaria mais cerca de 130 MB, que iriam para o swap e deixariam a API mais lenta. **O websocket não cabe nesta VM.** Ver Ordem de entrega.
 
 **Login no websocket (ticket)**
 - O navegador não tem o JWT (ele fica no proxy). Fluxo:
@@ -124,11 +124,10 @@ Em paralelo: migração de clientes e veículos do Databox (o ERP tem 27 OS em p
 - Aba em segundo plano pode fechar o socket e reabrir ao voltar (decisão do construtor).
 - Os `refetchInterval` que existem hoje (vistoria 6 s, capacidade, RH, transição) ficam como estão nesta versão.
 
-## Ordem de entrega (decidida pelo Thiago em 25/11/2026)
+## Ordem de entrega
 
-1. **Áreas (parte 1)**: entram já, só frontend, sem mexer no servidor.
-2. **Mudança da API da DS Car para uma VM A1 da Oracle**: projeto próprio, com desenho próprio. Resolve o swap e o espaço para o websocket, e permite religar o Celery.
-3. **Tempo real (parte 2)**: implementado depois da A1, como está neste documento. Até lá não entra atualização a cada poucos segundos nova; os `refetchInterval` atuais continuam.
+1. **Áreas (parte 1)**: entram já, só frontend, sem mexer no servidor. Implementadas na branch `docs/areas-tempo-real`.
+2. **Tempo real (parte 2)**: o websocket não cabe na VM atual. A mudança para uma VM A1 foi **abandonada em 25/11/2026**: a Oracle está sem capacidade de A1 e o Thiago decidiu trabalhar com o que existe até ter um MVP que justifique pagar uma VM melhor. A parte 2 fica parada até uma destas saídas: uma VM paga, ou um redesenho que caiba na VM atual sem processo novo, como aliviar o swap primeiro ou usar um serviço gerenciado. Até lá, os `refetchInterval` atuais continuam. Qualquer plano de infra não pode depender de trabalho manual do Thiago.
 
 Em aberto, fora deste desenho: o Celery da DS Car (`paddock-worker`, `paddock-beat`) está parado em produção, e com ele os retornos automáticos e as tarefas agendadas. Conferir se foi de propósito.
 
