@@ -127,8 +127,8 @@ class AccountingTestCase(TenantTestCase):
             is_analytical=True,
         )
         self.account_suppliers_payable = make_account(
-            code="2.1.04.001",
-            name="Fornecedores a Pagar",
+            code="2.1.01.001",
+            name="Fornecedores Nacionais",
             account_type="L",
             nature="C",
             is_analytical=True,

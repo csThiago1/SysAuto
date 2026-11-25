@@ -213,7 +213,8 @@ class JournalEntryService:
             )
 
         reversal_description = description or f"Estorno de {entry.number}: {entry.description}"
-        reversal_date = timezone.now().date()
+        # Dia local (Manaus) e nunca antes do original: senao o par cai em meses trocados na DRE
+        reversal_date = max(timezone.localdate(), entry.competence_date)
         fiscal_period = cls._get_fiscal_period(reversal_date)
 
         reversal_number = NumberingService.next("JE")

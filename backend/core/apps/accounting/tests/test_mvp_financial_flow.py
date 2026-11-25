@@ -7,8 +7,6 @@ from decimal import Decimal
 from typing import Any
 from unittest.mock import patch
 
-import pytest
-
 from apps.accounting.models import JournalEntry
 from apps.accounting.models.journal_entry import JournalEntryOrigin
 from apps.accounting.services.journal_entry_service import JournalEntryService
@@ -124,10 +122,6 @@ class MvpFinancialFlowTestCase(AccountingTestCase):
         self.assertEqual(line_values["5.1.01.001"], (Decimal("200.00"), Decimal("0.00")))
         self.assertEqual(line_values["1.1.04.001"], (Decimal("0.00"), Decimal("200.00")))
 
-    @pytest.mark.skip(
-        reason="Baixa de Contas a Pagar nao gera lancamento: accounting_service ainda le "
-        "supplier.name. Religar a contabilizacao muda a DRE e aguarda decisao do dono."
-    )
     def test_receipt_and_payment_partial_then_total_create_accounting_entries(self) -> None:
         """Partial and full AR/AP settlements update status and post bank entries."""
         receivable = ReceivableDocumentService.create_receivable(
@@ -164,6 +158,7 @@ class MvpFinancialFlowTestCase(AccountingTestCase):
             competence_date=date.today(),
             document_number="NFE-ENT-001",
             origin=PayableOrigin.NFE_IN,
+            expense_account_id=str(self.account_expense.id),
             user=self.admin,
         )
         first_payment = PayableDocumentService.record_payment(
@@ -192,5 +187,5 @@ class MvpFinancialFlowTestCase(AccountingTestCase):
         )
         self.assertEqual(
             JournalEntry.objects.filter(origin=JournalEntryOrigin.BANK_PAYMENT).count(),
-            2,
+            3,  # reconhecimento da despesa + duas baixas
         )
