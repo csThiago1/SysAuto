@@ -43,6 +43,7 @@ import {
   Car,
   type LucideIcon,
 } from "lucide-react";
+import type { AreaId } from "./areas";
 import { ROLE_HIERARCHY, type PaddockRole, type ExtraPermission } from "@paddock/types";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -58,6 +59,8 @@ export interface NavItem {
   id: string;
   label: string;
   icon: LucideIcon;
+  /** Área do ERP a que o item pertence */
+  area: AreaId;
   href?: string;
   /** Quando "overdue": badge vem do hook useOverdueOrders em runtime */
   dynamicBadge?: "overdue";
@@ -91,12 +94,14 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       {
         id: "dashboard",
+        area: "gestao",
         label: "Dashboard",
         icon: LayoutDashboard,
         href: "/dashboard",
       },
       {
         id: "os",
+        area: "oficina",
         label: "Ordens de Serviço",
         icon: ClipboardList,
         dynamicBadge: "overdue",
@@ -107,18 +112,21 @@ export const NAV_SECTIONS: NavSection[] = [
       },
       {
         id: "agenda",
+        area: "oficina",
         label: "Agenda",
         icon: CalendarDays,
         href: "/agenda",
       },
       {
         id: "orcamentos-particulares",
+        area: "comercial",
         label: "Orçamentos",
         icon: ReceiptText,
         href: "/orcamentos-particulares",
       },
       {
         id: "cadastros",
+        area: "gestao",
         label: "Cadastros",
         icon: Users,
         href: "/cadastros",
@@ -139,6 +147,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       {
         id: "crm",
+        area: "comercial",
         label: "CRM",
         icon: Bell,
         href: "/crm/retornos",
@@ -155,6 +164,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       {
         id: "financeiro",
+        area: "financeiro",
         label: "Financeiro",
         icon: DollarSign,
         href: "/financeiro",
@@ -177,6 +187,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       {
         id: "fiscal",
+        area: "financeiro",
         label: "Fiscal",
         icon: FileText,
         children: [
@@ -197,6 +208,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       {
         id: "rh",
+        area: "financeiro",
         label: "Recursos Humanos",
         icon: UserCog,
         href: "/rh",
@@ -216,6 +228,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       {
         id: "estoque",
+        area: "oficina",
         label: "Estoque Físico",
         icon: Boxes,
         href: "/estoque",
@@ -241,6 +254,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       {
         id: "compras",
+        area: "oficina",
         label: "Compras",
         icon: ShoppingCart,
         href: "/compras",
@@ -256,6 +270,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       {
         id: "configuracoes",
+        area: "gestao",
         label: "Configurações",
         icon: Settings,
         href: "/configuracoes",
@@ -269,17 +284,18 @@ export const NAV_SECTIONS: NavSection[] = [
 // "Mais", visível apenas para MANAGER+ (corte por dispositivo + papel).
 
 export const MOBILE_TABS: NavItem[] = [
-  { id: "m-inicio", label: "Início", icon: LayoutDashboard, href: "/dashboard" },
+  { id: "m-inicio", area: "gestao", label: "Início", icon: LayoutDashboard, href: "/dashboard" },
   {
     id: "m-os",
+    area: "oficina",
     label: "OS",
     icon: KanbanSquare,
     href: "/os/kanban",
     dynamicBadge: "overdue",
     children: [{ id: "m-os-lista", label: "Lista de OS", href: "/os", icon: ClipboardList }],
   },
-  { id: "m-agenda", label: "Agenda", icon: CalendarDays, href: "/agenda" },
-  { id: "m-apontamento", label: "Apontar", icon: Timer, href: "/apontamento" },
+  { id: "m-agenda", area: "oficina", label: "Agenda", icon: CalendarDays, href: "/agenda" },
+  { id: "m-apontamento", area: "oficina", label: "Apontar", icon: Timer, href: "/apontamento" },
 ];
 
 /** Sub-rotas de fluxo onde o FAB "Nova OS" não deve aparecer. */
