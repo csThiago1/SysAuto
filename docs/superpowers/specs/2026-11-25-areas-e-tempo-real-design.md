@@ -127,7 +127,7 @@ Em paralelo: migração de clientes e veículos do Databox (o ERP tem 27 OS em p
 ## Ordem de entrega
 
 1. **Áreas (parte 1)**: entram já, só frontend, sem mexer no servidor. Implementadas na branch `docs/areas-tempo-real`.
-2. **Tempo real (parte 2)**: o websocket não cabe na VM atual. A mudança para uma VM A1 foi **abandonada em 25/11/2026**: a Oracle está sem capacidade de A1 e o Thiago decidiu trabalhar com o que existe até ter um MVP que justifique pagar uma VM melhor. A parte 2 fica parada até uma destas saídas: uma VM paga, ou um redesenho que caiba na VM atual sem processo novo, como aliviar o swap primeiro ou usar um serviço gerenciado. Até lá, os `refetchInterval` atuais continuam. Qualquer plano de infra não pode depender de trabalho manual do Thiago.
+2. **Tempo real (parte 2)**: o websocket não cabe na VM atual. A mudança para uma VM A1 foi **abandonada em 25/11/2026**: a Oracle está sem capacidade de A1 e o Thiago decidiu trabalhar com o que existe até ter um MVP que justifique pagar uma VM melhor. A parte 2 fica parada até uma destas saídas: uma VM paga, ou um redesenho que caiba na VM atual sem processo novo, como aliviar o swap primeiro ou usar um serviço gerenciado. Até lá, os `refetchInterval` atuais continuam. Qualquer plano de infra não pode depender de trabalho manual do Thiago. **Atualização (25/11/2026):** o Thiago escolheu ligar o tempo real só no ambiente local (Docker do Mac, para demonstrar o MVP). Ele foi entregue assim, com produção desligada: ver `2026-11-25-tempo-real-local-design.md`.
 
 Em aberto, fora deste desenho: o Celery da DS Car (`paddock-worker`, `paddock-beat`) está parado em produção, e com ele os retornos automáticos e as tarefas agendadas. Conferir se foi de propósito.
 
