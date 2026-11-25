@@ -43,6 +43,7 @@ urlpatterns = [
     path("api/v1/documents/", include("apps.documents.urls")),
     path("api/v1/purchasing/", include("apps.purchasing.urls")),
     path("api/v1/lookups/", include("apps.lookups.urls")),
+    path("api/v1/realtime/", include("apps.realtime.urls")),
     # Link remoto do checklist de entrada (sem login; tenant pelo domínio, como o reset de senha)
     path(
         "api/v1/public/checklist-confirm/<str:token>/",
