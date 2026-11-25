@@ -1,6 +1,6 @@
 # Áreas do ERP e tempo real — desenho
 
-Data: 25/11/2026 · Autor: Thiago Campos + Claude · Status: aguardando aprovação · Áreas primeiro; tempo real depois da VM A1
+Data: 25/11/2026 · Autor: Thiago Campos + Claude · Status: aprovado pelo Thiago em 25/11/2026 · Áreas primeiro; tempo real depois da VM A1
 
 ## Contexto: o programa comercial
 
