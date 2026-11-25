@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 from channels.layers import get_channel_layer
 from channels.testing import WebsocketCommunicator
@@ -9,7 +11,7 @@ EV = {"entity": "service_order", "id": "00000000-0000-0000-0000-000000000001", "
 
 
 @pytest.fixture(autouse=True)
-def _layer(settings):
+def _layer(settings: Any) -> None:
     settings.CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 
@@ -18,7 +20,7 @@ def _comm(query: str) -> WebsocketCommunicator:
 
 
 @pytest.mark.asyncio
-async def test_ticket_valido_conecta_e_recebe():
+async def test_ticket_valido_conecta_e_recebe() -> None:
     c = _comm(f"?ticket={make_ticket('u1', 'tenant_a')}")
     connected, _ = await c.connect()
     assert connected is True
@@ -31,14 +33,14 @@ async def test_ticket_valido_conecta_e_recebe():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("query", ["", "?ticket=forjado"])
-async def test_ticket_ausente_ou_forjado_fecha_4401(query: str):
+async def test_ticket_ausente_ou_forjado_fecha_4401(query: str) -> None:
     connected, code = await _comm(query).connect()
     assert connected is False
     assert code == 4401
 
 
 @pytest.mark.asyncio
-async def test_nao_recebe_de_outro_tenant():
+async def test_nao_recebe_de_outro_tenant() -> None:
     c = _comm(f"?ticket={make_ticket('u1', 'tenant_a')}")
     await c.connect()
     await get_channel_layer().group_send(

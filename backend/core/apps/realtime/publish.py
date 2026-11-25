@@ -26,6 +26,6 @@ def publish_change(entity: str, obj_id: object) -> None:
         try:
             async_to_sync(get_channel_layer().group_send)(group, message)
         except Exception:
-            logger.warning("realtime: falha ao publicar %s", entity)
+            logger.warning("realtime: falha ao publicar %s", entity, exc_info=True)
 
     transaction.on_commit(send)

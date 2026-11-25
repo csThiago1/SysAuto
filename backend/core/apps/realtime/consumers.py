@@ -1,6 +1,7 @@
 """Consumer do websocket de tempo real: um grupo por tenant, só avisa; não toca o banco."""
 
 import logging
+from typing import Any
 from urllib.parse import parse_qs
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
@@ -32,5 +33,5 @@ class RealtimeConsumer(AsyncJsonWebsocketConsumer):
         if self.group:
             await self.channel_layer.group_discard(self.group, self.channel_name)
 
-    async def realtime_event(self, message: dict) -> None:
+    async def realtime_event(self, message: dict[str, Any]) -> None:
         await self.send_json(message["event"])

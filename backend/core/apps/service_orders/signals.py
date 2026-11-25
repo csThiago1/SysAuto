@@ -1,4 +1,9 @@
-"""Avisa o tempo real quando a OS ou seu histórico (itens, fotos, pagamentos) muda."""
+"""Avisa o tempo real quando a OS muda.
+
+Dispara ao salvar a ServiceOrder e a cada ServiceOrderEvent registrado na linha do
+tempo da OS. Mudanças gravadas via `.update()` (ex.: totais) e peças/mão de obra/fotos
+que não registram evento na linha do tempo não disparam.
+"""
 
 from typing import Any
 
