@@ -35,3 +35,15 @@ def sha256_lookup_candidates(value: str) -> set[str]:
     if digits:
         values.add(digits)
     return {sha256_hex(item) for item in values if item}
+
+
+def normalize_phone(value: str) -> str:
+    """Telefone só com dígitos, sem o DDI 55 (formato DDD + número).
+
+    "(92) 99125-5466", "92991255466" e "5592991255466" viram "92991255466" —
+    assim o número digitado na recepção casa com o que chega do WhatsApp.
+    """
+    digits = re.sub(r"\D", "", str(value or ""))
+    if len(digits) in (12, 13) and digits.startswith("55"):
+        return digits[2:]
+    return digits

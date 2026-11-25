@@ -17,13 +17,14 @@ from rest_framework.response import Response
 from apps.authentication.permissions import IsConsultantOrAbove
 
 from .models import UnifiedCustomer
+from apps.persons.utils import normalize_phone
+
 from .serializers import (
     UnifiedCustomerCreateSerializer,
     UnifiedCustomerDetailSerializer,
     UnifiedCustomerListSerializer,
     UnifiedCustomerUpdateSerializer,
     mask_cpf,
-    mask_phone,
 )
 
 logger = logging.getLogger(__name__)
@@ -102,7 +103,7 @@ class UnifiedCustomerViewSet(
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         """
         Cria o cliente usando UnifiedCustomerCreateSerializer para validação,
-        mas retorna UnifiedCustomerListSerializer (inclui id, cpf_masked, phone_masked).
+        mas retorna UnifiedCustomerListSerializer (inclui id, cpf_masked, phone).
         """
         serializer = UnifiedCustomerCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -146,7 +147,9 @@ class UnifiedCustomerViewSet(
 
         lookup = Q(name__icontains=q)
         if digits_hash:
-            lookup |= Q(cpf_hash=digits_hash) | Q(phone_hash=digits_hash)
+            lookup |= Q(cpf_hash=digits_hash)
+        if len(digits) >= 4:
+            lookup |= Q(phone__contains=normalize_phone(digits))
 
         qs = (
             UnifiedCustomer.objects.filter(is_active=True)
@@ -158,7 +161,7 @@ class UnifiedCustomerViewSet(
                 "id": str(c.id),
                 "name": c.name,
                 "cpf_masked": mask_cpf(c.cpf) or "",
-                "phone_masked": mask_phone(c.phone) or "",
+                "phone": c.phone or "",
             })
             seen_names.add(c.name.lower())
 
@@ -183,7 +186,7 @@ class UnifiedCustomerViewSet(
                         "id": str(p.id),
                         "name": p.full_name,
                         "cpf_masked": "",
-                        "phone_masked": "",
+                        "phone": "",
                     })
                     seen_names.add(p.full_name.lower())
         except Exception:

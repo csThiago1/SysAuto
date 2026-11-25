@@ -423,7 +423,8 @@ Número da OS: gerado automaticamente (MAX + 1) — nunca enviar no POST.
 - **Funcionários:** assinatura salva no cadastro (RH), aparece quando fazem apontamento/vistoria
 
 ### LGPD
-- CPF, email, telefone: SEMPRE `EncryptedField`
+- CPF e CNPJ: SEMPRE `EncryptedField`
+- Telefone (e contatos do cadastro, inclusive e-mail): texto claro, telefone só dígitos sem DDI (`normalize_phone`), exibido inteiro, nunca mascarado (decisão do Thiago, 25/11/2026)
 - Lookup por email: `email_hash` (SHA-256)
 - Hard delete: PROIBIDO — usar anonimização
 - Logs: NUNCA PII em texto claro

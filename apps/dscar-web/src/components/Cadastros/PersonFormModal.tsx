@@ -187,8 +187,6 @@ export function PersonFormModal({
       : "";
 
   const personKind = watch("person_kind");
-  const primaryPhoneValue = watch("primary_phone");
-  const primaryEmailValue = watch("primary_email");
   const needsContacts = selectedRoles.some((r) => ["CLIENT", "EMPLOYEE"].includes(r));
 
   // ── Carrega dados ao editar ───────────────────────────────────────────────
@@ -198,8 +196,8 @@ export function PersonFormModal({
     const src = personData;
 
     // Extrai contatos primários para os campos fixos
-    const allContacts: Array<{ contact_type: string; value?: string; value_masked?: string; is_primary?: boolean }> =
-      (src?.contacts ?? []) as Array<{ contact_type: string; value?: string; value_masked?: string; is_primary?: boolean }>;
+    const allContacts: Array<{ contact_type: string; value?: string; is_primary?: boolean }> =
+      (src?.contacts ?? []) as Array<{ contact_type: string; value?: string; is_primary?: boolean }>;
 
     const primaryCelular =
       allContacts.find((c) => c.contact_type === "CELULAR" && c.is_primary) ??
@@ -225,9 +223,8 @@ export function PersonFormModal({
       // Ao editar, documentos existentes ficam somente-leitura (exibidos abaixo).
       // Apenas novos documentos são enviados para não sobrescrever dados mascarados.
       documents: [],
-      // Campos primários pré-populados (valor mascarado em modo edição → read-only)
-      primary_phone: primaryCelular?.value_masked ?? primaryCelular?.value ?? "",
-      primary_email: primaryEmail?.value_masked ?? primaryEmail?.value ?? "",
+      primary_phone: primaryCelular?.value ?? "",
+      primary_email: primaryEmail?.value ?? "",
       // Contatos adicionais (excluindo os primários já capturados acima)
       contacts: otherContacts as FormValues["contacts"],
       addresses: src?.addresses ?? [],
@@ -674,12 +671,7 @@ export function PersonFormModal({
                   {...register("primary_phone")}
                   placeholder="(92) 99999-1234"
                   className="mt-1"
-                  readOnly={isEditing && !!primaryPhoneValue}
-                  title={isEditing && !!primaryPhoneValue ? "Para alterar, use o painel de detalhe da pessoa" : undefined}
                 />
-                {isEditing && !!primaryPhoneValue && (
-                  <p className="text-xs text-muted-foreground mt-0.5">Dado encriptado — edite via painel de detalhe.</p>
-                )}
               </div>
               <div>
                 <Label className="label-mono">
@@ -690,12 +682,7 @@ export function PersonFormModal({
                   type="email"
                   placeholder="cliente@email.com"
                   className="mt-1"
-                  readOnly={isEditing && !!primaryEmailValue}
-                  title={isEditing && !!primaryEmailValue ? "Para alterar, use o painel de detalhe da pessoa" : undefined}
                 />
-                {isEditing && !!primaryEmailValue && (
-                  <p className="text-xs text-muted-foreground mt-0.5">Dado encriptado — edite via painel de detalhe.</p>
-                )}
               </div>
             </div>
 

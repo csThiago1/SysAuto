@@ -1,7 +1,7 @@
 """
 Paddock Solutions — Customers Serializers
-LGPD: CPF, email e telefone NUNCA são expostos em texto claro na API.
-Busca é feita via hash (cpf_hash, email_hash, phone_hash).
+LGPD: CPF e email NUNCA são expostos em texto claro na API.
+Telefone é texto claro, só dígitos (decisão de 25/11/2026).
 """
 import datetime
 import logging
@@ -25,16 +25,6 @@ def mask_cpf(cpf: str | None) -> str | None:
     return "***.***.***-**"
 
 
-def mask_phone(phone: str | None) -> str | None:
-    """Retorna telefone mascarado — apenas últimos 4 dígitos."""
-    if not phone:
-        return None
-    digits = "".join(filter(str.isdigit, str(phone)))
-    if len(digits) >= 4:
-        return f"(**) *****-{digits[-4:]}"
-    return "(**) *****-****"
-
-
 def normalize_phone_digits(value: str) -> str:
     """Remove formatação, valida comprimento mínimo do telefone."""
     if not value:
@@ -48,12 +38,11 @@ def normalize_phone_digits(value: str) -> str:
 class UnifiedCustomerListSerializer(serializers.ModelSerializer):
     """
     Serializer compacto para listagem de clientes.
-    CPF e telefone são expostos apenas mascarados — LGPD Art. 46.
+    CPF exposto apenas mascarado — LGPD Art. 46. Telefone inteiro.
     Usado no dropdown de busca da Nova OS.
     """
 
     cpf_masked = serializers.SerializerMethodField()
-    phone_masked = serializers.SerializerMethodField()
 
     class Meta:
         model = UnifiedCustomer
@@ -61,7 +50,7 @@ class UnifiedCustomerListSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "cpf_masked",
-            "phone_masked",
+            "phone",
             "lgpd_consent_version",
             "lgpd_consent_date",
             "group_sharing_consent",
@@ -73,9 +62,6 @@ class UnifiedCustomerListSerializer(serializers.ModelSerializer):
     def get_cpf_masked(self, obj: UnifiedCustomer) -> str | None:
         return mask_cpf(obj.cpf)
 
-    def get_phone_masked(self, obj: UnifiedCustomer) -> str | None:
-        return mask_phone(obj.phone)
-
 
 class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
     """
@@ -85,7 +71,6 @@ class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
     """
 
     cpf_masked = serializers.SerializerMethodField()
-    phone_masked = serializers.SerializerMethodField()
 
     class Meta:
         model = UnifiedCustomer
@@ -93,8 +78,7 @@ class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "cpf_masked",
-            "phone",           # retornado para edição interna — descriptografado
-            "phone_masked",
+            "phone",
             "email",
             "birth_date",
             "zip_code",
@@ -113,16 +97,13 @@ class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = [
-            "id", "cpf_masked", "phone_masked",
+            "id", "cpf_masked",
             "lgpd_consent_version", "lgpd_consent_date", "lgpd_consent_ip",
             "is_active", "created_at", "updated_at",
         ]
 
     def get_cpf_masked(self, obj: UnifiedCustomer) -> str | None:
         return mask_cpf(obj.cpf)
-
-    def get_phone_masked(self, obj: UnifiedCustomer) -> str | None:
-        return mask_phone(obj.phone)
 
 
 class UnifiedCustomerUpdateSerializer(serializers.ModelSerializer):

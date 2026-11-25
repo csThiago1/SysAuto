@@ -148,43 +148,32 @@ class TestPersonContactSerializerMasked(TestCase):
     def setUp(self) -> None:
         self.person = make_person("Roberto Contato")  # type: ignore[assignment]
 
-    def test_email_masked_in_serializer(self) -> None:
-        """Email não é exposto em plain no serializer de contato."""
+    def test_email_plain_in_serializer(self) -> None:
+        """E-mail aparece inteiro no serializer de contato (sem máscara)."""
         from apps.persons.models import PersonContact
         from apps.persons.serializers import PersonContactSerializer
 
         email = "roberto@example.com"
-        contact = PersonContact.objects.create(
-            person=self.person,
-            contact_type="EMAIL",
-            value=email,
-            value_hash=sha256_hex(email),
-        )
-        serializer = PersonContactSerializer(contact)
-        data = serializer.data
+        contact = PersonContact.objects.create(person=self.person, contact_type="EMAIL", value=email)
+        data = PersonContactSerializer(contact).data
 
-        self.assertIn("value_masked", data)
-        self.assertNotIn("value", data)
-        self.assertIn("*", data["value_masked"])
+        self.assertEqual(data["value"], email)
+        self.assertNotIn("value_masked", data)
 
-    def test_phone_masked_in_serializer(self) -> None:
-        """Telefone não é exposto em plain no serializer de contato."""
+    def test_phone_plain_and_normalized(self) -> None:
+        """Telefone é gravado só com dígitos, sem DDI 55, e aparece inteiro."""
         from apps.persons.models import PersonContact
         from apps.persons.serializers import PersonContactSerializer
 
-        phone = "92991234567"
         contact = PersonContact.objects.create(
-            person=self.person,
-            contact_type="CELULAR",
-            value=phone,
-            value_hash=sha256_hex(phone),
+            person=self.person, contact_type="WHATSAPP", value="+55 (92) 99123-4567"
         )
-        serializer = PersonContactSerializer(contact)
-        data = serializer.data
+        contact.refresh_from_db()
+        data = PersonContactSerializer(contact).data
 
-        self.assertIn("value_masked", data)
-        self.assertNotIn("value", data)
-        self.assertTrue(data["value_masked"].endswith(phone[-4:]))
+        self.assertEqual(data["value"], "92991234567")
+        self.assertEqual(contact.value_hash, sha256_hex("92991234567"))
+        self.assertTrue(PersonContact.objects.filter(value="92991234567").exists())
 
 
 # ── PersonDetailSerializer ──────────────────────────────────────────────────
@@ -225,23 +214,16 @@ class TestPersonDetailSerializerLGPD(TestCase):
         # Campo 'document' removido do DetailSerializer (LGPD)
         self.assertNotIn("document", serializer.data)
 
-    def test_contacts_masked_in_detail(self) -> None:
-        """Contatos no detalhe estão mascarados."""
+    def test_contacts_plain_in_detail(self) -> None:
+        """Contatos no detalhe aparecem inteiros."""
         from apps.persons.models import PersonContact
         from apps.persons.serializers import PersonDetailSerializer
 
         email = "detalhe@example.com"
-        PersonContact.objects.create(
-            person=self.person,
-            contact_type="EMAIL",
-            value=email,
-            value_hash=sha256_hex(email),
-        )
-        serializer = PersonDetailSerializer(self.person)
-        contacts = serializer.data["contacts"]
+        PersonContact.objects.create(person=self.person, contact_type="EMAIL", value=email)
+        contacts = PersonDetailSerializer(self.person).data["contacts"]
         self.assertEqual(len(contacts), 1)
-        self.assertIn("value_masked", contacts[0])
-        self.assertNotIn("value", contacts[0])
+        self.assertEqual(contacts[0]["value"], email)
 
     def test_municipio_ibge_in_address(self) -> None:
         """PersonDetailSerializer inclui municipio_ibge no endereço."""

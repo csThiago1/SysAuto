@@ -139,23 +139,12 @@ class PersonDocumentWriteSerializer(serializers.ModelSerializer):
 
 
 class PersonContactSerializer(serializers.ModelSerializer):
-    """Contato mascarado — padrão para todos os usuários.
-
-    O campo value retorna valor mascarado.
-    Para acesso plain, usar PersonContactPlainSerializer (fiscal_admin).
-    """
-
-    value_masked = serializers.SerializerMethodField()
+    """Contato em texto claro (telefone e e-mail aparecem inteiros)."""
 
     class Meta:
         model = PersonContact
-        fields = ["id", "contact_type", "value", "value_masked", "label", "is_primary"]
+        fields = ["id", "contact_type", "value", "label", "is_primary"]
         read_only_fields = fields
-
-    def get_value_masked(self, obj: PersonContact) -> str:
-        """Retorna contato mascarado."""
-        v: str = obj.value or ""
-        return _mask_value(v)
 
 
 class PersonContactWriteSerializer(serializers.ModelSerializer):
