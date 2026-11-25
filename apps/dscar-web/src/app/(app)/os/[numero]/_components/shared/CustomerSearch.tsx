@@ -13,7 +13,7 @@ import { DateField } from "@/components/ui/date-field"
 export interface SelectedCustomer {
   id: number
   name: string
-  phone_masked?: string | null
+  phone?: string | null
   cpf_masked?: string | null
 }
 
@@ -111,7 +111,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
       onChange({
         id: customer.id,
         name: customer.name,
-        phone_masked: customer.phone_masked,
+        phone: customer.phone,
         cpf_masked: customer.cpf_masked,
       })
       setMode("search")
@@ -302,16 +302,16 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
                     handleSelect({
                       id: c.id,
                       name: c.name,
-                      phone_masked: c.phone_masked,
+                      phone: c.phone,
                       cpf_masked: c.cpf_masked,
                     })
                   }
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
-                    {(c.cpf_masked || c.phone_masked) && (
+                    {(c.cpf_masked || c.phone) && (
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {[c.cpf_masked, c.phone_masked].filter(Boolean).join(" · ")}
+                        {[c.cpf_masked, c.phone && formatPhone(c.phone)].filter(Boolean).join(" · ")}
                       </p>
                     )}
                   </div>

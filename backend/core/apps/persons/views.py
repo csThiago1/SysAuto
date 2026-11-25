@@ -34,7 +34,7 @@ class PersonViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
 
     queryset = Person.objects.all()
     filterset_fields = ["person_kind", "is_active"]
-    search_fields = ["full_name", "fantasy_name", "legacy_code"]
+    search_fields = ["full_name", "fantasy_name", "legacy_code", "contacts__value"]
 
     def get_queryset(self):  # type: ignore[override]
         base = Person.objects.filter(is_active=True)

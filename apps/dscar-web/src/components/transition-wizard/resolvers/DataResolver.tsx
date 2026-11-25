@@ -11,7 +11,7 @@ import { usePersonSearch } from "@/app/(app)/os/[numero]/_hooks/useCustomerSearc
 import { toLocalDatetime } from "@/app/(app)/os/[numero]/_utils/form-defaults"
 import type { ResolverProps } from "./index"
 import { DateField } from "@/components/ui/date-field"
-import { formatPlate, onlyAlnum } from "@paddock/utils"
+import { formatPhone, formatPlate, onlyAlnum } from "@paddock/utils"
 import { ColorSelect } from "@/app/(app)/os/[numero]/_components/shared/ColorSelect"
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
 import type { CatalogSelection } from "@/components/vehicle/catalog.schema"
@@ -293,8 +293,8 @@ function CustomerLinkedForm({ order, onResolved }: ResolverProps) {
                 onClick={() => void handleSelect(p.id, p.name)}
               >
                 <span className="font-medium">{p.name}</span>
-                {p.phone_masked && (
-                  <span className="ml-2 text-xs text-muted-foreground">{p.phone_masked}</span>
+                {p.phone && (
+                  <span className="ml-2 text-xs text-muted-foreground">{formatPhone(p.phone)}</span>
                 )}
               </button>
             </li>

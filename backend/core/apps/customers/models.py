@@ -29,7 +29,7 @@ class UnifiedCustomer(PaddockBaseModel):
     )
     email = EncryptedEmailField(null=True, blank=True, verbose_name="E-mail")
     email_hash = models.CharField(max_length=64, db_index=True, blank=True, default="")
-    phone = EncryptedCharField(max_length=20, verbose_name="Telefone")
+    phone = models.CharField(max_length=20, default="", verbose_name="Telefone")  # texto claro, só dígitos
     phone_hash = models.CharField(max_length=64, db_index=True, blank=True, default="")
 
     # Dados complementares
@@ -88,7 +88,10 @@ class UnifiedCustomer(PaddockBaseModel):
         if self.email:
             self.email_hash = self._hash(str(self.email).lower())
         if self.phone:
-            self.phone_hash = self._hash(str(self.phone))
+            from apps.persons.utils import normalize_phone
+
+            self.phone = normalize_phone(str(self.phone))
+            self.phone_hash = self._hash(self.phone)
         super().save(*args, **kwargs)
 
     @staticmethod

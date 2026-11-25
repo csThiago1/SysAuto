@@ -107,7 +107,7 @@ export interface MeEmployeeSnapshot {
 export interface MeCustomerSnapshot {
   id: string;
   name: string;
-  phone_masked: string;
+  phone: string;
   cpf_masked: string;
 }
 

@@ -13,7 +13,7 @@ export interface PersonResult {
   id: number
   name: string
   cpf_masked: string | null
-  phone_masked: string | null
+  phone: string | null
 }
 
 interface PersonListItem {
@@ -48,7 +48,7 @@ export function usePersonSearch(q: string) {
         id: p.id,
         name: p.full_name,
         cpf_masked: null,
-        phone_masked: p.primary_contact?.value ?? null,
+        phone: p.primary_contact?.value ?? null,
       })),
     }),
   })
@@ -87,7 +87,7 @@ export function usePersonCreate() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
-      return { id: res.id, name: res.full_name, cpf_masked: null, phone_masked: null }
+      return { id: res.id, name: res.full_name, cpf_masked: null, phone: null }
     },
     onSuccess: (person) => {
       void qc.invalidateQueries({ queryKey: ["persons-search"] })
@@ -103,7 +103,6 @@ export function usePersonCreate() {
 export interface PersonDetailContact {
   contact_type: string
   value: string
-  value_masked: string
   is_primary: boolean
 }
 

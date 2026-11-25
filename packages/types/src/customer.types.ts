@@ -8,5 +8,5 @@ export interface Customer {
   cpf_cnpj?: string;
   person_id?: string;
   document_masked?: string;
-  phone_masked?: string;
+  phone?: string;
 }

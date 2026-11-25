@@ -4,7 +4,7 @@ Entidade unificada de pessoas (tenant-level): clientes, seguradoras, corretores,
 
 LGPD (Ciclo 06A):
   - PersonDocument: CPF, CNPJ, RG, IE, IM, CNH criptografados com EncryptedCharField
-  - PersonContact.value: criptografado + value_hash para filter()
+  - PersonContact.value: texto claro (telefone só dígitos, ver normalize_phone); value_hash mantido
   - PersonAddress.municipio_ibge: código IBGE 7 dígitos (obrigatório NFS-e Manaus)
 """
 
@@ -39,6 +39,9 @@ class TipoContato(models.TextChoices):
     EMAIL_NFE = "EMAIL_NFE", "E-mail NF-e"
     EMAIL_FINANCEIRO = "EMAIL_FINANCEIRO", "E-mail Financeiro"
     SITE = "SITE", "Site"
+
+
+PHONE_CONTACT_TYPES = {TipoContato.CELULAR, TipoContato.COMERCIAL, TipoContato.WHATSAPP}
 
 
 class TipoEndereco(models.TextChoices):
@@ -262,9 +265,9 @@ class PersonContact(models.Model):
 
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="contacts")
     contact_type = models.CharField(max_length=20, choices=TipoContato.choices, verbose_name="Tipo")
-    # PII criptografada em repouso (email, telefone)
-    value = EncryptedCharField(max_length=200, verbose_name="Valor")
-    # Hash SHA-256 para filter()
+    # Texto claro por decisão do Thiago (25/11/2026): telefone precisa aparecer e ser buscado inteiro
+    value = models.CharField(max_length=200, default="", verbose_name="Valor")
+    # Hash SHA-256 mantido para os lookups antigos
     value_hash = models.CharField(
         max_length=64,
         db_index=True,
@@ -280,10 +283,12 @@ class PersonContact(models.Model):
         verbose_name_plural = "Contatos"
 
     def save(self, *args, **kwargs) -> None:
-        """Auto-gera value_hash a partir do value (SHA-256 para busca)."""
+        """Normaliza telefone e gera value_hash a partir do value."""
         if self.value:
-            from apps.persons.utils import sha256_hex
+            from apps.persons.utils import normalize_phone, sha256_hex
 
+            if self.contact_type in PHONE_CONTACT_TYPES:
+                self.value = normalize_phone(self.value)
             self.value_hash = sha256_hex(self.value)
         super().save(*args, **kwargs)
 

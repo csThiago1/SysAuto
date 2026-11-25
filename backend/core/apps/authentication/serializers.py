@@ -43,18 +43,8 @@ class CustomerSnapshotSerializer(serializers.Serializer):
 
     id = serializers.UUIDField()
     name = serializers.CharField()
-    phone_masked = serializers.SerializerMethodField()
+    phone = serializers.CharField()
     cpf_masked = serializers.SerializerMethodField()
-
-    def get_phone_masked(self, obj: object) -> str:
-        """Retorna telefone mascarado: (**) *****-XXXX."""
-        from apps.customers.models import UnifiedCustomer
-
-        if isinstance(obj, UnifiedCustomer):
-            phone = str(obj.phone or "")
-            if len(phone) >= 4:
-                return "(**) *****-" + phone[-4:]
-        return ""
 
     def get_cpf_masked(self, obj: object) -> str:
         """Retorna CPF mascarado: ***.***.***-XX."""

@@ -91,8 +91,8 @@ function PersonInlineSearch({ onSelect, onCancel }: PersonInlineSearchProps) {
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
-                    {p.phone_masked && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{p.phone_masked}</p>
+                    {p.phone && (
+                      <p className="text-xs text-muted-foreground mt-0.5">{formatPhone(p.phone)}</p>
                     )}
                   </div>
                 </button>

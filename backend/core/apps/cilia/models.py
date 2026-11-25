@@ -32,9 +32,9 @@ class OrcamentoCilia(PaddockBaseModel):
 
     # Cliente
     client_name = models.CharField(max_length=200)
-    # LGPD: CPF/CNPJ e telefone criptografados em repouso — nunca filtrados por valor.
+    # LGPD: CPF/CNPJ criptografado em repouso; telefone em texto claro (decisão de 25/11/2026).
     client_document = EncryptedCharField(max_length=20, blank=True)
-    client_phone = EncryptedCharField(max_length=30, blank=True)
+    client_phone = models.CharField(max_length=30, blank=True, default="")
 
     # Seguradora
     insurer_name = models.CharField(max_length=200)
