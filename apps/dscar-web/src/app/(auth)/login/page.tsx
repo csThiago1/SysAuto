@@ -159,7 +159,7 @@ export default function LoginPage(): React.ReactElement {
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: unknown) {
       fail(err);
     } finally {

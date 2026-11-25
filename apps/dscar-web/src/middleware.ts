@@ -28,9 +28,9 @@ export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
 
   if (!isLoggedIn) return; // nao autenticado em pagina de auth — ok
 
-  // Usuario ja autenticado tentando acessar pagina de auth -> redireciona para OS
+  // Usuario ja autenticado tentando acessar pagina de auth -> redireciona para a raiz, que escolhe a área do papel
   if (isLoggedIn && isAuthPage) {
-    return Response.redirect(new URL("/dashboard", request.url));
+    return Response.redirect(new URL("/", request.url));
   }
 
   const role = req.auth?.role as string | undefined;

@@ -7,7 +7,6 @@ import { LayoutGrid, Plus } from "lucide-react";
 import type { Route } from "next";
 import { ROLE_HIERARCHY, type PaddockRole, type ExtraPermission } from "@paddock/types";
 import {
-  visibleModules,
   isGroupActive,
   MOBILE_TABS,
   FAB_HIDDEN_SUBPATHS,
@@ -23,6 +22,9 @@ import {
 } from "@/components/ui/sheet";
 import { AccountSheetBlock } from "./DockActions";
 import { Placar } from "./Placar";
+import { AreaSwitcher } from "./AreaSwitcher";
+import { sectionsForArea } from "./areas";
+import { useActiveArea } from "./useActiveArea";
 import { cn } from "@/lib/utils";
 
 interface TabButtonProps {
@@ -72,9 +74,10 @@ export function MobileTabBar(): React.ReactElement {
 
   // Modo operação: tabs fixas pra todos; navegação completa só no "Mais" (MANAGER+)
   const fixed = MOBILE_TABS;
+  const { area, areas } = useActiveArea();
   const rest = useMemo(
-    () => (level >= ROLE_HIERARCHY.MANAGER ? visibleModules(role, perms) : []),
-    [level, role, perms]
+    () => (level >= ROLE_HIERARCHY.MANAGER ? sectionsForArea(role, perms, area).flatMap((s) => s.items) : []),
+    [level, role, perms, area]
   );
 
   const fabVisible =
@@ -141,9 +144,10 @@ export function MobileTabBar(): React.ReactElement {
             <Placar className="mb-5 p-1" />
             <AccountSheetBlock />
 
-            {rest.length > 0 && (
-              <p className="label-mono mb-3 border-t border-border pt-4">Módulos</p>
+            {level >= ROLE_HIERARCHY.MANAGER && (
+              <AreaSwitcher area={area} areas={areas} onNavigate={() => setMoreOpen(false)} className="mb-3 border-t border-border pt-4" />
             )}
+            {rest.length > 0 && <p className="label-mono mb-3">Módulos</p>}
             <div className="grid grid-cols-4 gap-4">
               {rest.map((item) => {
                 const active = isGroupActive(pathname, item);

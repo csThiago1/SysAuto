@@ -4,19 +4,19 @@ import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Command } from "cmdk"
 import { useSession } from "next-auth/react"
-import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types"
-import { NAV_SECTIONS, type NavSection } from "@/components/dock/nav-config"
+import type { ExtraPermission, PaddockRole } from "@paddock/types"
+import { AREAS, areaHome, sectionsForArea } from "@/components/dock/areas"
+import { useActiveArea } from "@/components/dock/useActiveArea"
 
 export function CommandPalette(): React.ReactElement {
   const [open, setOpen] = useState(false)
   const router = useRouter()
   const { data: session } = useSession()
 
-  const userRoleLevel = ROLE_HIERARCHY[(session?.role ?? "STOREKEEPER") as PaddockRole] ?? 0
-
-  const visibleSections = NAV_SECTIONS.filter((s: NavSection) =>
-    !s.minRole || userRoleLevel >= (ROLE_HIERARCHY[s.minRole] ?? 0)
-  )
+  const { area, areas } = useActiveArea()
+  const role = (session?.role ?? "STOREKEEPER") as PaddockRole
+  const perms = (session?.extraPermissions ?? []) as ExtraPermission[]
+  const visibleSections = sectionsForArea(role, perms, area)
 
   // Flatten all navigable items
   const allItems = visibleSections.flatMap((section) =>
@@ -84,6 +84,22 @@ export function CommandPalette(): React.ReactElement {
             <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
               Nenhum resultado encontrado.
             </Command.Empty>
+
+            <Command.Group
+              heading="Áreas"
+              className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:tracking-wider"
+            >
+              {AREAS.filter((a) => a.id !== area && areas.includes(a.id)).map((a) => (
+                <Command.Item
+                  key={a.id}
+                  value={`Ir para ${a.label}`}
+                  onSelect={() => handleSelect(areaHome(a.id))}
+                  className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-primary-foreground/80 cursor-pointer aria-selected:bg-primary/10 aria-selected:text-primary transition-colors"
+                >
+                  Ir para {a.label}
+                </Command.Item>
+              ))}
+            </Command.Group>
 
             {visibleSections.map((section) => {
               const sectionItems = allItems.filter((i) => i.section === section.label)

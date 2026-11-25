@@ -38,11 +38,11 @@ describe("MobileTabBar (modo operação)", () => {
     expect(screen.getByRole("button", { name: "Nova OS" })).toBeInTheDocument();
   });
 
-  it("Mais abre sheet com a navegação completa e navega", () => {
+  it("Mais abre sheet com a navegação da área ativa e navega", () => {
     wrap(<MobileTabBar />);
     fireEvent.click(screen.getByRole("button", { name: "Conta e mais módulos" }));
-    fireEvent.click(screen.getByRole("button", { name: /Estoque/ }));
-    expect(push).toHaveBeenCalledWith("/estoque");
+    fireEvent.click(screen.getByRole("button", { name: /Configurações/ }));
+    expect(push).toHaveBeenCalledWith("/configuracoes");
   });
 
   it("FAB Nova OS navega pro wizard de recepção", () => {
