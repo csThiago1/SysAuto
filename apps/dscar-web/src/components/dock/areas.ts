@@ -1,9 +1,10 @@
 import { visibleSections, type NavSection } from "./nav-config";
 import type { PaddockRole, ExtraPermission } from "@paddock/types";
+import type { Route } from "next";
 
 export type AreaId = "oficina" | "comercial" | "financeiro" | "gestao";
 
-export const AREAS: readonly { id: AreaId; label: string; home: string }[] = [
+export const AREAS: readonly { id: AreaId; label: string; home: Route }[] = [
   { id: "oficina", label: "Oficina", home: "/os/kanban" },
   { id: "comercial", label: "Comercial", home: "/crm/retornos" },
   { id: "financeiro", label: "Financeiro", home: "/financeiro" },
@@ -14,7 +15,7 @@ export function isAreaId(value: unknown): value is AreaId {
   return AREAS.some((a) => a.id === value);
 }
 
-export function areaHome(area: AreaId): string {
+export function areaHome(area: AreaId): Route {
   return AREAS.find((a) => a.id === area)!.home;
 }
 
