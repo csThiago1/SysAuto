@@ -65,6 +65,10 @@ urlpatterns = [
     ),
 ]
 
+if settings.REALTIME_ENABLED:
+    # Tempo real só em dev local; produção não expõe a rota.
+    urlpatterns += [path("api/v1/realtime/", include("apps.realtime.urls"))]
+
 if settings.DEBUG:
     import debug_toolbar
     from django.conf.urls.static import static

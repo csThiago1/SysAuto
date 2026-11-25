@@ -65,6 +65,23 @@ services:
       retries: 5
       start_period: 30s
 
+  # ─── Websocket (tempo real) ───────────────────────────────────────────────
+  # Mesmo desenho planejado para a VM paga: gunicorn para HTTP, um processo só para websocket.
+  ws:
+    image: paddock-django:dev
+    container_name: paddock_ws
+    restart: unless-stopped
+    command: uvicorn config.asgi:application --host 0.0.0.0 --port 8001 --reload
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../backend/core:/app
+    ports:
+      - "8001:8001"
+    depends_on:
+      redis:
+        condition: service_healthy
+
   # ─── Celery Worker ────────────────────────────────────────────────────────
   celery:
     image: paddock-django:dev

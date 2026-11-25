@@ -2,6 +2,7 @@ import React from "react";
 import { Sidebar } from "@/components/dock/Sidebar";
 import { MobileTabBar } from "@/components/dock/MobileTabBar";
 import { CommandPalette } from "@/components/CommandPalette";
+import { RealtimeProvider } from "@/components/RealtimeProvider";
 
 export default function AppLayout({
   children,
@@ -28,6 +29,7 @@ export default function AppLayout({
       </main>
       <MobileTabBar />
       <CommandPalette />
+      <RealtimeProvider />
     </div>
   );
 }

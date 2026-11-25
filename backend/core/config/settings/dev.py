@@ -151,3 +151,6 @@ SPECTACULAR_SETTINGS = {  # type: ignore[name-defined]
     **SPECTACULAR_SETTINGS,  # type: ignore[name-defined]
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
 }
+
+# Tempo real local (websocket); em prod fica desligado até a VM nova.
+REALTIME_ENABLED = True
