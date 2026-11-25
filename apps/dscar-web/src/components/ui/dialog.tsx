@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
@@ -74,8 +75,10 @@ function DialogPortal({
   children: React.ReactNode;
 }): React.ReactElement | null {
   const { open } = React.useContext(DialogContext);
-  if (!open) return null;
-  return <>{children}</>;
+  if (!open || typeof document === "undefined") return null;
+  // Portal de verdade: dentro de um ancestral com transform (ex. animate-section-in
+  // da OS) o fixed vira relativo a ele e a barra inferior do celular ficava por cima.
+  return createPortal(children, document.body);
 }
 
 // ─── DialogOverlay ───────────────────────────────────────────────────────────
@@ -223,7 +226,7 @@ function DialogFooter({
   return (
     <div
       className={cn(
-        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
         className
       )}
       {...props}
