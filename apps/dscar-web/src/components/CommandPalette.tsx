@@ -4,19 +4,19 @@ import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Command } from "cmdk"
 import { useSession } from "next-auth/react"
-import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types"
-import { NAV_SECTIONS, type NavSection } from "@/components/dock/nav-config"
+import type { ExtraPermission, PaddockRole } from "@paddock/types"
+import { sectionsForArea } from "@/components/dock/areas"
+import { useActiveArea } from "@/components/dock/useActiveArea"
 
 export function CommandPalette(): React.ReactElement {
   const [open, setOpen] = useState(false)
   const router = useRouter()
   const { data: session } = useSession()
 
-  const userRoleLevel = ROLE_HIERARCHY[(session?.role ?? "STOREKEEPER") as PaddockRole] ?? 0
-
-  const visibleSections = NAV_SECTIONS.filter((s: NavSection) =>
-    !s.minRole || userRoleLevel >= (ROLE_HIERARCHY[s.minRole] ?? 0)
-  )
+  const { area } = useActiveArea()
+  const role = (session?.role ?? "STOREKEEPER") as PaddockRole
+  const perms = (session?.extraPermissions ?? []) as ExtraPermission[]
+  const visibleSections = sectionsForArea(role, perms, area)
 
   // Flatten all navigable items
   const allItems = visibleSections.flatMap((section) =>

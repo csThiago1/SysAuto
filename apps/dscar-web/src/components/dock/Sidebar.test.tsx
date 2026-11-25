@@ -1,14 +1,15 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Sidebar, activeHref } from "./Sidebar";
 
+const t = vi.hoisted(() => ({ path: "/os/kanban", role: "STOREKEEPER", push: vi.fn() }));
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/os/kanban",
-  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => t.path,
+  useRouter: () => ({ push: t.push }),
 }));
 vi.mock("next-auth/react", () => ({
-  useSession: () => ({ data: { role: "STOREKEEPER", extraPermissions: [] } }),
+  useSession: () => ({ data: { role: t.role, extraPermissions: [] } }),
   signOut: vi.fn(),
 }));
 vi.mock("@/components/header/NotificationBell", () => ({ NotificationBell: () => null }));
@@ -41,6 +42,42 @@ describe("activeHref", () => {
 });
 
 describe("Sidebar", () => {
+  beforeEach(() => {
+    t.path = "/os/kanban";
+    t.role = "STOREKEEPER";
+    t.push.mockClear();
+    sessionStorage.clear();
+  });
+
+  it("OWNER em /os/kanban: área Oficina, com Kanban e sem Retornos", () => {
+    t.role = "OWNER";
+    wrap(<Sidebar />);
+    expect(screen.getByRole("tab", { name: "Oficina" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("link", { name: "Kanban" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Retornos" })).not.toBeInTheDocument();
+  });
+
+  it("OWNER em /crm/retornos: área Comercial, com Retornos e sem Kanban", () => {
+    t.role = "OWNER";
+    t.path = "/crm/retornos";
+    wrap(<Sidebar />);
+    expect(screen.getByRole("tab", { name: "Comercial" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("link", { name: "Retornos" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Kanban" })).not.toBeInTheDocument();
+  });
+
+  it("almoxarife não vê a área Financeiro", () => {
+    wrap(<Sidebar />);
+    expect(screen.queryByRole("tab", { name: "Financeiro" })).not.toBeInTheDocument();
+  });
+
+  it("clicar em Financeiro leva para /financeiro", () => {
+    t.role = "OWNER";
+    wrap(<Sidebar />);
+    fireEvent.click(screen.getByRole("tab", { name: "Financeiro" }));
+    expect(t.push).toHaveBeenCalledWith("/financeiro");
+  });
+
   it("acende só o Kanban, mostra o placar e esconde módulos do papel", () => {
     wrap(<Sidebar />);
     expect(screen.getByRole("link", { name: "Kanban" })).toHaveAttribute("aria-current", "page");

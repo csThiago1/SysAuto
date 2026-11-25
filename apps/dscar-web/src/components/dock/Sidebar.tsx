@@ -26,15 +26,14 @@ import {
   isActiveRoute,
   isGroupActive,
   podeAbrirOS,
-  visibleSections,
   type NavItem,
 } from "./nav-config";
+import { AreaSwitcher } from "./AreaSwitcher";
+import { sectionsForArea } from "./areas";
+import { useActiveArea } from "./useActiveArea";
 import { Placar, usePlacar } from "./Placar";
 import { SearchTrigger } from "./DockActions";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
-
-/** Seções do dia a dia; o resto vai para "Gestão", recolhido. */
-const OFICINA = new Set(["GERAL", "CRM"]);
 
 /** Entre irmãos, acende só o href mais específico (/financeiro/dre, não /financeiro). */
 export function activeHref(pathname: string, hrefs: string[]): string | undefined {
@@ -122,10 +121,8 @@ export function Sidebar(): React.ReactElement {
   const perms = (session?.extraPermissions ?? []) as ExtraPermission[];
   const roleLabel = ROLE_LABELS[session?.role ?? ""] ?? session?.role ?? "";
 
-  const sections = visibleSections(role, perms);
-  const oficina = sections.filter((s) => OFICINA.has(s.label)).flatMap((s) => s.items);
-  const gestao = sections.filter((s) => !OFICINA.has(s.label)).flatMap((s) => s.items);
-  const gestaoAtiva = gestao.some((i) => isGroupActive(pathname, i));
+  const { area, areas, setArea } = useActiveArea();
+  const items = sectionsForArea(role, perms, area).flatMap((s) => s.items);
   // A barra fica escondida (CSS) no celular: sempre desenhada (sem pular no
   // desktop), mas o placar só busca dados em tela md+. O sino divide a query de
   // atrasadas com a barra de abas do celular, então não pesa a mais.
@@ -155,21 +152,10 @@ export function Sidebar(): React.ReactElement {
       </div>
 
       <nav aria-label="Módulos" className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
-        <p className="px-3 pb-1 text-[11px] text-muted-foreground">Oficina</p>
-        {oficina.map((i) => (
+        <AreaSwitcher area={area} areas={areas} onChange={setArea} className="mb-2 px-1" />
+        {items.map((i) => (
           <Item key={i.id} item={i} pathname={pathname} counts={counts} />
         ))}
-        {gestao.length > 0 && (
-          <details open={gestaoAtiva} className="pt-3">
-            <summary className="flex cursor-pointer list-none items-center gap-1 px-3 pb-1 text-[11px] text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
-              Gestão
-              <ChevronRight className="h-3 w-3 transition-transform [details[open]>summary>&]:rotate-90" aria-hidden />
-            </summary>
-            {gestao.map((i) => (
-              <Item key={i.id} item={i} pathname={pathname} counts={counts} />
-            ))}
-          </details>
-        )}
       </nav>
 
       <div className="space-y-2 border-t border-border p-3">
