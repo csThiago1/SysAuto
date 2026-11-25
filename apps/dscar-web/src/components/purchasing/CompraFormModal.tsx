@@ -10,6 +10,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { CatalogSearchCombobox } from "./CatalogSearchCombobox"
 import { CatalogContextCard } from "./CatalogContextCard"
 import { NativeSelect } from "@/components/ui/native-select"
@@ -35,8 +36,8 @@ interface CompraFormModalProps {
 }
 
 const TIPO_QUALIDADE_OPTIONS: { value: TipoQualidade; label: string }[] = [
-  { value: "genuina", label: "Genuina" },
-  { value: "reposicao", label: "Reposicao" },
+  { value: "genuina", label: "Genuína" },
+  { value: "reposicao", label: "Reposição" },
   { value: "similar", label: "Similar" },
   { value: "usada", label: "Usada" },
 ]
@@ -108,17 +109,17 @@ export function CompraFormModal({
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Solicitar Compra de Peca</DialogTitle>
+          <DialogTitle>Solicitar compra de peça</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-foreground/60">
-          Um pedido de compra sera criado automaticamente para o setor de compras.
+          Um pedido de compra será criado automaticamente para o setor de compras.
         </p>
 
         <div className="space-y-4">
           {/* Descricao — with catalog search */}
           <div>
             <label className="label-mono text-muted-foreground mb-1.5 block">
-              Descricao *
+              Descrição *
             </label>
             <CatalogSearchCombobox
               value={description}
@@ -126,7 +127,7 @@ export function CompraFormModal({
               onSelect={handleCatalogSelect}
               vehicleMakeName={vehicleMakeName}
               vehicleModelName={vehicleModelName}
-              placeholder="Buscar no catalogo ou digitar descricao..."
+              placeholder="Buscar no catálogo ou digitar a descrição…"
             />
           </div>
 
@@ -156,7 +157,7 @@ export function CompraFormModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
-                Tipo de peca *
+                Tipo de peça *
               </label>
               <NativeSelect
                 value={tipoQualidade}
@@ -207,34 +208,25 @@ export function CompraFormModal({
           {/* Observacoes */}
           <div>
             <label className="label-mono text-muted-foreground mb-1.5 block">
-              Observacoes para compras
+              Observações para compras
             </label>
             <textarea
               value={observacoes}
               onChange={(e) => setObservacoes(e.target.value)}
               rows={3}
-              placeholder="Informacoes adicionais para o setor de compras..."
+              placeholder="Informações para o setor de compras…"
               className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border resize-none"
             />
           </div>
         </div>
 
         <DialogFooter>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="rounded-md border border-border bg-muted/50 px-4 py-2 text-sm text-foreground/60 hover:text-foreground hover:bg-muted transition-colors"
-          >
+          <Button type="button" variant="outline" onClick={handleClose}>
             Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!description || !unitPrice}
-            className="rounded-md bg-info-500 hover:bg-info-600 px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Solicitar Compra
-          </button>
+          </Button>
+          <Button type="button" onClick={handleSubmit} disabled={!description || !unitPrice}>
+            Solicitar compra
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
