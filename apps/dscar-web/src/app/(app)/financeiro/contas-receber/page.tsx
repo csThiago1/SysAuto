@@ -11,7 +11,7 @@ import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { PlusCircle, TrendingUp, AlertCircle, CheckCircle2, Clock } from "lucide-react";
-import { useReceivableDocuments, useRecordReceipt, useCancelReceivable } from "@/hooks/useFinanceiro";
+import { useReceivableDocuments, useReceivableSummary, useRecordReceipt, useCancelReceivable } from "@/hooks/useFinanceiro";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
@@ -48,16 +48,6 @@ function isOverdue(dueDate: string, status: ReceivableStatus): boolean {
   return new Date(dueDate + "T00:00:00") < new Date(new Date().toDateString());
 }
 
-function isDueToday(dueDate: string): boolean {
-  return dueDate === new Date().toISOString().split("T")[0];
-}
-
-function isThisMonth(date: string): boolean {
-  const d = new Date(date + "T00:00:00");
-  const now = new Date();
-  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-}
-
 // ── Filter types ──────────────────────────────────────────────────────────────
 
 type FilterStatus = ReceivableStatus | "";
@@ -86,10 +76,10 @@ export default function ContasReceberPage(): React.ReactElement {
   if (debouncedSearch) filters.search = debouncedSearch;
   if (status) filters.status = status;
   if (origin) filters.origin = origin;
-  if (dueDateGte) filters.due_date__gte = dueDateGte;
-  if (dueDateLte) filters.due_date__lte = dueDateLte;
+  if (dueDateGte) filters.due_date_gte = dueDateGte;
+  if (dueDateLte) filters.due_date_lte = dueDateLte;
 
-  const { data, isLoading } = useReceivableDocuments(filters);
+  const { data, isLoading, isError } = useReceivableDocuments(filters);
   const recordReceipt = useRecordReceipt();
   const cancelReceivable = useCancelReceivable();
 
@@ -102,28 +92,7 @@ export default function ContasReceberPage(): React.ReactElement {
   const documents = data?.results ?? [];
 
   // ── Summary computations ──────────────────────────────────────────────────
-  const { data: allData, isLoading: isAllLoading } = useReceivableDocuments({});
-  const allDocs = allData?.results ?? [];
-
-  const totalOpen = allDocs
-    .filter((d) => d.status === "open" || d.status === "partial")
-    .reduce((acc, d) => acc + Number(d.amount_remaining), 0);
-
-  const totalOverdue = allDocs
-    .filter((d) => isOverdue(d.due_date, d.status))
-    .reduce((acc, d) => acc + Number(d.amount_remaining), 0);
-
-  const receivedThisMonth = allDocs
-    .filter((d) => d.status === "received" && isThisMonth(d.due_date))
-    .reduce((acc, d) => acc + Number(d.amount_received), 0);
-
-  const dueToday = allDocs
-    .filter(
-      (d) =>
-        isDueToday(d.due_date) &&
-        (d.status === "open" || d.status === "partial")
-    )
-    .reduce((acc, d) => acc + Number(d.amount_remaining), 0);
+  const { data: summary, isLoading: isAllLoading } = useReceivableSummary();
 
   const canCancel = (s: ReceivableStatus): boolean =>
     s === "open" || s === "partial" || s === "overdue";
@@ -154,28 +123,28 @@ export default function ContasReceberPage(): React.ReactElement {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryCard
             label="Total a Receber"
-            value={formatBRL(String(totalOpen))}
+            value={summary ? formatBRL(summary.total_open) : "—"}
             iconBg="bg-muted/50"
             icon={<TrendingUp className="h-5 w-5 text-foreground/70" />}
             isLoading={isAllLoading}
           />
           <SummaryCard
             label="Total Vencido"
-            value={formatBRL(String(totalOverdue))}
+            value={summary ? formatBRL(summary.total_overdue) : "—"}
             iconBg="bg-error-500/10"
             icon={<AlertCircle className="h-5 w-5 text-error-400" />}
             isLoading={isAllLoading}
           />
           <SummaryCard
             label="Recebido no Mês"
-            value={formatBRL(String(receivedThisMonth))}
+            value={summary ? formatBRL(summary.settled_this_month) : "—"}
             iconBg="bg-success-500/10"
             icon={<CheckCircle2 className="h-5 w-5 text-success-400" />}
             isLoading={isAllLoading}
           />
           <SummaryCard
             label="A Vencer Hoje"
-            value={formatBRL(String(dueToday))}
+            value={summary ? formatBRL(summary.due_today) : "—"}
             iconBg="bg-warning-500/10"
             icon={<Clock className="h-5 w-5 text-warning-400" />}
             isLoading={isAllLoading}
@@ -240,6 +209,10 @@ export default function ContasReceberPage(): React.ReactElement {
 
           {isLoading ? (
             <FinanceiroTableSkeleton />
+          ) : isError ? (
+            <div className="py-16 text-center text-sm text-error-400">
+              Erro ao carregar os títulos. Tente recarregar a página.
+            </div>
           ) : documents.length === 0 ? (
             <div className="py-16 text-center text-sm text-muted-foreground">
               Nenhum título encontrado.
@@ -251,9 +224,12 @@ export default function ContasReceberPage(): React.ReactElement {
                   key={doc.id}
                   className="grid grid-cols-1 md:grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3.5 items-center text-sm hover:bg-muted/30 transition-colors"
                 >
-                  <span className="font-medium text-foreground truncate">
+                  <Link
+                    href={`/financeiro/contas-receber/${doc.id}` as Route}
+                    className="font-medium text-foreground truncate hover:underline"
+                  >
                     {doc.customer_name}
-                  </span>
+                  </Link>
                   <span className="text-foreground/60 truncate">
                     {doc.description}
                     {doc.document_number && (

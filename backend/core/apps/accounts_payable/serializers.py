@@ -75,6 +75,7 @@ class PayableDocumentListSerializer(serializers.ModelSerializer):
             "id",
             "supplier_name",
             "description",
+            "document_number",
             "due_date",
             "amount",
             "amount_paid",
@@ -89,7 +90,7 @@ class PayableDocumentListSerializer(serializers.ModelSerializer):
 
     def get_supplier_name(self, obj: PayableDocument) -> str:
         """Retorna nome do fornecedor."""
-        return obj.supplier.name
+        return obj.supplier.full_name
 
     def get_amount_remaining(self, obj: PayableDocument) -> str:
         """Retorna saldo restante a pagar."""
@@ -100,7 +101,7 @@ class PayableDocumentSerializer(serializers.ModelSerializer):
     """Serializer completo de titulo a pagar — inclui pagamentos."""
 
     supplier = SupplierListSerializer(read_only=True)
-    supplier_name = serializers.CharField(source="supplier.name", read_only=True)
+    supplier_name = serializers.CharField(source="supplier.full_name", read_only=True)
     payments = PayablePaymentSerializer(many=True, read_only=True)
     amount_remaining = serializers.SerializerMethodField()
     status_display = serializers.CharField(source="get_status_display", read_only=True)

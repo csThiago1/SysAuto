@@ -15,6 +15,7 @@ import {
 import type { PaymentMethod } from "@paddock/types";
 import { PAYMENT_METHOD_LABELS } from "@paddock/types";
 import { DateField } from "@/components/ui/date-field"
+import { todayISO } from "@paddock/utils";
 import { toast } from "sonner"
 
 interface RecordPaymentDialogProps {
@@ -60,7 +61,7 @@ export function RecordPaymentDialog({
   amountLabel = "Valor a pagar *",
   title = "Registrar Pagamento",
 }: RecordPaymentDialogProps) {
-  const todayStr = new Date().toISOString().split("T")[0] ?? "";
+  const todayStr = todayISO();
 
   const [amount, setAmount] = React.useState("");
   const [paymentDate, setPaymentDate] = React.useState(todayStr);

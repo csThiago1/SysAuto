@@ -4,6 +4,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { z } from "zod";
 import type {
   PaginatedResponse,
   PayableDocumentListItem,
@@ -69,6 +70,27 @@ export function usePayableDocument(
     queryKey: financeiroKeys.payable.document(id),
     queryFn: () => apiFetch<PayableDocument>(`${AP}/documents/${id}/`),
     enabled: Boolean(id),
+  });
+}
+
+// Totais dos cartões das listas — somados no backend (não só a 1ª página).
+const documentsSummarySchema = z.object({
+  total_open: z.string(),
+  total_overdue: z.string(),
+  settled_this_month: z.string(),
+  due_today: z.string(),
+});
+export type DocumentsSummary = z.infer<typeof documentsSummarySchema>;
+
+export function usePayableSummary(): ReturnType<
+  typeof useQuery<DocumentsSummary>
+> {
+  return useQuery<DocumentsSummary>({
+    queryKey: [...financeiroKeys.payable.allDocuments(), "summary"],
+    queryFn: async () =>
+      documentsSummarySchema.parse(
+        await apiFetch<unknown>(`${AP}/documents/summary/`)
+      ),
   });
 }
 
@@ -275,6 +297,18 @@ export function useReceivableDocument(
     queryKey: financeiroKeys.receivable.document(id),
     queryFn: () => apiFetch<ReceivableDocument>(`${AR}/documents/${id}/`),
     enabled: Boolean(id),
+  });
+}
+
+export function useReceivableSummary(): ReturnType<
+  typeof useQuery<DocumentsSummary>
+> {
+  return useQuery<DocumentsSummary>({
+    queryKey: [...financeiroKeys.receivable.allDocuments(), "summary"],
+    queryFn: async () =>
+      documentsSummarySchema.parse(
+        await apiFetch<unknown>(`${AR}/documents/summary/`)
+      ),
   });
 }
 

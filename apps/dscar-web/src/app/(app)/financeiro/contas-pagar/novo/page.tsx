@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { PayableOrigin } from "@paddock/types";
 import { PAYABLE_ORIGIN_LABELS } from "@paddock/types";
 import { DateField } from "@/components/ui/date-field"
+import { todayISO } from "@paddock/utils";
 
 // ── Zod schema ────────────────────────────────────────────────────────────────
 
@@ -152,7 +153,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
   const { data: suppliersData, isLoading: loadingSuppliers } = useSuppliers();
   const { data: expenseAccounts } = useExpenseAccounts();
 
-  const todayStr = new Date().toISOString().split("T")[0] ?? "";
+  const todayStr = todayISO();
 
   const [form, setForm] = React.useState<FormDraft>({
     supplier_id: "",

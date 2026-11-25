@@ -31,7 +31,10 @@ export function formatDateTime(iso: string | null | undefined): string {
 
 /** Retorna data de hoje no formato YYYY-MM-DD (para filtros de API) */
 export function todayISO(): string {
-  return new Date().toISOString().split("T")[0]!;
+  // Dia local do navegador (Manaus), não UTC: toISOString vira o dia às 20h locais.
+  const d = new Date();
+  const pad = (n: number): string => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 /** Retorna datetime atual no formato ISO 8601 */
