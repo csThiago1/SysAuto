@@ -4,6 +4,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { formatCurrency } from "@paddock/utils";
 import { z } from "zod";
 import type {
   PaginatedResponse,
@@ -15,6 +16,7 @@ import type {
   ReceivableDocumentListItem,
   CreateReceivablePayload,
   RecordReceiptPayload,
+  RecordReceiptsBatchPayload,
 } from "@paddock/types"
 import { apiFetch, fetchList } from "@/lib/api";
 import type { ApiSchema } from "@/types"
@@ -412,6 +414,86 @@ export function useRecordReceipt(): ReturnType<
     },
     onError: (err) => {
       toast.error(err.message || "Erro ao registrar recebimento.");
+    },
+  });
+}
+
+const receiptsBatchSchema = z.object({
+  count: z.number(),
+  total: z.string(),
+  without_journal_entry: z.number(),
+});
+export type ReceiptsBatchResult = z.infer<typeof receiptsBatchSchema>;
+
+export function useRecordReceiptsBatch(): ReturnType<
+  typeof useMutation<ReceiptsBatchResult, Error, RecordReceiptsBatchPayload>
+> {
+  const qc = useQueryClient();
+  return useMutation<ReceiptsBatchResult, Error, RecordReceiptsBatchPayload>({
+    mutationFn: async (payload) =>
+      receiptsBatchSchema.parse(
+        await apiFetch<unknown>(`${AR}/documents/receive-batch/`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        })
+      ),
+    onSuccess: ({ count, total, without_journal_entry: unposted }) => {
+      toast.success(
+        `${count === 1 ? "1 título recebido" : `${count} títulos recebidos`} · ${formatCurrency(total)}`
+      );
+      if (unposted > 0) {
+        toast.warning(
+          unposted === 1
+            ? "1 baixa ficou sem lançamento contábil."
+            : `${unposted} baixas ficaram sem lançamento contábil.`
+        );
+      }
+    },
+    onError: (err) => {
+      toast.error(err.message || "Erro ao registrar os recebimentos.");
+    },
+    // Também no erro: a lista recarregada tira da seleção o título que já foi baixado.
+    // A chave dos documentos é prefixo da lista, do detalhe e do resumo.
+    onSettled: () => {
+      void qc.invalidateQueries({
+        queryKey: financeiroKeys.receivable.allDocuments(),
+      });
+    },
+  });
+}
+
+export function useReverseReceipt(): ReturnType<
+  typeof useMutation<
+    unknown,
+    Error,
+    { documentId: string; receiptId: string; reason: string }
+  >
+> {
+  const qc = useQueryClient();
+  return useMutation<
+    unknown,
+    Error,
+    { documentId: string; receiptId: string; reason: string }
+  >({
+    mutationFn: ({ documentId, receiptId, reason }) =>
+      apiFetch<unknown>(
+        `${AR}/documents/${documentId}/receipts/${receiptId}/reverse/`,
+        {
+          method: "POST",
+          body: JSON.stringify({ reason }),
+        }
+      ),
+    onSuccess: (_, { documentId }) => {
+      void qc.invalidateQueries({
+        queryKey: financeiroKeys.receivable.document(documentId),
+      });
+      void qc.invalidateQueries({
+        queryKey: financeiroKeys.receivable.allDocuments(),
+      });
+      toast.success("Baixa estornada.");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Erro ao estornar a baixa.");
     },
   });
 }

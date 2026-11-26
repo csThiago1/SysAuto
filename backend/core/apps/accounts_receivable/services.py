@@ -239,19 +239,7 @@ class ReceivableDocumentService:
             created_by=user,
         )
 
-        # Recalcular amount_received via aggregate para consistencia
-        total_received = ReceivableReceipt.objects.filter(
-            document=document, is_active=True
-        ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
-
-        document.amount_received = total_received
-        new_status = (
-            ReceivableStatus.RECEIVED
-            if total_received >= document.amount
-            else ReceivableStatus.PARTIAL
-        )
-        document.status = new_status
-        document.save(update_fields=["amount_received", "status", "updated_at"])
+        cls._refresh_received(document)
 
         # Gerar lancamento contabil automatico
         # Idempotencia: nao cria lancamento se ja existe para este receipt (ex: retry Celery)
@@ -286,6 +274,175 @@ class ReceivableDocumentService:
         )
         return receipt
 
+    @staticmethod
+    def _refresh_received(document: ReceivableDocument) -> None:
+        """Recalcula recebido (soma das baixas ativas) e status do titulo — ponto unico."""
+        received = document.receipts.filter(is_active=True).aggregate(total=Sum("amount"))[
+            "total"
+        ] or Decimal("0.00")
+        document.amount_received = received
+        if received >= document.amount:
+            document.status = ReceivableStatus.RECEIVED
+        elif received > 0:
+            document.status = ReceivableStatus.PARTIAL
+        elif document.due_date < timezone.localdate():
+            document.status = ReceivableStatus.OVERDUE
+        else:
+            document.status = ReceivableStatus.OPEN
+        document.save(update_fields=["amount_received", "status", "updated_at"])
+
+    @staticmethod
+    def _deactivate_receipt(receipt: ReceivableReceipt, *, reason: str, user: "object") -> None:
+        """Desativa uma baixa e estorna o lancamento contabil dela.
+
+        Falha no estorno contabil propaga: quem chama esta em transacao e desfaz tudo.
+        """
+        if receipt.journal_entry_id:
+            from apps.accounting.models.journal_entry import JournalEntry
+            from apps.accounting.services.journal_entry_service import JournalEntryService
+
+            entry = JournalEntry.objects.filter(id=receipt.journal_entry_id).first()
+            if entry is None:
+                raise ValidationError({"detail": "Lancamento contabil da baixa nao encontrado."})
+            # ja estornado a mao na contabilidade: falta so desativar a baixa
+            if not entry.is_reversed:
+                JournalEntryService.reverse_entry(
+                    entry=entry,
+                    user=user,
+                    description=f"Estorno de recebimento {entry.number}: {reason}",
+                )
+
+        receipt.is_active = False
+        receipt.reversed_at = timezone.now()
+        receipt.reversed_by = user
+        receipt.reverse_reason = reason
+        receipt.save(
+            update_fields=[
+                "is_active",
+                "reversed_at",
+                "reversed_by",
+                "reverse_reason",
+                "updated_at",
+            ]
+        )
+
+    @classmethod
+    @transaction.atomic
+    def reverse_receipt(
+        cls,
+        *,
+        document_id: str,
+        receipt_id: str,
+        reason: str,
+        user: "object",
+    ) -> ReceivableDocument:
+        """
+        Estorna uma baixa: ela fica inativa (nunca apagada), o lancamento contabil
+        e estornado e o recebido e o status do titulo sao recalculados.
+
+        Args:
+            document_id: UUID do titulo a receber.
+            receipt_id: UUID da baixa, que precisa ser desse titulo.
+            reason: Motivo do estorno (obrigatorio).
+            user: Usuario que estornou.
+
+        Returns:
+            ReceivableDocument recalculado.
+
+        Raises:
+            ValidationError: Se motivo vazio, titulo cancelado, baixa ja estornada
+                ou se o estorno contabil falhar.
+        """
+        reason = reason.strip()
+        if not reason:
+            raise ValidationError({"detail": "O motivo do estorno e obrigatorio."})
+
+        document = ReceivableDocument.objects.select_for_update().get(id=document_id)
+        receipt = document.receipts.select_for_update().get(id=receipt_id)
+
+        if document.status == ReceivableStatus.CANCELLED:
+            raise ValidationError(
+                {"detail": "Nao e possivel estornar baixa de um titulo cancelado."}
+            )
+        if not receipt.is_active:
+            raise ValidationError({"detail": "Esta baixa ja foi estornada."})
+
+        cls._deactivate_receipt(receipt, reason=reason, user=user)
+        cls._refresh_received(document)
+
+        logger.info(
+            "ReceivableDocumentService.reverse_receipt: recebimento %s estornado — "
+            "titulo %s status=%s",
+            receipt.id,
+            document.id,
+            document.status,
+        )
+        return document
+
+    @classmethod
+    @transaction.atomic
+    def record_receipts_batch(
+        cls,
+        *,
+        document_ids: list[str],
+        receipt_date: "object",
+        payment_method: str = "pix",
+        bank_account: str = "",
+        notes: str = "",
+        user: "object",
+    ) -> list[ReceivableReceipt]:
+        """
+        Baixa varios titulos pelo saldo, com a mesma data, forma e conta. Tudo ou nada.
+
+        Args:
+            document_ids: UUIDs dos titulos (repetidos contam uma vez).
+            receipt_date: Data do recebimento.
+            payment_method: Forma de pagamento/recebimento.
+            bank_account: Identificacao da conta bancaria (opcional).
+            notes: Observacoes (opcional).
+            user: Usuario que registrou os recebimentos.
+
+        Returns:
+            Lista de ReceivableReceipt criados, um por titulo.
+
+        Raises:
+            ValidationError: Se algum titulo nao existe, esta inativo, recebido,
+                cancelado ou sem saldo.
+        """
+        ids = {str(document_id) for document_id in document_ids}
+        # trava em ordem de id: dois lotes com os mesmos titulos nao se travam um ao outro
+        documents = list(
+            ReceivableDocument.objects.select_for_update()
+            .filter(id__in=ids, is_active=True)
+            .order_by("id")
+        )
+        missing = len(ids) - len(documents)
+        if missing:
+            raise ValidationError({"detail": f"{missing} titulo(s) do lote nao encontrado(s)."})
+
+        blocked = sum(
+            1
+            for document in documents
+            if document.status in (ReceivableStatus.RECEIVED, ReceivableStatus.CANCELLED)
+            or document.amount_remaining <= 0
+        )
+        if blocked:
+            message = f"{blocked} titulo(s) do lote ja recebido(s), cancelado(s) ou sem saldo."
+            raise ValidationError({"detail": message})
+
+        return [
+            cls.record_receipt(
+                document_id=str(document.id),
+                receipt_date=receipt_date,
+                amount=document.amount_remaining,
+                payment_method=payment_method,
+                bank_account=bank_account,
+                notes=notes,
+                user=user,
+            )
+            for document in documents
+        ]
+
     @classmethod
     @transaction.atomic
     def cancel_receivable(
@@ -299,6 +456,7 @@ class ReceivableDocumentService:
         Cancela titulo a receber.
 
         Nao permite cancelar titulo ja recebido ou ja cancelado.
+        Estorna e desativa as baixas ativas e zera o recebido.
 
         Args:
             document_id: UUID do titulo a receber.
@@ -309,7 +467,8 @@ class ReceivableDocumentService:
             ReceivableDocument cancelado.
 
         Raises:
-            ValidationError: Se titulo ja recebido ou ja cancelado.
+            ValidationError: Se titulo ja recebido, ja cancelado ou se o estorno
+                contabil de alguma baixa falhar (nada e gravado).
         """
         document = ReceivableDocument.objects.select_for_update().get(id=document_id)
 
@@ -318,37 +477,18 @@ class ReceivableDocumentService:
         if document.status == ReceivableStatus.CANCELLED:
             raise ValidationError({"detail": "Titulo ja esta cancelado."})
 
-        # Estorna lancamentos contabeis dos recebimentos ja realizados (titulos PARTIAL)
-        receipts_with_entries = document.receipts.filter(
-            is_active=True, journal_entry_id__isnull=False
-        )
-        for receipt in receipts_with_entries:
-            try:
-                from apps.accounting.models.journal_entry import JournalEntry
-                from apps.accounting.services.journal_entry_service import JournalEntryService
+        # Estorna e desativa as baixas ja realizadas (titulos PARTIAL)
+        for receipt in document.receipts.filter(is_active=True):
+            cls._deactivate_receipt(receipt, reason=f"Titulo cancelado: {reason}"[:200], user=user)
 
-                entry = JournalEntry.objects.get(id=receipt.journal_entry_id)
-                JournalEntryService.reverse_entry(
-                    entry=entry,
-                    user=user,
-                    description=(
-                        f"Estorno automatico — titulo "
-                        f"{document.document_number or document.id} cancelado"
-                    ),
-                )
-            except Exception:
-                logger.warning(
-                    "cancel_receivable: falha ao estornar journal_entry=%s para receipt=%s",
-                    receipt.journal_entry_id,
-                    receipt.id,
-                )
-
+        document.amount_received = Decimal("0.00")
         document.status = ReceivableStatus.CANCELLED
         document.cancelled_at = timezone.now()
         document.cancelled_by = user
         document.cancel_reason = reason
         document.save(
             update_fields=[
+                "amount_received",
                 "status",
                 "cancelled_at",
                 "cancelled_by",

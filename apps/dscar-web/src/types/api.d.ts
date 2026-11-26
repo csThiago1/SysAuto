@@ -20684,6 +20684,12 @@ export interface components {
             readonly journal_entry_id: string | null;
             /** Format: date-time */
             readonly created_at: string;
+            /** false = baixa estornada */
+            readonly is_active: boolean;
+            /** Format: date-time */
+            readonly reversed_at: string | null;
+            readonly reversed_by_name: string | null;
+            readonly reverse_reason: string;
         };
         /** @description Serializer de leitura de ReceivableReceipt. */
         ReceivableReceiptRequest: {

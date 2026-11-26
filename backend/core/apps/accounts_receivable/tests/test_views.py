@@ -11,11 +11,17 @@ import uuid
 from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any
+from unittest import mock
 
+from django.core.exceptions import ValidationError
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
 from django_tenants.test.cases import TenantTestCase
 from rest_framework.test import APIClient
 
-from apps.accounts_receivable.models import ReceivableDocument, ReceivableStatus
+from apps.accounting.tests.base import make_account
+from apps.accounts_receivable.models import ReceivableDocument, ReceivableReceipt, ReceivableStatus
 from apps.authentication.models import GlobalUser
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -360,3 +366,214 @@ class TestUpdateDocument(ARViewTestCase):
         self.assertEqual(response.status_code, 200)
         doc.refresh_from_db()
         self.assertEqual(doc.cancel_reason, "")
+
+
+class TestReceiveBatchAction(ARViewTestCase):
+    """POST /documents/receive-batch/: baixa varios titulos pelo saldo."""
+
+    def _batch(self, ids: list[object]) -> Any:
+        return self.client.post(
+            f"{self.DOCUMENTS_URL}receive-batch/",
+            {
+                "document_ids": [str(i) for i in ids],
+                "receipt_date": str(date.today()),
+                "payment_method": "bank_transfer",
+                "bank_account": "Bradesco",
+            },
+            format="json",
+        )
+
+    def test_batch_returns_201_with_totals_and_receipts(self) -> None:
+        """Lote valido: 201 com quantidade, total, baixas sem lancamento e as baixas."""
+        self._authenticate_as_manager()
+        first = self._make_open_document(amount=Decimal("900.00"))
+        second = self._make_open_document(amount=Decimal("100.50"))
+
+        response = self._batch([first.id, second.id])
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(response.data["total"], "1000.50")
+        # sem plano de contas no teste, nenhuma baixa gera lancamento
+        self.assertEqual(response.data["without_journal_entry"], 2)
+        self.assertEqual(len(response.data["receipts"]), 2)
+        receipt = response.data["receipts"][0]
+        self.assertIs(receipt["is_active"], True)
+        self.assertIsNone(receipt["reversed_at"])
+        self.assertIsNone(receipt["reversed_by_name"])
+        self.assertEqual(receipt["reverse_reason"], "")
+        self.assertEqual(
+            ReceivableDocument.objects.filter(status=ReceivableStatus.RECEIVED).count(), 2
+        )
+
+    def test_batch_by_consultant_returns_403(self) -> None:
+        """CONSULTANT nao da baixa em lote."""
+        self._authenticate_as_consultant()
+        doc = self._make_open_document()
+        self.assertEqual(self._batch([doc.id]).status_code, 403)
+
+    def test_batch_with_empty_or_oversized_list_returns_400(self) -> None:
+        """Lista vazia ou com mais de 200 ids: 400 na chave document_ids."""
+        self._authenticate_as_manager()
+        for ids in ([], [uuid.uuid4() for _ in range(201)]):
+            response = self._batch(ids)
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("document_ids", response.data)
+
+    def test_batch_with_unknown_or_received_document_returns_400_and_records_nothing(self) -> None:
+        """Um titulo ruim derruba o lote: 400 e nenhuma baixa nova."""
+        self._authenticate_as_manager()
+        good = self._make_open_document()
+        received = self._make_open_document(amount=Decimal("100.00"))
+        self.assertEqual(self._batch([received.id]).status_code, 201)
+
+        for bad_id in (uuid.uuid4(), received.id):
+            response = self._batch([good.id, bad_id])
+            self.assertEqual(response.status_code, 400)
+            self.assertIsInstance(response.data["detail"], list)
+        self.assertEqual(ReceivableReceipt.objects.filter(document=good).count(), 0)
+
+
+class TestReverseReceiptAction(ARViewTestCase):
+    """POST /documents/{id}/receipts/{receipt_id}/reverse/ e o cancelamento com baixas."""
+
+    def _receive(self, doc: ReceivableDocument, amount: str) -> str:
+        response = self.client.post(
+            f"{self.DOCUMENTS_URL}{doc.id}/receive/",
+            {"receipt_date": str(date.today()), "amount": amount, "payment_method": "pix"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        return str(response.data["id"])
+
+    def _reverse(self, doc_id: object, receipt_id: object, reason: str = "Titulo errado") -> Any:
+        return self.client.post(
+            f"{self.DOCUMENTS_URL}{doc_id}/receipts/{receipt_id}/reverse/",
+            {"reason": reason},
+            format="json",
+        )
+
+    def _make_ar_accounts(self) -> None:
+        make_account(code="1.1.01.002", name="Banco Bradesco C/C")
+        make_account(code="1.1.02.001", name="Clientes a Receber")
+
+    def test_reverse_returns_document_with_reversed_receipt(self) -> None:
+        """Estorno: 200 com o titulo reaberto e a baixa inativa; o GET mostra a estornada."""
+        self._authenticate_as_manager()
+        doc = self._make_open_document(amount=Decimal("900.00"))
+        receipt_id = self._receive(doc, "900.00")
+
+        response = self._reverse(doc.id, receipt_id)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["id"], str(doc.id))
+        self.assertEqual(response.data["status"], ReceivableStatus.OPEN)
+        self.assertEqual(Decimal(response.data["amount_received"]), Decimal("0.00"))
+        receipt = response.data["receipts"][0]
+        self.assertIs(receipt["is_active"], False)
+        self.assertIsNotNone(receipt["reversed_at"])
+        self.assertEqual(receipt["reversed_by_name"], "Admin")
+        self.assertEqual(receipt["reverse_reason"], "Titulo errado")
+
+        detail = self.client.get(f"{self.DOCUMENTS_URL}{doc.id}/")
+        self.assertEqual([r["id"] for r in detail.data["receipts"]], [receipt_id])
+
+    def test_reverse_without_reason_or_already_reversed_returns_400(self) -> None:
+        """Motivo vazio: 400 em reason. Baixa ja estornada: 400 com a mensagem do service."""
+        self._authenticate_as_manager()
+        doc = self._make_open_document()
+        receipt_id = self._receive(doc, "100.00")
+
+        response = self._reverse(doc.id, receipt_id, reason="")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("reason", response.data)
+        self.assertEqual(self._reverse(doc.id, receipt_id, reason="x" * 201).status_code, 400)
+
+        self.assertEqual(self._reverse(doc.id, receipt_id).status_code, 200)
+        response = self._reverse(doc.id, receipt_id)
+        self.assertEqual(response.status_code, 400)
+        self.assertIsInstance(response.data["detail"], list)
+
+    def test_reverse_receipt_of_another_document_returns_404(self) -> None:
+        """Baixa de outro titulo, baixa inexistente ou titulo inexistente: 404."""
+        self._authenticate_as_manager()
+        doc = self._make_open_document()
+        other = self._make_open_document()
+        receipt_id = self._receive(other, "100.00")
+
+        self.assertEqual(self._reverse(doc.id, receipt_id).status_code, 404)
+        self.assertEqual(self._reverse(doc.id, uuid.uuid4()).status_code, 404)
+        self.assertEqual(self._reverse(uuid.uuid4(), receipt_id).status_code, 404)
+        self.assertTrue(ReceivableReceipt.objects.get(id=receipt_id).is_active)
+
+    def test_reverse_by_consultant_returns_403(self) -> None:
+        """CONSULTANT nao estorna baixa."""
+        self._authenticate_as_manager()
+        doc = self._make_open_document()
+        receipt_id = self._receive(doc, "100.00")
+        self._authenticate_as_consultant()
+        self.assertEqual(self._reverse(doc.id, receipt_id).status_code, 403)
+
+    def test_cancel_deactivates_receipts_and_zeroes_received(self) -> None:
+        """Cancelar titulo parcial: baixas inativas e recebido zerado na resposta."""
+        self._authenticate_as_manager()
+        doc = self._make_open_document(amount=Decimal("900.00"))
+        self._receive(doc, "300.00")
+
+        response = self.client.post(
+            f"{self.DOCUMENTS_URL}{doc.id}/cancel/", {"reason": "OS cancelada"}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["status"], ReceivableStatus.CANCELLED)
+        self.assertEqual(Decimal(response.data["amount_received"]), Decimal("0.00"))
+        self.assertIs(response.data["receipts"][0]["is_active"], False)
+        self.assertEqual(
+            response.data["receipts"][0]["reverse_reason"], "Titulo cancelado: OS cancelada"
+        )
+
+    def test_accounting_failure_returns_400_and_changes_nothing(self) -> None:
+        """Estorno contabil que falha: 400 no estorno e no cancelamento, nada gravado."""
+        self._authenticate_as_manager()
+        self._make_ar_accounts()
+        doc = self._make_open_document(amount=Decimal("900.00"))
+        receipt_id = self._receive(doc, "300.00")
+
+        target = "apps.accounting.services.journal_entry_service.JournalEntryService.reverse_entry"
+        with mock.patch(target, side_effect=ValidationError("Periodo fechado")):
+            self.assertEqual(self._reverse(doc.id, receipt_id).status_code, 400)
+            cancel = self.client.post(
+                f"{self.DOCUMENTS_URL}{doc.id}/cancel/", {"reason": "Teste"}, format="json"
+            )
+            self.assertEqual(cancel.status_code, 400)
+
+        doc.refresh_from_db()
+        self.assertEqual(doc.status, ReceivableStatus.PARTIAL)
+        self.assertEqual(doc.amount_received, Decimal("300.00"))
+        self.assertTrue(ReceivableReceipt.objects.get(id=receipt_id).is_active)
+
+    def test_retrieve_does_not_query_per_reversed_receipt(self) -> None:
+        """O nome de quem estornou vem no prefetch: mais baixas nao viram mais consultas."""
+        self._authenticate_as_manager()
+        doc = self._make_open_document()
+        url = f"{self.DOCUMENTS_URL}{doc.id}/"
+
+        def add_reversed_receipt() -> None:
+            ReceivableReceipt.objects.create(
+                document=doc,
+                receipt_date=date.today(),
+                amount=Decimal("10.00"),
+                is_active=False,
+                reversed_at=timezone.now(),
+                reversed_by=self.admin_user,
+                reverse_reason="Teste",
+            )
+
+        add_reversed_receipt()
+        with CaptureQueriesContext(connection) as one:
+            self.assertEqual(self.client.get(url).status_code, 200)
+        for _ in range(3):
+            add_reversed_receipt()
+        with CaptureQueriesContext(connection) as four:
+            self.assertEqual(len(self.client.get(url).data["receipts"]), 4)
+        self.assertEqual(len(four), len(one))

@@ -6,23 +6,28 @@
  */
 
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { NativeSelect } from "@/components/ui/native-select";
 import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { PlusCircle, TrendingUp, AlertCircle, CheckCircle2, Clock } from "lucide-react";
-import { useReceivableDocuments, useReceivableSummary, useRecordReceipt, useCancelReceivable } from "@/hooks/useFinanceiro";
+import { useReceivableDocuments, useReceivableSummary, useRecordReceipt, useRecordReceiptsBatch, useCancelReceivable } from "@/hooks/useFinanceiro";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePermission } from "@/hooks/usePermission";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 import {
   SummaryCard,
   FinanceiroStatusBadge,
   RecordPaymentDialog,
+  ReceiveBatchDialog,
   CancelDialog,
   FinanceiroTableSkeleton,
 } from "@/components/financeiro";
+import { type Selection, hasBalance, headerState, reconcile, toggle, toggleAll, total } from "./_lib/selection";
 import type {
   ReceivableDocumentListItem,
   ReceivableStatus,
@@ -48,6 +53,9 @@ function isOverdue(dueDate: string, status: ReceivableStatus): boolean {
   if (status === "received" || status === "cancelled") return false;
   return new Date(dueDate + "T00:00:00") < new Date(new Date().toDateString());
 }
+
+// Limite de títulos por chamada da baixa em lote (contrato da API).
+const BATCH_MAX = 200;
 
 // ── Filter types ──────────────────────────────────────────────────────────────
 
@@ -93,6 +101,27 @@ export default function ContasReceberPage(): React.ReactElement {
 
   const documents = data?.results ?? [];
 
+  // ── Seleção para baixa em lote: por id, sobrevive à troca de busca e filtro ──
+  const receiveBatch = useRecordReceiptsBatch();
+  const [selection, setSelection] = React.useState<Selection>({});
+  const [batchOpen, setBatchOpen] = React.useState(false);
+
+  // carga anterior e o filtro dela: sumir da lista sem trocar de filtro é baixa ou cancelamento
+  const lastLoad = React.useRef<{ key: string; ids: string[] }>({ key: "", ids: [] });
+  const filterKey = JSON.stringify(filters);
+  React.useEffect(() => {
+    if (!data) return;
+    const ids = data.results.map((d) => d.id);
+    const previous = lastLoad.current;
+    const gone = previous.key === filterKey ? previous.ids.filter((id) => !ids.includes(id)) : [];
+    lastLoad.current = { key: filterKey, ids };
+    setSelection((current) => reconcile(current, data.results, gone));
+  }, [data, filterKey]);
+
+  const selectedCount = Object.keys(selection).length;
+  const selectionSummary = `${selectedCount} título${selectedCount !== 1 ? "s" : ""} · ${brl.format(total(selection))}`;
+  const selectionBarVisible = isManager && selectedCount > 0;
+
   // ── Summary computations ──────────────────────────────────────────────────
   const { data: summary, isLoading: isAllLoading } = useReceivableSummary();
 
@@ -101,7 +130,8 @@ export default function ContasReceberPage(): React.ReactElement {
 
   return (
     <ErrorBoundary>
-      <div className="space-y-5">
+      {/* folga embaixo enquanto a barra de seleção existe: ela não cobre a última linha */}
+      <div className={cn("space-y-5", selectionBarVisible && "pb-44 md:pb-20")}>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -198,8 +228,32 @@ export default function ContasReceberPage(): React.ReactElement {
         {/* Table */}
         <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
           {/* Table header */}
-          <div className="hidden md:grid grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_2rem] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            <span>Cliente</span>
+          <div
+            className={cn(
+              // celular: o cabeçalho aparece só para o gerente, e só com o "selecionar todos"
+              isManager ? "flex max-md:[&>span]:hidden" : "hidden",
+              "md:grid grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_2rem] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+            )}
+          >
+            {isManager ? (
+              <div className="flex items-center gap-3">
+                <label className="flex cursor-pointer items-center gap-3">
+                  {/* área de toque de 44px sem aumentar a linha */}
+                  <span className="-m-2.5 flex h-11 w-11 items-center justify-center md:-my-3.5">
+                    <Checkbox
+                      checked={headerState(selection, documents)}
+                      onCheckedChange={() => setSelection((current) => toggleAll(current, documents))}
+                      disabled={!documents.some(hasBalance)}
+                      aria-label="Selecionar todos os títulos com saldo da lista"
+                    />
+                  </span>
+                  <span className="md:hidden">Selecionar todos</span>
+                </label>
+                <span className="max-md:hidden">Cliente</span>
+              </div>
+            ) : (
+              <span>Cliente</span>
+            )}
             <span>Descrição</span>
             <span>Vencimento</span>
             <span className="text-right">Valor</span>
@@ -226,12 +280,26 @@ export default function ContasReceberPage(): React.ReactElement {
                   key={doc.id}
                   className="grid grid-cols-1 md:grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_2rem] gap-3 px-5 py-3.5 items-center text-sm hover:bg-muted/30 transition-colors"
                 >
-                  <Link
-                    href={`/financeiro/contas-receber/${doc.id}` as Route}
-                    className="font-medium text-foreground truncate hover:underline"
-                  >
-                    {doc.customer_name}
-                  </Link>
+                  <div className="flex min-w-0 items-center gap-3">
+                    {isManager &&
+                      (hasBalance(doc) ? (
+                        <label className="-mx-2.5 -my-3 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center">
+                          <Checkbox
+                            checked={doc.id in selection}
+                            onCheckedChange={() => setSelection((current) => toggle(current, doc))}
+                            aria-label={`Selecionar título de ${doc.customer_name}`}
+                          />
+                        </label>
+                      ) : (
+                        <span className="w-6 shrink-0" />
+                      ))}
+                    <Link
+                      href={`/financeiro/contas-receber/${doc.id}` as Route}
+                      className="font-medium text-foreground truncate hover:underline"
+                    >
+                      {doc.customer_name}
+                    </Link>
+                  </div>
                   <span className="text-foreground/60 truncate">
                     {doc.description}
                     {doc.document_number && (
@@ -310,7 +378,70 @@ export default function ContasReceberPage(): React.ReactElement {
         </div>
       </div>
 
+      {/* Barra de seleção: fixa, acima da barra de abas no celular e ao lado da navegação no desktop.
+          No celular para 76px antes da borda direita: é onde fica o botão flutuante de Nova OS. */}
+      {selectionBarVisible && (
+        <div
+          role="region"
+          aria-label="Títulos selecionados"
+          className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-2 right-[76px] z-30 md:bottom-6 md:left-60 md:right-0 md:px-6"
+        >
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background/95 px-4 py-3 shadow-lg backdrop-blur">
+            <p className="min-w-0 flex-1 font-mono text-sm font-semibold tabular-nums text-foreground">
+              {selectionSummary}
+              {selectedCount > BATCH_MAX && (
+                <span className="block font-sans text-xs font-normal text-warning-400">
+                  Máximo de {BATCH_MAX} títulos por baixa.
+                </span>
+              )}
+            </p>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setSelection({})}>
+              Limpar
+            </Button>
+            <Button
+              type="button"
+              className="max-md:w-full"
+              disabled={selectedCount > BATCH_MAX}
+              onClick={() => setBatchOpen(true)}
+            >
+              Receber selecionados
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Dialogs */}
+      <ReceiveBatchDialog
+        count={selectedCount}
+        summary={selectionSummary}
+        open={batchOpen}
+        onOpenChange={(open) => {
+          // com a baixa em andamento o diálogo não fecha: o resultado tem que aparecer
+          if (receiveBatch.isPending) return;
+          setBatchOpen(open);
+          if (!open) receiveBatch.reset();
+        }}
+        onSubmit={(data) => {
+          receiveBatch.mutate(
+            { document_ids: Object.keys(selection), ...data },
+            {
+              onSuccess: (result) => {
+                // o servidor baixa pelo saldo de agora, que pode não ser o que estava na tela
+                if (Number(result.total) !== total(selection)) {
+                  toast.warning(
+                    `O saldo mudou desde a seleção: foram baixados ${brl.format(Number(result.total))}, e não ${brl.format(total(selection))}.`
+                  );
+                }
+                setBatchOpen(false);
+                setSelection({});
+              },
+            }
+          );
+        }}
+        isPending={receiveBatch.isPending}
+        isError={receiveBatch.isError}
+        errorMessage={receiveBatch.error?.message}
+      />
       <RecordPaymentDialog
         document={receivingDoc}
         open={receivingDoc !== null}
@@ -343,6 +474,7 @@ export default function ContasReceberPage(): React.ReactElement {
         title="Registrar Recebimento"
         submitLabel="Registrar Recebimento"
         amountLabel="Valor a receber *"
+        noun="recebimento"
       />
       <CancelDialog
         entityName={cancellingDoc?.customer_name ?? ""}

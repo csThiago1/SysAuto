@@ -13,7 +13,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 
-from django.db.models import F, Q, Sum
+from django.db.models import F, Prefetch, Q, Sum
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import filters, status
 from rest_framework.decorators import action
@@ -25,12 +26,15 @@ from rest_framework.viewsets import ModelViewSet
 from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 
 from .filters import ReceivableDocumentFilter
-from .models import ReceivableDocument, ReceivableStatus
+from .models import ReceivableDocument, ReceivableReceipt, ReceivableStatus
 from .serializers import (
     CreateReceivableDocumentSerializer,
     ReceivableDocumentListSerializer,
     ReceivableDocumentSerializer,
+    ReceivableReceiptSerializer,
+    RecordReceiptBatchSerializer,
     RecordReceiptSerializer,
+    ReverseReceiptSerializer,
 )
 from .services import ReceivableDocumentService
 
@@ -49,12 +53,16 @@ class ReceivableDocumentViewSet(ModelViewSet):
     destroy       DELETE /accounts-receivable/documents/{id}/       → 405 (usar cancel)
     receive       POST /accounts-receivable/documents/{id}/receive/ → RecordReceiptSerializer
     cancel        POST /accounts-receivable/documents/{id}/cancel/  → {"reason": "..."}
+    receive-batch POST /accounts-receivable/documents/receive-batch/ → RecordReceiptBatchSerializer
+    reverse       POST /accounts-receivable/documents/{id}/receipts/{receipt_id}/reverse/
     """
 
     queryset = (
         ReceivableDocument.objects.filter(is_active=True)
         .select_related("cost_center", "cancelled_by")
-        .prefetch_related("receipts")
+        .prefetch_related(
+            Prefetch("receipts", queryset=ReceivableReceipt.objects.select_related("reversed_by"))
+        )
     )
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -266,12 +274,83 @@ class ReceivableDocumentViewSet(ModelViewSet):
             user=request.user,
         )
 
-        from .serializers import ReceivableReceiptSerializer
-
         return Response(
             ReceivableReceiptSerializer(receipt).data,
             status=status.HTTP_201_CREATED,
         )
+
+    @action(
+        methods=["post"],
+        detail=False,
+        url_path="receive-batch",
+        permission_classes=[IsAuthenticated, IsManagerOrAbove],
+    )
+    def receive_batch(self, request: Request) -> Response:
+        """
+        Baixa varios titulos pelo saldo, numa transacao so (ou todos ou nenhum).
+
+        POST /accounts-receivable/documents/receive-batch/
+        Body: { document_ids, receipt_date, payment_method, bank_account, notes }
+
+        Args:
+            request: Request com os ids dos titulos e os dados comuns da baixa.
+
+        Returns:
+            Response com count, total, without_journal_entry e os recebimentos.
+        """
+        serializer = RecordReceiptBatchSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        receipts = ReceivableDocumentService.record_receipts_batch(
+            **serializer.validated_data, user=request.user
+        )
+
+        return Response(
+            {
+                "count": len(receipts),
+                "total": str(sum((receipt.amount for receipt in receipts), Decimal("0.00"))),
+                "without_journal_entry": sum(1 for r in receipts if not r.journal_entry_id),
+                "receipts": ReceivableReceiptSerializer(receipts, many=True).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(
+        methods=["post"],
+        detail=True,
+        url_path=r"receipts/(?P<receipt_id>[0-9a-f-]{36})/reverse",
+        permission_classes=[IsAuthenticated, IsManagerOrAbove],
+    )
+    def reverse_receipt(
+        self, request: Request, pk: str | None = None, receipt_id: str | None = None
+    ) -> Response:
+        """
+        Estorna uma baixa do titulo (a baixa fica inativa, nunca apagada).
+
+        POST /accounts-receivable/documents/{id}/receipts/{receipt_id}/reverse/
+        Body: { "reason": "..." }
+
+        Args:
+            request: Request com o motivo do estorno.
+            pk: UUID do titulo a receber.
+            receipt_id: UUID da baixa, que precisa ser desse titulo.
+
+        Returns:
+            Response com ReceivableDocumentSerializer do titulo recalculado.
+        """
+        document = self.get_object()
+        get_object_or_404(document.receipts, id=receipt_id)
+        serializer = ReverseReceiptSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        ReceivableDocumentService.reverse_receipt(
+            document_id=str(document.id),
+            receipt_id=str(receipt_id),
+            reason=serializer.validated_data["reason"],
+            user=request.user,
+        )
+
+        return Response(ReceivableDocumentSerializer(self.get_object()).data)
 
     @action(
         methods=["post"],
@@ -294,17 +373,15 @@ class ReceivableDocumentViewSet(ModelViewSet):
             Response com ReceivableDocumentSerializer do titulo cancelado.
         """
         document = self.get_object()
-        reason = request.data.get("reason", "")
-        if not reason:
-            return Response(
-                {"reason": ["O motivo do cancelamento e obrigatorio."]},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # mesmo formato do motivo do estorno: obrigatorio, ate 200 (tamanho da coluna)
+        serializer = ReverseReceiptSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        document = ReceivableDocumentService.cancel_receivable(
+        ReceivableDocumentService.cancel_receivable(
             document_id=str(document.id),
-            reason=reason,
+            reason=serializer.validated_data["reason"],
             user=request.user,
         )
 
-        return Response(ReceivableDocumentSerializer(document).data)
+        # busca de novo: as baixas estornadas vem com quem estornou, sem consulta por baixa
+        return Response(ReceivableDocumentSerializer(self.get_object()).data)
