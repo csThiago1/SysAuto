@@ -282,7 +282,7 @@ class BillingService:
         """
         cls._validate_billable(order)
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         result = BillingResult()
 
         cls._create_receivables_and_emit_fiscal(order, items, user, today, result)

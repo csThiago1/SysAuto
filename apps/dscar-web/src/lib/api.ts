@@ -99,12 +99,18 @@ export async function apiFetch<T>(
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     const e = err as Record<string, unknown>;
 
+    // DRF manda o texto solto ({detail: "..."}) ou em lista ({campo: ["..."]}): vale o primeiro
+    const first = (v: unknown): string | undefined => {
+      const t = Array.isArray(v) ? v[0] : v;
+      return typeof t === "string" ? t : undefined;
+    };
     const message =
-      (e.detail as string | undefined) ??
-      (e.erro as string | undefined) ??
-      (e.non_field_errors as string[] | undefined)?.[0] ??
+      first(e.detail) ??
+      first(e.erro) ??
+      first(e.non_field_errors) ??
+      first(Object.values(e).find((v) => Array.isArray(v) && typeof v[0] === "string")) ??
       "Ocorreu um erro na requisição.";
-      
+
     throw new ApiError(message, res.status, e);
   }
 

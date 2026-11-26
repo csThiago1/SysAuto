@@ -16,6 +16,7 @@ import { ChevronLeft, Search, X } from "lucide-react";
 import { z } from "zod";
 import { useCreateReceivable, useCreateReceivableInstallments } from "@/hooks/useFinanceiro";
 import { useCustomers } from "@/hooks/useCustomers";
+import { usePermission } from "@/hooks/usePermission";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -112,6 +113,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
   const router = useRouter();
   const createReceivable = useCreateReceivable();
   const createInstallments = useCreateReceivableInstallments();
+  const isManager = usePermission("MANAGER");
 
   const todayStr = todayISO();
 
@@ -370,62 +372,64 @@ export default function NovoContaReceberPage(): React.ReactElement {
             </div>
           </section>
 
-          {/* Parcelamento */}
-          <section className="rounded-md bg-muted/50 shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2">
-              Parcelamento
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="Parcelas">
-                <Input
-                  type="number"
-                  min={1}
-                  max={12}
-                  value={numParcelas}
-                  onChange={(e) => {
-                    const v = Math.max(1, Math.min(12, parseInt(e.target.value, 10) || 1));
-                    setNumParcelas(v);
-                  }}
-                />
-              </FormField>
-              {numParcelas > 1 && (
-                <FormField label="Intervalo (dias)">
+          {/* Parcelamento — o backend só aceita parcelar de gerente para cima */}
+          {isManager && (
+            <section className="rounded-md bg-muted/50 shadow-card p-5 space-y-4">
+              <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2">
+                Parcelamento
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField label="Parcelas">
                   <Input
                     type="number"
                     min={1}
-                    max={365}
-                    value={intervalDays}
+                    max={12}
+                    value={numParcelas}
                     onChange={(e) => {
-                      const v = Math.max(1, Math.min(365, parseInt(e.target.value, 10) || 30));
-                      setIntervalDays(v);
+                      const v = Math.max(1, Math.min(12, parseInt(e.target.value, 10) || 1));
+                      setNumParcelas(v);
                     }}
                   />
                 </FormField>
-              )}
-            </div>
-            {installmentPreview.length > 0 && (
-              <div className="mt-3 rounded-md border border-border overflow-hidden">
-                <Table>
-                  <TableHeader className="bg-muted/70">
-                    <TableRow>
-                      <TableHead>Parcela</TableHead>
-                      <TableHead className="text-right">Valor (R$)</TableHead>
-                      <TableHead className="text-right">Vencimento</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {installmentPreview.map((p) => (
-                      <TableRow key={p.parcela} className="border-t">
-                        <TableCell className="text-foreground">{p.parcela}/{numParcelas}</TableCell>
-                        <TableCell className="text-right text-foreground">{p.valor}</TableCell>
-                        <TableCell className="text-right text-muted-foreground">{p.vencimento}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                {numParcelas > 1 && (
+                  <FormField label="Intervalo (dias)">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={intervalDays}
+                      onChange={(e) => {
+                        const v = Math.max(1, Math.min(365, parseInt(e.target.value, 10) || 30));
+                        setIntervalDays(v);
+                      }}
+                    />
+                  </FormField>
+                )}
               </div>
-            )}
-          </section>
+              {installmentPreview.length > 0 && (
+                <div className="mt-3 rounded-md border border-border overflow-hidden">
+                  <Table>
+                    <TableHeader className="bg-muted/70">
+                      <TableRow>
+                        <TableHead>Parcela</TableHead>
+                        <TableHead className="text-right">Valor (R$)</TableHead>
+                        <TableHead className="text-right">Vencimento</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {installmentPreview.map((p) => (
+                        <TableRow key={p.parcela} className="border-t">
+                          <TableCell className="text-foreground">{p.parcela}/{numParcelas}</TableCell>
+                          <TableCell className="text-right text-foreground">{p.valor}</TableCell>
+                          <TableCell className="text-right text-muted-foreground">{p.vencimento}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </section>
+          )}
 
           {/* Observações */}
           <section className="rounded-md bg-muted/50 shadow-card p-5 space-y-4">

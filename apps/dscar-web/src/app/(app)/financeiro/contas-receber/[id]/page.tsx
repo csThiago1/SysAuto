@@ -187,7 +187,7 @@ export default function ContaReceberDetailPage(): React.ReactElement {
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0">
-              {canReceive && (
+              {canReceive && isManager && (
                 <button
                   type="button"
                   onClick={() => setReceiptDialogOpen(true)}
@@ -300,7 +300,7 @@ export default function ContaReceberDetailPage(): React.ReactElement {
       </div>
 
       {/* Dialogs */}
-      {canReceive && (
+      {canReceive && isManager && (
         <RecordPaymentDialog
           document={{
             id: doc.id,

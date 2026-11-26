@@ -3,6 +3,7 @@ Paddock Solutions — Accounts Receivable Service
 
 ReceivableDocumentService — criacao, baixa e cancelamento de titulos a receber.
 """
+
 import logging
 from decimal import Decimal
 from uuid import UUID, uuid5
@@ -94,10 +95,8 @@ class ReceivableDocumentService:
         if amount_decimal <= 0:
             raise ValidationError({"amount": "O valor do titulo deve ser maior que zero."})
 
-        today = timezone.now().date()
-        initial_status = (
-            ReceivableStatus.OVERDUE if due_date < today else ReceivableStatus.OPEN
-        )
+        today = timezone.localdate()
+        initial_status = ReceivableStatus.OVERDUE if due_date < today else ReceivableStatus.OPEN
 
         document = ReceivableDocument.objects.create(
             customer_id=normalize_free_reference_id(customer_id, kind="customer"),
@@ -117,9 +116,8 @@ class ReceivableDocumentService:
         )
 
         logger.info(
-            "ReceivableDocumentService.create_receivable: titulo %s criado para %s — R$%s",
+            "ReceivableDocumentService.create_receivable: titulo %s criado — R$%s",
             document.id,
-            customer_name,
             amount_decimal,
         )
         return document
@@ -154,14 +152,12 @@ class ReceivableDocumentService:
         origin = "NFSE" if is_services else ("NFE" if is_parts else "MAN")
 
         term_days = int(billing_item.get("default_payment_term_days", 0))
-        today = timezone.now().date()
+        today = timezone.localdate()
         due_date = today + timezone.timedelta(days=term_days)
 
         customer_id = str(person.pk) if person else str(getattr(order, "customer_uuid", "") or "")
         customer_name = (
-            getattr(person, "full_name", None)
-            or getattr(order, "customer_name", "")
-            or ""
+            getattr(person, "full_name", None) or getattr(order, "customer_name", "") or ""
         )
 
         return cls.create_receivable(
@@ -221,9 +217,7 @@ class ReceivableDocumentService:
         if document.status == ReceivableStatus.RECEIVED:
             raise ValidationError({"detail": "Titulo ja esta totalmente recebido."})
         if document.status == ReceivableStatus.CANCELLED:
-            raise ValidationError(
-                {"detail": "Nao e possivel receber um titulo cancelado."}
-            )
+            raise ValidationError({"detail": "Nao e possivel receber um titulo cancelado."})
 
         if amount_decimal > document.amount_remaining:
             raise ValidationError(
@@ -246,12 +240,9 @@ class ReceivableDocumentService:
         )
 
         # Recalcular amount_received via aggregate para consistencia
-        total_received = (
-            ReceivableReceipt.objects.filter(
-                document=document, is_active=True
-            ).aggregate(total=Sum("amount"))["total"]
-            or Decimal("0.00")
-        )
+        total_received = ReceivableReceipt.objects.filter(
+            document=document, is_active=True
+        ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
 
         document.amount_received = total_received
         new_status = (
@@ -323,9 +314,7 @@ class ReceivableDocumentService:
         document = ReceivableDocument.objects.select_for_update().get(id=document_id)
 
         if document.status == ReceivableStatus.RECEIVED:
-            raise ValidationError(
-                {"detail": "Nao e possivel cancelar um titulo ja recebido."}
-            )
+            raise ValidationError({"detail": "Nao e possivel cancelar um titulo ja recebido."})
         if document.status == ReceivableStatus.CANCELLED:
             raise ValidationError({"detail": "Titulo ja esta cancelado."})
 
@@ -422,7 +411,7 @@ class ReceivableDocumentService:
         Returns:
             Numero de titulos atualizados para OVERDUE.
         """
-        today = timezone.now().date()
+        today = timezone.localdate()
         count = ReceivableDocument.objects.filter(
             status__in=[ReceivableStatus.OPEN, ReceivableStatus.PARTIAL],
             due_date__lt=today,

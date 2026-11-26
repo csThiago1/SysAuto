@@ -277,16 +277,62 @@ export function useCreateSupplier(): ReturnType<
 
 // ── Accounts Receivable hooks ─────────────────────────────────────────────────
 
+const receivableListPageSchema = z.object({
+  count: z.number(),
+  next: z.string().nullable(),
+  results: z.array(
+    z.object({
+      id: z.string(),
+      customer_name: z.string(),
+      description: z.string(),
+      document_number: z.string(),
+      due_date: z.string(),
+      // opcionais até o backend desta fatia estar publicado (o front sobe antes, pela Vercel)
+      competence_date: z.string().optional(),
+      amount: z.string(),
+      amount_received: z.string(),
+      amount_remaining: z.string(),
+      status: z.enum(["open", "partial", "received", "overdue", "cancelled"]),
+      origin: z.enum(["MAN", "OS", "NFE", "NFCE", "NFSE"]),
+      service_order_id: z.string().nullable().optional(),
+      created_at: z.string(),
+    })
+  ),
+});
+
+// shortcut: carrega todos os títulos do filtro; trocar por filtro de mês quando a tela do mês existir
+export async function fetchAllReceivables(
+  filters: Record<string, string> = {},
+  signal?: AbortSignal
+): Promise<PaginatedResponse<ReceivableDocumentListItem>> {
+  const results: ReceivableDocumentListItem[] = [];
+  for (let page = 1; ; page++) {
+    // filtro mudou no meio: para de pedir as páginas da busca antiga
+    signal?.throwIfAborted();
+    const params = new URLSearchParams({
+      // desempate por created_at: só due_date deixa título repetir ou sumir entre páginas
+      ordering: "due_date,created_at",
+      ...filters,
+      page: String(page),
+      page_size: "200",
+    });
+    const data = receivableListPageSchema.parse(
+      await apiFetch<unknown>(`${AR}/documents/?${params}`)
+    );
+    results.push(...data.results);
+    // "next" aponta para o backend, não para o proxy: serve só de sinal de que há mais
+    if (!data.next || data.results.length === 0) {
+      return { count: data.count, next: null, previous: null, results };
+    }
+  }
+}
+
 export function useReceivableDocuments(
   filters: Record<string, string> = {}
 ): ReturnType<typeof useQuery<PaginatedResponse<ReceivableDocumentListItem>>> {
-  const params = new URLSearchParams(filters).toString();
   return useQuery<PaginatedResponse<ReceivableDocumentListItem>>({
     queryKey: financeiroKeys.receivable.documents(filters),
-    queryFn: () =>
-      apiFetch<PaginatedResponse<ReceivableDocumentListItem>>(
-        `${AR}/documents/${params ? `?${params}` : ""}`
-      ),
+    queryFn: ({ signal }) => fetchAllReceivables(filters, signal),
   });
 }
 

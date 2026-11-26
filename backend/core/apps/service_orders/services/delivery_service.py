@@ -2,6 +2,7 @@
 Paddock Solutions — Service Orders: Delivery Service
 Logica de entrega da OS ao cliente.
 """
+
 import logging
 from typing import Any
 
@@ -43,16 +44,16 @@ class ServiceOrderDeliveryService:
         Returns:
             ServiceOrder com status 'delivered'.
         """
-        from apps.service_orders.models import (
-            ServiceOrderActivityLog,
-            ActivityType,
-        )
-        from apps.service_orders.services.order_service import _ServiceOrderCoreMixin
         from django.utils import timezone
+
+        from apps.service_orders.models import ActivityType, ServiceOrderActivityLog
+        from apps.service_orders.services.order_service import _ServiceOrderCoreMixin
 
         if order.status != "ready":
             raise ValidationError(
-                {"detail": f"OS deve estar 'Pronto para Entrega' para ser entregue. Status atual: {order.status}"}
+                {
+                    "detail": f"OS deve estar 'Pronto para Entrega' para ser entregue. Status atual: {order.status}"
+                }
             )
 
         # Validacao fiscal para clientes particulares
@@ -60,9 +61,11 @@ class ServiceOrderDeliveryService:
             nfe_key = data.get("nfe_key") or order.nfe_key
             nfse_number = data.get("nfse_number") or order.nfse_number
             # 06C: aceita tambem FiscalDocument autorizado vinculado a OS
-            has_authorized_doc = order.fiscal_documents.filter(
-                status="authorized"
-            ).exists() if hasattr(order, "fiscal_documents") else False
+            has_authorized_doc = (
+                order.fiscal_documents.filter(status="authorized").exists()
+                if hasattr(order, "fiscal_documents")
+                else False
+            )
             if not nfe_key and not nfse_number and not has_authorized_doc:
                 raise ValidationError(
                     {"fiscal": "NF-e ou NFS-e obrigatoria para entrega de cliente particular."}
@@ -117,6 +120,7 @@ class ServiceOrderDeliveryService:
         # Snapshot do orcamento final
         # Use the composed ServiceOrderService to access create_budget_snapshot
         from apps.service_orders.services import ServiceOrderService
+
         ServiceOrderService.create_budget_snapshot(
             order=order,
             trigger="delivery",
@@ -125,6 +129,7 @@ class ServiceOrderDeliveryService:
 
         # Log de atividade
         from apps.authentication.models import GlobalUser
+
         user = GlobalUser.objects.filter(id=delivered_by_id).first()
         user_name = user.get_full_name() or user.email if user else "Usuario"
 
@@ -168,8 +173,8 @@ class ServiceOrderDeliveryService:
                     customer_name=order.customer_name,
                     description=f"OS #{order.number} -- {order.plate}",
                     amount=os_total,
-                    due_date=now.date(),
-                    competence_date=now.date(),
+                    due_date=timezone.localdate(now),
+                    competence_date=timezone.localdate(now),
                     origin=ReceivableOrigin.OS,
                     service_order_id=str(order.id),
                     user=GlobalUser.objects.filter(id=delivered_by_id).first(),

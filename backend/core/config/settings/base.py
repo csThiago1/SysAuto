@@ -197,6 +197,7 @@ REST_FRAMEWORK = {
         "anon": "20/minute",
         "user": "200/minute",
     },
+    "EXCEPTION_HANDLER": "config.exception_handler.exception_handler",
 }
 
 # ─── drf-spectacular (Swagger) ────────────────────────────────────────────────
