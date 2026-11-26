@@ -47,7 +47,11 @@ interface RecordPaymentDialogProps {
   amountLabel?: string;
   /** Title: "Registrar Pagamento" or "Registrar Recebimento" */
   title?: string;
+  /** Como os rótulos e avisos chamam a operação */
+  noun?: "pagamento" | "recebimento";
 }
+
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 export function RecordPaymentDialog({
   document,
@@ -60,6 +64,7 @@ export function RecordPaymentDialog({
   submitLabel = "Registrar Pagamento",
   amountLabel = "Valor a pagar *",
   title = "Registrar Pagamento",
+  noun = "pagamento",
 }: RecordPaymentDialogProps) {
   const todayStr = todayISO();
 
@@ -69,15 +74,23 @@ export function RecordPaymentDialog({
   const [bankAccount, setBankAccount] = React.useState("");
   const [notes, setNotes] = React.useState("");
 
+  // pelo id e pelo saldo, não pelo objeto: quem passa um objeto novo a cada render
+  // (o detalhe do título) apagava o que o usuário digitou assim que o servidor recusava
+  const documentId = document?.id;
+  const remaining = document?.amount_remaining;
   React.useEffect(() => {
-    if (document) {
-      setAmount(document.amount_remaining);
+    if (open && remaining !== undefined) {
+      setAmount(remaining);
       setPaymentDate(todayStr);
       setPaymentMethod("pix");
       setBankAccount("");
       setNotes("");
     }
-  }, [document, todayStr]);
+  }, [open, documentId, remaining, todayStr]);
+
+  // O servidor recusa valor acima do saldo; aqui o aviso chega antes do envio.
+  const overBalance =
+    document !== null && Number(amount) > Number(document.amount_remaining);
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
@@ -85,9 +98,10 @@ export function RecordPaymentDialog({
     // O `required` do input nativo era a única validação desta data; o
     // DateField é um botão, então o browser não bloqueia mais o submit.
     if (!paymentDate) {
-      toast.error("Informe a data do pagamento.");
+      toast.error(`Informe a data do ${noun}.`);
       return;
     }
+    if (overBalance) return;
     onSubmit({
       documentId: document.id,
       payment_date: paymentDate,
@@ -106,30 +120,37 @@ export function RecordPaymentDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          {document && (
+            <p className="text-sm text-muted-foreground pt-1">
+              {entityName} — {document.description}
+            </p>
+          )}
         </DialogHeader>
-        {document && (
-          <p className="text-sm text-muted-foreground -mt-2">
-            {entityName} — {document.description}
-          </p>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs font-medium text-foreground/70">{amountLabel}</Label>
             <Input
               type="number"
               step="0.01"
               min="0.01"
+              max={document?.amount_remaining}
+              aria-invalid={overBalance}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
             />
+            {overBalance && document && (
+              <p role="alert" className="text-xs text-error-400">
+                O valor passa do saldo do título, que é {brl.format(Number(document.amount_remaining))}.
+              </p>
+            )}
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">Data do pagamento *</Label>
+            <Label className="text-xs font-medium text-foreground/70">Data do {noun} *</Label>
             <DateField value={paymentDate} onChange={setPaymentDate} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">Forma de pagamento *</Label>
+            <Label className="text-xs font-medium text-foreground/70">Forma de {noun} *</Label>
             <NativeSelect
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
@@ -156,7 +177,7 @@ export function RecordPaymentDialog({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-base md:text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Opcional..."
             />
           </div>

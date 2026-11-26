@@ -12,11 +12,14 @@ import { Breadcrumb } from "@/components/ui/breadcrumb";
 import {
   useReceivableDocument,
   useRecordReceipt,
+  useReverseReceipt,
   useCancelReceivable,
+  type ReceivableDocument,
 } from "@/hooks/useFinanceiro";
 import { usePermission } from "@/hooks/usePermission";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   RecordPaymentDialog,
   CancelDialog,
@@ -107,9 +110,13 @@ export default function ContaReceberDetailPage(): React.ReactElement {
   const isManager = usePermission("MANAGER");
   const recordReceipt = useRecordReceipt();
   const cancelReceivable = useCancelReceivable();
+  const reverseReceipt = useReverseReceipt();
 
   const [receiptDialogOpen, setReceiptDialogOpen] = React.useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = React.useState(false);
+  const [reversing, setReversing] = React.useState<
+    ReceivableDocument["receipts"][number] | null
+  >(null);
 
   const canReceive =
     doc !== undefined &&
@@ -263,11 +270,12 @@ export default function ContaReceberDetailPage(): React.ReactElement {
           ) : (
             <>
               {/* Table header */}
-              <div className="hidden md:grid grid-cols-[1fr_1fr_1.5fr_2fr] gap-4 px-5 py-2.5 bg-muted/30 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <div className="hidden md:grid grid-cols-[1fr_1fr_1.5fr_2fr_5.5rem] gap-4 px-5 py-2.5 bg-muted/30 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 <span>Data</span>
                 <span className="text-right">Valor</span>
                 <span>Forma</span>
                 <span>Observacoes</span>
+                <span></span>
               </div>
               <div className="divide-y divide-white/5">
                 {doc.receipts.map((receipt) => {
@@ -275,21 +283,48 @@ export default function ContaReceberDetailPage(): React.ReactElement {
                     paymentMethods.find(
                       ([v]) => v === receipt.payment_method
                     )?.[1] ?? receipt.payment_method;
+                  // baixa estornada fica no histórico, marcada; resposta sem o campo conta como ativa
+                  const reversed = receipt.is_active === false;
                   return (
                     <div
                       key={receipt.id}
-                      className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.5fr_2fr] gap-4 px-5 py-3.5 items-center text-sm"
+                      className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.5fr_2fr_5.5rem] gap-4 px-5 py-3.5 items-center text-sm"
                     >
                       <span className="text-foreground/70">
                         {formatDate(receipt.receipt_date)}
                       </span>
-                      <span className="text-right font-mono font-semibold text-foreground">
+                      <span
+                        className={
+                          reversed
+                            ? "text-right font-mono text-muted-foreground line-through"
+                            : "text-right font-mono font-semibold text-foreground"
+                        }
+                      >
                         {formatBRL(receipt.amount)}
                       </span>
                       <span className="text-foreground/60">{methodLabel}</span>
                       <span className="text-muted-foreground truncate">
                         {receipt.notes || "—"}
                       </span>
+                      {isManager && !reversed && doc.status !== "cancelled" && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="justify-self-start md:-my-2 md:justify-self-end"
+                          onClick={() => setReversing(receipt)}
+                        >
+                          Estornar
+                        </Button>
+                      )}
+                      {reversed && (
+                        <p className="col-span-full -mt-2 text-xs text-muted-foreground">
+                          Estornada
+                          {receipt.reversed_at && ` em ${formatDate(receipt.reversed_at)}`}
+                          {receipt.reversed_by_name && ` por ${receipt.reversed_by_name}`}
+                          {receipt.reverse_reason && `: ${receipt.reverse_reason}`}
+                        </p>
+                      )}
                     </div>
                   );
                 })}
@@ -309,7 +344,10 @@ export default function ContaReceberDetailPage(): React.ReactElement {
             description: doc.description,
           }}
           open={receiptDialogOpen}
-          onOpenChange={setReceiptDialogOpen}
+          onOpenChange={(open) => {
+            setReceiptDialogOpen(open);
+            if (!open) recordReceipt.reset();
+          }}
           onSubmit={(data) => {
             recordReceipt.mutate(
               {
@@ -329,6 +367,35 @@ export default function ContaReceberDetailPage(): React.ReactElement {
           title="Registrar Recebimento"
           submitLabel="Registrar Recebimento"
           amountLabel="Valor a receber *"
+          noun="recebimento"
+        />
+      )}
+      {isManager && (
+        <CancelDialog
+          title="Estornar Recebimento"
+          reasonLabel="Motivo do estorno *"
+          submitLabel="Confirmar Estorno"
+          pendingLabel="Estornando..."
+          reasonMaxLength={200}
+          entityName={doc.customer_name}
+          amount={reversing?.amount ?? "0"}
+          open={reversing !== null}
+          onOpenChange={(open) => {
+            if (!open) {
+              setReversing(null);
+              reverseReceipt.reset();
+            }
+          }}
+          onSubmit={(reason) => {
+            if (!reversing) return;
+            reverseReceipt.mutate(
+              { documentId: doc.id, receiptId: reversing.id, reason },
+              { onSuccess: () => setReversing(null) }
+            );
+          }}
+          isPending={reverseReceipt.isPending}
+          isError={reverseReceipt.isError}
+          errorMessage={reverseReceipt.error?.message || "Erro ao estornar a baixa."}
         />
       )}
       {canCancel && isManager && (
@@ -336,7 +403,10 @@ export default function ContaReceberDetailPage(): React.ReactElement {
           entityName={doc.customer_name}
           amount={doc.amount}
           open={cancelDialogOpen}
-          onOpenChange={setCancelDialogOpen}
+          onOpenChange={(open) => {
+            setCancelDialogOpen(open);
+            if (!open) cancelReceivable.reset();
+          }}
           onSubmit={(reason) => {
             cancelReceivable.mutate(
               { id: doc.id, reason },

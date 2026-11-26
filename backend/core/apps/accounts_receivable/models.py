@@ -5,6 +5,7 @@ Models:
   ReceivableDocument  — Titulo a receber (OS, NF-e emitida, manual, etc.)
   ReceivableReceipt   — Baixa de recebimento (parcial ou total)
 """
+
 import logging
 from decimal import Decimal
 
@@ -12,10 +13,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounting.models.chart_of_accounts import CostCenter
-from apps.authentication.models import GlobalUser, PaddockBaseModel
 
 # Reutiliza PaymentMethod do modulo AP para evitar duplicacao
 from apps.accounts_payable.models import PaymentMethod  # noqa: F401
+from apps.authentication.models import GlobalUser, PaddockBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -75,9 +76,7 @@ class ReceivableDocument(PaddockBaseModel):
         default=ReceivableOrigin.MANUAL,
     )
     # Referencia a OS — sem FK (cross-schema)
-    service_order_id = models.UUIDField(
-        _("ID da OS"), null=True, blank=True, db_index=True
-    )
+    service_order_id = models.UUIDField(_("ID da OS"), null=True, blank=True, db_index=True)
     cost_center = models.ForeignKey(
         CostCenter,
         on_delete=models.SET_NULL,
@@ -151,6 +150,18 @@ class ReceivableReceipt(PaddockBaseModel):
     bank_account = models.CharField(_("Conta bancaria"), max_length=100, blank=True, default="")
     notes = models.TextField(_("Observacoes"), blank=True, default="")
     journal_entry_id = models.UUIDField(_("Lancamento contabil"), null=True, blank=True)
+    reversed_at = models.DateTimeField(_("Estornado em"), null=True, blank=True)
+    reversed_by = models.ForeignKey(
+        GlobalUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reversed_receivable_receipts",
+        verbose_name=_("Estornado por"),
+    )
+    reverse_reason = models.CharField(
+        _("Motivo do estorno"), max_length=200, blank=True, default=""
+    )
 
     class Meta:
         ordering = ["-receipt_date"]

@@ -20,6 +20,12 @@ interface CancelDialogProps {
   isPending: boolean;
   isError: boolean;
   errorMessage?: string;
+  /** Rótulos: o mesmo diálogo confirma o estorno de uma baixa */
+  title?: string;
+  reasonLabel?: string;
+  submitLabel?: string;
+  pendingLabel?: string;
+  reasonMaxLength?: number;
 }
 
 export function CancelDialog({
@@ -31,6 +37,12 @@ export function CancelDialog({
   isPending,
   isError,
   errorMessage,
+  title = "Cancelar Titulo",
+  reasonLabel = "Motivo do cancelamento *",
+  submitLabel = "Confirmar Cancelamento",
+  pendingLabel = "Cancelando...",
+  // 200 é o tamanho da coluna do motivo, no título e na baixa
+  reasonMaxLength = 200,
 }: CancelDialogProps) {
   const [reason, setReason] = React.useState("");
 
@@ -49,22 +61,23 @@ export function CancelDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Cancelar Titulo</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
+          <p className="text-sm text-muted-foreground pt-1">
+            {entityName} — {brl.format(Number(amount))}
+          </p>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground -mt-2">
-          {entityName} — {brl.format(Number(amount))}
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs font-medium text-foreground/70">
-              Motivo do cancelamento *
+              {reasonLabel}
             </Label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
               required
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+              maxLength={reasonMaxLength}
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-base md:text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Informe o motivo..."
             />
           </div>
@@ -88,7 +101,7 @@ export function CancelDialog({
               disabled={isPending || !reason.trim()}
               className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-error-700 disabled:opacity-50 transition-colors"
             >
-              {isPending ? "Cancelando..." : "Confirmar Cancelamento"}
+              {isPending ? pendingLabel : submitLabel}
             </button>
           </DialogFooter>
         </form>

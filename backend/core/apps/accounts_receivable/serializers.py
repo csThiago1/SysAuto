@@ -21,6 +21,7 @@ class ReceivableReceiptSerializer(serializers.ModelSerializer):
     payment_method_display = serializers.CharField(
         source="get_payment_method_display", read_only=True
     )
+    reversed_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = ReceivableReceipt
@@ -33,9 +34,26 @@ class ReceivableReceiptSerializer(serializers.ModelSerializer):
             "bank_account",
             "notes",
             "journal_entry_id",
+            "is_active",
+            "reversed_at",
+            "reversed_by_name",
+            "reverse_reason",
             "created_at",
         ]
-        read_only_fields = ["id", "journal_entry_id", "created_at"]
+        read_only_fields = [
+            "id",
+            "journal_entry_id",
+            "is_active",
+            "reversed_at",
+            "reverse_reason",
+            "created_at",
+        ]
+
+    def get_reversed_by_name(self, obj: ReceivableReceipt) -> str | None:
+        """Retorna nome do usuario que estornou a baixa, se houver."""
+        if obj.reversed_by:
+            return obj.reversed_by.name
+        return None
 
 
 # ── ReceivableDocument ─────────────────────────────────────────────────────────
@@ -211,3 +229,18 @@ class RecordReceiptSerializer(serializers.Serializer):
         max_length=100, required=False, default="", allow_blank=True
     )
     notes = serializers.CharField(required=False, default="", allow_blank=True)
+
+
+class RecordReceiptBatchSerializer(RecordReceiptSerializer):
+    """Baixa em lote: os dados da baixa sem o valor, que e o saldo de cada titulo."""
+
+    amount = None
+    document_ids = serializers.ListField(
+        child=serializers.UUIDField(), min_length=1, max_length=200
+    )
+
+
+class ReverseReceiptSerializer(serializers.Serializer):
+    """Serializer de escrita para estorno de uma baixa."""
+
+    reason = serializers.CharField(max_length=200)

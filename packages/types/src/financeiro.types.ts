@@ -171,6 +171,11 @@ export interface ReceivableReceipt {
   notes: string;
   journal_entry_id: string | null;
   created_at: string;
+  /** false = baixa estornada (nunca é apagada) */
+  is_active: boolean;
+  reversed_at: string | null;
+  reversed_by_name: string | null;
+  reverse_reason: string;
 }
 
 export interface ReceivableDocument {
@@ -229,6 +234,15 @@ export interface CreateReceivablePayload {
 export interface RecordReceiptPayload {
   receipt_date: string;
   amount: string;
+  payment_method: PaymentMethod;
+  bank_account?: string;
+  notes?: string;
+}
+
+/** Baixa em lote: cada título é baixado pelo saldo, com a mesma data, forma e conta. */
+export interface RecordReceiptsBatchPayload {
+  document_ids: string[];
+  receipt_date: string;
   payment_method: PaymentMethod;
   bank_account?: string;
   notes?: string;

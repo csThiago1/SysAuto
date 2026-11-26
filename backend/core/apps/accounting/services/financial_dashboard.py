@@ -48,10 +48,16 @@ class FinancialDashboardService:
         """Total received (baixas) in the period."""
         from apps.accounts_receivable.models import ReceivableReceipt
 
-        total = ReceivableReceipt.objects.filter(
-            receipt_date__range=(start_date, end_date),
-            is_active=True,
-        ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
+        total = (
+            ReceivableReceipt.objects.filter(
+                receipt_date__range=(start_date, end_date),
+                is_active=True,
+            )
+            # titulo cancelado antes do estorno de baixa existir ficou com baixa ativa
+            .exclude(document__status="cancelled")
+            .aggregate(total=Sum("amount"))["total"]
+            or Decimal("0")
+        )
         return str(total)
 
     @classmethod
