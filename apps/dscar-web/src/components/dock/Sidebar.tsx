@@ -152,7 +152,7 @@ export function Sidebar(): React.ReactElement {
       </div>
 
       <nav aria-label="Módulos" className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
-        <AreaSwitcher area={area} areas={areas} className="mb-2 px-1" />
+        <AreaSwitcher area={area} areas={areas} className="mb-3 border-b border-border pb-3" />
         {items.map((i) => (
           <Item key={i.id} item={i} pathname={pathname} counts={counts} />
         ))}
