@@ -1,6 +1,7 @@
 """
 Paddock Solutions — Accounts Receivable Filters
 """
+
 import django_filters
 
 from .models import ReceivableDocument
@@ -14,6 +15,8 @@ class ReceivableDocumentFilter(django_filters.FilterSet):
     customer_id = django_filters.UUIDFilter(field_name="customer_id")
     due_date_gte = django_filters.DateFilter(field_name="due_date", lookup_expr="gte")
     due_date_lte = django_filters.DateFilter(field_name="due_date", lookup_expr="lte")
+    competence_date_gte = django_filters.DateFilter(field_name="competence_date", lookup_expr="gte")
+    competence_date_lte = django_filters.DateFilter(field_name="competence_date", lookup_expr="lte")
 
     class Meta:
         model = ReceivableDocument
@@ -23,4 +26,6 @@ class ReceivableDocumentFilter(django_filters.FilterSet):
             "customer_id",
             "due_date_gte",
             "due_date_lte",
+            "competence_date_gte",
+            "competence_date_lte",
         ]

@@ -4,15 +4,17 @@ Paddock Solutions — Accounts Receivable Views
 ViewSets para Contas a Receber.
 Regras de negocio ficam em services.py — nunca aqui.
 """
+
 import logging
 from decimal import Decimal
 from typing import Any
 
-from django.db.models import F, Q, Sum
-from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
+
+from django.db.models import F, Q, Sum
+from django.utils import timezone
 from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -59,7 +61,13 @@ class ReceivableDocumentViewSet(ModelViewSet):
     filterset_class = ReceivableDocumentFilter
     search_fields = ["description", "document_number", "customer_name"]
     ordering_fields = ["due_date", "amount", "status", "created_at"]
-    ordering = ["due_date"]
+    ordering = ["due_date", "created_at"]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        """Edicao do titulo e de gerente para cima."""
+        if self.action in ("update", "partial_update"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return super().get_permissions()
 
     def get_serializer_class(self) -> type:
         """Retorna serializer adequado para cada acao."""
@@ -97,9 +105,7 @@ class ReceivableDocumentViewSet(ModelViewSet):
                 str(data["service_order_id"]) if data.get("service_order_id") else None
             ),
             document_number=data.get("document_number", ""),
-            cost_center_id=(
-                str(data["cost_center_id"]) if data.get("cost_center_id") else None
-            ),
+            cost_center_id=(str(data["cost_center_id"]) if data.get("cost_center_id") else None),
             notes=data.get("notes", ""),
             user=request.user,
         )
@@ -190,12 +196,23 @@ class ReceivableDocumentViewSet(ModelViewSet):
             Response com lista de ReceivableDocumentListSerializer dos titulos criados.
         """
         data = request.data.copy()
-        num_parcelas = int(data.pop("num_parcelas", 1))
-        interval_days = int(data.pop("interval_days", 30))
+        try:
+            num_parcelas = int(data.pop("num_parcelas", 1))
+            interval_days = int(data.pop("interval_days", 30))
+        except (TypeError, ValueError, OverflowError):
+            return Response(
+                {"detail": ["num_parcelas e interval_days devem ser numeros inteiros."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if num_parcelas < 1 or num_parcelas > 12:
             return Response(
-                {"num_parcelas": "Deve ser entre 1 e 12."},
+                {"num_parcelas": ["Deve ser entre 1 e 12."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not 1 <= interval_days <= 365:
+            return Response(
+                {"interval_days": ["Deve ser entre 1 e 365."]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -234,12 +251,13 @@ class ReceivableDocumentViewSet(ModelViewSet):
         Returns:
             Response com dados do recebimento registrado.
         """
+        document = self.get_object()
         serializer = RecordReceiptSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
         receipt = ReceivableDocumentService.record_receipt(
-            document_id=str(pk),
+            document_id=str(document.id),
             receipt_date=data["receipt_date"],
             amount=data["amount"],
             payment_method=data.get("payment_method", "pix"),
@@ -275,15 +293,16 @@ class ReceivableDocumentViewSet(ModelViewSet):
         Returns:
             Response com ReceivableDocumentSerializer do titulo cancelado.
         """
+        document = self.get_object()
         reason = request.data.get("reason", "")
         if not reason:
             return Response(
-                {"reason": "O motivo do cancelamento e obrigatorio."},
+                {"reason": ["O motivo do cancelamento e obrigatorio."]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         document = ReceivableDocumentService.cancel_receivable(
-            document_id=str(pk),
+            document_id=str(document.id),
             reason=reason,
             user=request.user,
         )

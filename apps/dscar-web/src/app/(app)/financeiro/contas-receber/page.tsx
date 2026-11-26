@@ -13,6 +13,7 @@ import type { Route } from "next";
 import { PlusCircle, TrendingUp, AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { useReceivableDocuments, useReceivableSummary, useRecordReceipt, useCancelReceivable } from "@/hooks/useFinanceiro";
 import { useDebounce } from "@/hooks/useDebounce";
+import { usePermission } from "@/hooks/usePermission";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import {
@@ -80,6 +81,7 @@ export default function ContasReceberPage(): React.ReactElement {
   if (dueDateLte) filters.due_date_lte = dueDateLte;
 
   const { data, isLoading, isError } = useReceivableDocuments(filters);
+  const isManager = usePermission("MANAGER");
   const recordReceipt = useRecordReceipt();
   const cancelReceivable = useCancelReceivable();
 
@@ -196,7 +198,7 @@ export default function ContasReceberPage(): React.ReactElement {
         {/* Table */}
         <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
           {/* Table header */}
-          <div className="hidden md:grid grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="hidden md:grid grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_2rem] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             <span>Cliente</span>
             <span>Descrição</span>
             <span>Vencimento</span>
@@ -222,7 +224,7 @@ export default function ContasReceberPage(): React.ReactElement {
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="grid grid-cols-1 md:grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3.5 items-center text-sm hover:bg-muted/30 transition-colors"
+                  className="grid grid-cols-1 md:grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_2rem] gap-3 px-5 py-3.5 items-center text-sm hover:bg-muted/30 transition-colors"
                 >
                   <Link
                     href={`/financeiro/contas-receber/${doc.id}` as Route}
@@ -267,36 +269,37 @@ export default function ContasReceberPage(): React.ReactElement {
                     />
                   </div>
                   <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setOpenMenu(openMenu === doc.id ? null : doc.id)}
-                      className="inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
-                    >
-                      &middot;&middot;&middot;
-                    </button>
-                    {openMenu === doc.id && (
+                    {/* Receber e Cancelar valem para os mesmos status e só para gerente: sem item, sem gatilho */}
+                    {isManager && canCancel(doc.status) && (
                       <>
-                        <div className="fixed inset-0 z-40" onClick={() => setOpenMenu(null)} />
-                        <div className="absolute right-0 top-full mt-1 z-50 min-w-[140px] rounded-lg bg-popover border border-border shadow-lg py-1">
-                          {(doc.status === "open" || doc.status === "partial" || doc.status === "overdue") && (
-                            <button
-                              type="button"
-                              onClick={() => { setReceivingDoc(doc); setOpenMenu(null); }}
-                              className="w-full text-left px-3 py-1.5 text-xs text-foreground/70 hover:bg-muted/50 transition-colors"
-                            >
-                              Receber
-                            </button>
-                          )}
-                          {canCancel(doc.status) && (
-                            <button
-                              type="button"
-                              onClick={() => { setCancellingDoc(doc); setOpenMenu(null); }}
-                              className="w-full text-left px-3 py-1.5 text-xs text-error-400/80 hover:bg-muted/50 transition-colors"
-                            >
-                              Cancelar
-                            </button>
-                          )}
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setOpenMenu(openMenu === doc.id ? null : doc.id)}
+                          className="inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+                        >
+                          &middot;&middot;&middot;
+                        </button>
+                        {openMenu === doc.id && (
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setOpenMenu(null)} />
+                            <div className="absolute right-0 top-full mt-1 z-50 min-w-[140px] rounded-lg bg-popover border border-border shadow-lg py-1">
+                              <button
+                                type="button"
+                                onClick={() => { setReceivingDoc(doc); setOpenMenu(null); }}
+                                className="w-full text-left px-3 py-1.5 text-xs text-foreground/70 hover:bg-muted/50 transition-colors"
+                              >
+                                Receber
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { setCancellingDoc(doc); setOpenMenu(null); }}
+                                className="w-full text-left px-3 py-1.5 text-xs text-error-400/80 hover:bg-muted/50 transition-colors"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </>
                     )}
                   </div>
@@ -312,7 +315,10 @@ export default function ContasReceberPage(): React.ReactElement {
         document={receivingDoc}
         open={receivingDoc !== null}
         onOpenChange={(open) => {
-          if (!open) setReceivingDoc(null);
+          if (!open) {
+            setReceivingDoc(null);
+            recordReceipt.reset();
+          }
         }}
         onSubmit={(data) => {
           recordReceipt.mutate(
@@ -343,7 +349,10 @@ export default function ContasReceberPage(): React.ReactElement {
         amount={cancellingDoc?.amount ?? "0"}
         open={cancellingDoc !== null}
         onOpenChange={(open) => {
-          if (!open) setCancellingDoc(null);
+          if (!open) {
+            setCancellingDoc(null);
+            cancelReceivable.reset();
+          }
         }}
         onSubmit={(reason) => {
           if (!cancellingDoc) return;

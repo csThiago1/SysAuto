@@ -4,22 +4,20 @@ Paddock Solutions — Accounts Receivable Service Tests — Sprint 14
 Suíte simétrica ao AP para ReceivableDocumentService.
 Usa TenantTestCase para isolamento de schema por tenant.
 """
+
 import hashlib
 import uuid
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from datetime import timezone as dt_timezone
 from decimal import Decimal
+from unittest import mock
 
 from django.core.exceptions import ValidationError
 from django_tenants.test.cases import TenantTestCase
 
-from apps.authentication.models import GlobalUser
-from apps.accounts_receivable.models import (
-    ReceivableDocument,
-    ReceivableReceipt,
-    ReceivableStatus,
-)
+from apps.accounts_receivable.models import ReceivableDocument, ReceivableReceipt, ReceivableStatus
 from apps.accounts_receivable.services import ReceivableDocumentService
-
+from apps.authentication.models import GlobalUser
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -95,6 +93,16 @@ class TestCreateReceivable(ARServiceTestCase):
         doc = self._create_receivable()
         self.assertEqual(doc.status, ReceivableStatus.OPEN)
         self.assertEqual(doc.amount_received, Decimal("0.00"))
+
+    def test_due_on_local_day_is_open_when_utc_is_already_next_day(self) -> None:
+        """21h em Manaus ja e o dia seguinte em UTC: vencimento no dia local nasce OPEN."""
+        local_day = date(2026, 3, 10)
+        utc_next_day = datetime(2026, 3, 11, 1, 0, tzinfo=dt_timezone.utc)
+        with mock.patch("django.utils.timezone.now", return_value=utc_next_day):
+            doc = self._create_receivable(due_date=local_day, competence_date=local_day)
+            updated = ReceivableDocumentService.refresh_overdue_status()
+        self.assertEqual(doc.status, ReceivableStatus.OPEN)
+        self.assertEqual(updated, 0)
 
     def test_create_with_zero_amount_raises_validation_error(self) -> None:
         """TC-AR-02c: amount=0 deve levantar ValidationError com chave 'amount'."""

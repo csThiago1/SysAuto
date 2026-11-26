@@ -83,6 +83,25 @@ class TestListDocuments(ARListTestCase):
         self.assertEqual(resp.data["count"], 1)
         self.assertEqual(resp.data["results"][0]["description"], "Vence depois")
 
+    def test_competence_date_filter_and_list_fields(self) -> None:
+        """Filtro de competencia (competence_date_gte/lte) e os campos novos da lista."""
+        os_id = uuid.uuid4()
+        self._doc(description="Mes passado", competence_date=self.today - timedelta(days=40))
+        self._doc(description="Deste mes", service_order_id=os_id)
+        resp = self.client.get(
+            URL,
+            {
+                "competence_date_gte": str(self.today - timedelta(days=5)),
+                "competence_date_lte": str(self.today),
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data["count"], 1)
+        row = resp.data["results"][0]
+        self.assertEqual(row["description"], "Deste mes")
+        self.assertEqual(row["competence_date"], str(self.today))
+        self.assertEqual(row["service_order_id"], str(os_id))
+
 
 class TestSummary(ARListTestCase):
     """GET /documents/summary/ — totais dos cartoes."""

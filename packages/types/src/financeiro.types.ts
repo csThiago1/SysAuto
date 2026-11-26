@@ -203,12 +203,13 @@ export interface ReceivableDocumentListItem {
   description: string;
   document_number: string;
   due_date: string;
+  competence_date?: string;
   amount: string;
   amount_received: string;
   amount_remaining: string;
   status: ReceivableStatus;
   origin: ReceivableOrigin;
-  service_order_id: string | null;
+  service_order_id?: string | null;
   created_at: string;
 }
 

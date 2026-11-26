@@ -3,6 +3,7 @@ Paddock Solutions — Accounts Payable Service
 
 PayableDocumentService — criacao, baixa e cancelamento de titulos a pagar.
 """
+
 import logging
 from decimal import Decimal
 
@@ -71,17 +72,14 @@ class PayableDocumentService:
             raise ValidationError({"amount": "O valor do titulo deve ser maior que zero."})
 
         from apps.persons.models import Person
+
         try:
             supplier = Person.objects.get(id=supplier_id, roles__role="SUPPLIER")
         except Person.DoesNotExist:
-            raise ValidationError(
-                {"supplier_id": f"Fornecedor {supplier_id} nao encontrado."}
-            )
+            raise ValidationError({"supplier_id": f"Fornecedor {supplier_id} nao encontrado."})
 
-        today = timezone.now().date()
-        initial_status = (
-            DocumentStatus.OVERDUE if due_date < today else DocumentStatus.OPEN
-        )
+        today = timezone.localdate()
+        initial_status = DocumentStatus.OVERDUE if due_date < today else DocumentStatus.OPEN
 
         document = PayableDocument.objects.create(
             supplier=supplier,
@@ -99,9 +97,8 @@ class PayableDocumentService:
         )
 
         logger.info(
-            "PayableDocumentService.create_payable: titulo %s criado para %s — R$%s",
+            "PayableDocumentService.create_payable: titulo %s criado — R$%s",
             document.id,
-            supplier.full_name,
             amount_decimal,
         )
 
@@ -109,11 +106,13 @@ class PayableDocumentService:
         if expense_account_id:
             try:
                 from .accounting_service import PayableAccountingService
+
                 PayableAccountingService.post_expense_recognition(document, user)
             except Exception as exc:
                 logger.warning(
                     "Erro ao gerar lançamento de despesa para titulo %s: %s",
-                    document.id, exc,
+                    document.id,
+                    exc,
                 )
 
         return document
@@ -185,18 +184,13 @@ class PayableDocumentService:
         )
 
         # Recalcular amount_paid via aggregate para consistencia
-        total_paid = (
-            PayablePayment.objects.filter(
-                document=document, is_active=True
-            ).aggregate(total=Sum("amount"))["total"]
-            or Decimal("0.00")
-        )
+        total_paid = PayablePayment.objects.filter(document=document, is_active=True).aggregate(
+            total=Sum("amount")
+        )["total"] or Decimal("0.00")
 
         document.amount_paid = total_paid
         new_status = (
-            DocumentStatus.PAID
-            if total_paid >= document.amount
-            else DocumentStatus.PARTIAL
+            DocumentStatus.PAID if total_paid >= document.amount else DocumentStatus.PARTIAL
         )
         document.status = new_status
         document.save(update_fields=["amount_paid", "status", "updated_at"])
@@ -262,9 +256,7 @@ class PayableDocumentService:
         document = PayableDocument.objects.select_for_update().get(id=document_id)
 
         if document.status == DocumentStatus.PAID:
-            raise ValidationError(
-                {"detail": "Nao e possivel cancelar um titulo ja pago."}
-            )
+            raise ValidationError({"detail": "Nao e possivel cancelar um titulo ja pago."})
         if document.status == DocumentStatus.CANCELLED:
             raise ValidationError({"detail": "Titulo ja esta cancelado."})
 
@@ -384,7 +376,7 @@ class PayableDocumentService:
         Returns:
             Numero de titulos atualizados para OVERDUE.
         """
-        today = timezone.now().date()
+        today = timezone.localdate()
         count = PayableDocument.objects.filter(
             status__in=[DocumentStatus.OPEN, DocumentStatus.PARTIAL],
             due_date__lt=today,
